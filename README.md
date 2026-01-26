@@ -12,7 +12,7 @@ The technology stack for the **Employee Management System** has been selected to
 *   **Rationale:** Java is the core language for this course. **Maven** is selected for build automation and dependency management, as explicitly required for the Sprint 2 deliverables. This choice supports "Professional Development" standards by separating source code from build configurations and managing libraries like JUnit.
 
 ### Database
-*   **Technology:** MySQL (Relational Database)
+*   **Technology:** MariaDB (Relational Database)
 *   **Rationale:** The data managed by this system (Employees, Departments, Salaries) is highly structured and formalized. According to data modeling principles, a **Relational Database** is the correct choice for structured data where integrity and consistency are critical. A relational model allows us to implement the ER diagrams and cardinality constraints (e.g., 1:M relationships) designed in the logical design phase.
 
 ### DevOps & Tools
