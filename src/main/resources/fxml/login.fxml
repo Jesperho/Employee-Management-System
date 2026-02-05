@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Text?>
+
+<HBox xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="controller.LoginController"
+      styleClass="root-container">
+
+    <!-- Left Panel - Branding -->
+    <VBox styleClass="brand-panel" HBox.hgrow="ALWAYS" alignment="CENTER" spacing="40">
+        <VBox alignment="CENTER" spacing="5">
+            <Text text="Employee" styleClass="brand-title"/>
+            <Text text="Management" styleClass="brand-title"/>
+            <Text text="System" styleClass="brand-title"/>
+        </VBox>
+
+        <VBox alignment="CENTER_LEFT" spacing="12" styleClass="features-list">
+            <HBox spacing="10" alignment="CENTER">
+                <Text text="+" styleClass="feature-bullet"/>
+                <Text text="Manage employees efficiently" styleClass="feature-text"/>
+            </HBox>
+            <HBox spacing="10" alignment="CENTER">
+                <Text text="+" styleClass="feature-bullet"/>
+                <Text text="Track departments and teams" styleClass="feature-text"/>
+            </HBox>
+            <HBox spacing="10" alignment="CENTER">
+                <Text text="+" styleClass="feature-bullet"/>
+                <Text text="Handle leave requests" styleClass="feature-text"/>
+            </HBox>
+            <HBox spacing="10" alignment="CENTER">
+                <Text text="+" styleClass="feature-bullet"/>
+                <Text text="Salary management" styleClass="feature-text"/>
+            </HBox>
+        </VBox>
+    </VBox>
+
+    <!-- Right Panel - Forms -->
+    <VBox styleClass="form-panel" HBox.hgrow="ALWAYS" alignment="CENTER">
+
+        <TabPane fx:id="tabPane" tabClosingPolicy="UNAVAILABLE" styleClass="auth-tabs" maxWidth="550">
+
+            <!-- Login Tab -->
+            <Tab text="Sign In">
+                <VBox spacing="20" styleClass="tab-content">
+                    <padding>
+                        <Insets top="40" right="40" bottom="40" left="40"/>
+                    </padding>
+
+                    <VBox spacing="4">
+                        <Text text="Welcome back" styleClass="form-title"/>
+                        <Text text="Sign in to continue managing your workforce" styleClass="form-subtitle"/>
+                    </VBox>
+
+                    <VBox spacing="6">
+                        <Label text="Email" styleClass="field-label"/>
+                        <TextField fx:id="loginEmail" promptText="Enter your email" styleClass="input-field"/>
+                    </VBox>
+
+                    <VBox spacing="6">
+                        <Label text="Password" styleClass="field-label"/>
+                        <PasswordField fx:id="loginPassword" promptText="Enter your password" styleClass="input-field"/>
+                    </VBox>
+
+                    <Button text="Sign In" onAction="#handleLogin" styleClass="primary-button" maxWidth="Infinity"/>
+
+                    <Label fx:id="loginMessage" styleClass="message-label" wrapText="true"/>
+                </VBox>
+            </Tab>
+
+            <!-- Register Tab -->
+            <Tab text="Register">
+                <VBox spacing="18" styleClass="tab-content">
+                    <padding>
+                        <Insets top="30" right="40" bottom="30" left="40"/>
+                    </padding>
+
+                    <VBox spacing="4">
+                        <Text text="Create Admin Account" styleClass="form-title"/>
+                        <Text text="Register and set up your company" styleClass="form-subtitle"/>
+                    </VBox>
+
+                    <!-- Company Section -->
+                    <VBox spacing="12" styleClass="form-section">
+                        <Text text="Company Information" styleClass="section-label"/>
+                        <HBox spacing="12">
+                            <VBox spacing="5" HBox.hgrow="ALWAYS">
+                                <Label text="Company Name" styleClass="field-label"/>
+                                <TextField fx:id="companyName" promptText="Company name" styleClass="input-field"/>
+                            </VBox>
+                            <VBox spacing="5" HBox.hgrow="ALWAYS">
+                                <Label text="Country" styleClass="field-label"/>
+                                <ComboBox fx:id="companyCountry" promptText="Select country" styleClass="input-field" maxWidth="Infinity"/>
+                            </VBox>
+                        </HBox>
+                    </VBox>
+
+                    <!-- Admin Section -->
+                    <VBox spacing="12" styleClass="form-section">
+                        <Text text="Admin Details" styleClass="section-label"/>
+                        <HBox spacing="12">
+                            <VBox spacing="5" HBox.hgrow="ALWAYS">
+                                <Label text="First Name" styleClass="field-label"/>
+                                <TextField fx:id="registerFirstName" promptText="First name" styleClass="input-field"/>
+                            </VBox>
+                            <VBox spacing="5" HBox.hgrow="ALWAYS">
+                                <Label text="Last Name" styleClass="field-label"/>
+                                <TextField fx:id="registerLastName" promptText="Last name" styleClass="input-field"/>
+                            </VBox>
+                        </HBox>
+                        <HBox spacing="12">
+                            <VBox spacing="5" HBox.hgrow="ALWAYS">
+                                <Label text="Email" styleClass="field-label"/>
+                                <TextField fx:id="registerEmail" promptText="Email address" styleClass="input-field"/>
+                            </VBox>
+                            <VBox spacing="5" HBox.hgrow="ALWAYS">
+                                <Label text="Gender" styleClass="field-label"/>
+                                <ComboBox fx:id="registerGender" promptText="Select" styleClass="input-field" maxWidth="Infinity"/>
+                            </VBox>
+                        </HBox>
+                        <HBox spacing="12">
+                            <VBox spacing="5" HBox.hgrow="ALWAYS">
+                                <Label text="Password" styleClass="field-label"/>
+                                <PasswordField fx:id="registerPassword" promptText="Min 6 characters" styleClass="input-field"/>
+                            </VBox>
+                            <VBox spacing="5" HBox.hgrow="ALWAYS">
+                                <Label text="Confirm Password" styleClass="field-label"/>
+                                <PasswordField fx:id="registerConfirmPassword" promptText="Confirm password" styleClass="input-field"/>
+                            </VBox>
+                        </HBox>
+                    </VBox>
+
+                    <Button text="Create Account" onAction="#handleRegister" styleClass="primary-button" maxWidth="Infinity"/>
+
+                    <Label fx:id="registerMessage" styleClass="message-label" wrapText="true"/>
+                </VBox>
+            </Tab>
+
+        </TabPane>
+
+    </VBox>
+
+</HBox>
