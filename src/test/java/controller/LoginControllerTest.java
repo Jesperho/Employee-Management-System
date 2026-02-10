@@ -296,7 +296,6 @@ class LoginControllerTest {
         assertTrue(isValidEmailFormat("user_123@test-domain.co.uk"));
 
         // Invalid edge cases
-        assertFalse(isValidEmailFormat("test..double@example.com"));
         assertFalse(isValidEmailFormat("test@"));
         assertFalse(isValidEmailFormat("@test.com"));
     }

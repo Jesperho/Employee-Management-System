@@ -6,6 +6,7 @@ import org.junit.jupiter.api.*;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -314,8 +315,11 @@ class DashboardControllerTest {
     // ===== HELPER METHODS =====
 
     private String extractFirstName(String fullName) {
-        if (fullName == null || fullName.trim().isEmpty()) {
-            return fullName;
+        if (fullName == null) {
+            return null;
+        }
+        if (fullName.trim().isEmpty()) {
+            return "";
         }
         String[] parts = fullName.trim().split(" ");
         return parts.length > 0 ? parts[0] : "";
@@ -363,7 +367,7 @@ class DashboardControllerTest {
 
     private String formatSalary(double amount) {
         if (amount >= 1000) {
-            return String.format("€%,.0f", amount);
+            return String.format(Locale.US, "€%,.0f", amount);
         }
         return String.format("€%.0f", amount);
     }
