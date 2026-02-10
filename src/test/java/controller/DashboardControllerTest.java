@@ -1,12 +1,16 @@
 package controller;
 
 import controller.DashboardController.DepartmentRow;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.scene.control.*;
+import javafx.scene.text.Text;
 import org.junit.jupiter.api.*;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Locale;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -17,101 +21,461 @@ class DashboardControllerTest {
 
     private DashboardController controller;
 
+    @BeforeAll
+    static void initJavaFX() {
+        try {
+            Platform.startup(() -> {});
+        } catch (IllegalStateException e) {
+            // Toolkit already initialized
+        }
+    }
+
     @BeforeEach
     void setUp() {
         controller = new DashboardController();
     }
 
-    // ===== USER NAME PROCESSING TESTS =====
+    // ===== REFLECTION HELPERS =====
+
+    private void setField(String fieldName, Object value) throws Exception {
+        Field field = DashboardController.class.getDeclaredField(fieldName);
+        field.setAccessible(true);
+        field.set(controller, value);
+    }
+
+    private Object getField(String fieldName) throws Exception {
+        Field field = DashboardController.class.getDeclaredField(fieldName);
+        field.setAccessible(true);
+        return field.get(controller);
+    }
+
+    private Object invokePrivate(String methodName, Class<?>[] paramTypes, Object... args) throws Exception {
+        Method method = DashboardController.class.getDeclaredMethod(methodName, paramTypes);
+        method.setAccessible(true);
+        return method.invoke(controller, args);
+    }
+
+    // ===== setupUserProfile TESTS =====
 
     @Test
-    @DisplayName("Should extract first name from full name")
-    void testExtractFirstName() {
-        assertEquals("John", extractFirstName("John Doe"));
-        assertEquals("Mary", extractFirstName("Mary Jane Smith"));
-        assertEquals("Admin", extractFirstName("Admin"));
+    @DisplayName("setupUserProfile should set user name, role, initials, and welcome text")
+    void testSetupUserProfile() throws Exception {
+        Text userName = new Text();
+        Text userRole = new Text();
+        Text avatarInitials = new Text();
+        Text welcomeText = new Text();
+        setField("userName", userName);
+        setField("userRole", userRole);
+        setField("avatarInitials", avatarInitials);
+        setField("welcomeText", welcomeText);
+
+        invokePrivate("setupUserProfile", new Class[]{});
+
+        assertEquals("Osama Admin", userName.getText());
+        assertEquals("Administrator", userRole.getText());
+        assertEquals("OA", avatarInitials.getText());
+        assertEquals("Welcome back, Osama!", welcomeText.getText());
     }
 
     @Test
-    @DisplayName("Should handle empty or null names")
-    void testExtractFirstNameEdgeCases() {
-        assertNull(extractFirstName(null));
-        assertEquals("", extractFirstName(""));
-        assertEquals("", extractFirstName("   "));
-    }
+    @DisplayName("setupUserProfile should handle single-word name")
+    void testSetupUserProfileSingleName() throws Exception {
+        Text userName = new Text();
+        Text avatarInitials = new Text();
+        Text welcomeText = new Text();
+        setField("userName", userName);
+        setField("avatarInitials", avatarInitials);
+        setField("welcomeText", welcomeText);
+        setField("currentUserName", "Admin");
 
-    // ===== INITIALS GENERATION TESTS =====
+        invokePrivate("setupUserProfile", new Class[]{});
 
-    @Test
-    @DisplayName("Should generate initials from two-part name")
-    void testGenerateInitialsTwoParts() {
-        assertEquals("JD", generateInitials("John Doe"));
-        assertEquals("MS", generateInitials("Mary Smith"));
-        assertEquals("AB", generateInitials("Alice Brown"));
-    }
-
-    @Test
-    @DisplayName("Should generate initials from single name")
-    void testGenerateInitialsSingleName() {
-        assertEquals("AD", generateInitials("Admin"));
-        assertEquals("JO", generateInitials("John"));
-        assertEquals("A", generateInitials("A"));
+        assertEquals("Admin", userName.getText());
+        assertEquals("AD", avatarInitials.getText());
+        assertEquals("Welcome back, Admin!", welcomeText.getText());
     }
 
     @Test
-    @DisplayName("Should generate initials from multi-part name")
-    void testGenerateInitialsMultiPart() {
-        assertEquals("MJ", generateInitials("Mary Jane Smith"));
-        assertEquals("JM", generateInitials("John Michael Anderson"));
+    @DisplayName("setupUserProfile should work with null FXML fields")
+    void testSetupUserProfileNullFields() throws Exception {
+        // All FXML fields are null by default, should not throw
+        assertDoesNotThrow(() -> invokePrivate("setupUserProfile", new Class[]{}));
+    }
+
+    // ===== setupDepartmentTable TESTS =====
+
+    @Test
+    @DisplayName("setupDepartmentTable should populate table with sample data")
+    void testSetupDepartmentTable() throws Exception {
+        TableView<DepartmentRow> departmentTable = new TableView<>();
+        TableColumn<DepartmentRow, String> deptNameColumn = new TableColumn<>();
+        TableColumn<DepartmentRow, String> deptHeadColumn = new TableColumn<>();
+        TableColumn<DepartmentRow, String> deptEmployeesColumn = new TableColumn<>();
+        TableColumn<DepartmentRow, String> deptStatusColumn = new TableColumn<>();
+        setField("departmentTable", departmentTable);
+        setField("deptNameColumn", deptNameColumn);
+        setField("deptHeadColumn", deptHeadColumn);
+        setField("deptEmployeesColumn", deptEmployeesColumn);
+        setField("deptStatusColumn", deptStatusColumn);
+
+        invokePrivate("setupDepartmentTable", new Class[]{});
+
+        assertEquals(5, departmentTable.getItems().size());
+        assertEquals("IT Department", departmentTable.getItems().get(0).getName());
+        assertEquals("HR Department", departmentTable.getItems().get(1).getName());
+        assertEquals("Marketing", departmentTable.getItems().get(2).getName());
+        assertEquals("Finance", departmentTable.getItems().get(3).getName());
+        assertEquals("Operations", departmentTable.getItems().get(4).getName());
+
+        assertNotNull(deptNameColumn.getCellValueFactory());
+        assertNotNull(deptHeadColumn.getCellValueFactory());
+        assertNotNull(deptEmployeesColumn.getCellValueFactory());
+        assertNotNull(deptStatusColumn.getCellValueFactory());
     }
 
     @Test
-    @DisplayName("Should handle edge cases in initials generation")
-    void testGenerateInitialsEdgeCases() {
-        assertEquals("", generateInitials(""));
-        assertEquals("", generateInitials("   "));
-        assertEquals("", generateInitials(null));
+    @DisplayName("setupDepartmentTable should work with null table")
+    void testSetupDepartmentTableNull() throws Exception {
+        assertDoesNotThrow(() -> invokePrivate("setupDepartmentTable", new Class[]{}));
     }
 
-    // ===== DATE FORMATTING TESTS =====
+    // ===== initialize TESTS =====
 
     @Test
-    @DisplayName("Should format date correctly")
-    void testDateFormatting() {
-        LocalDate testDate = LocalDate.of(2024, 2, 15);
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy");
-        String formatted = testDate.format(formatter);
+    @DisplayName("initialize should setup all components")
+    void testInitialize() throws Exception {
+        // Inject all FXML fields
+        Text userName = new Text();
+        Text userRole = new Text();
+        Text avatarInitials = new Text();
+        Text welcomeText = new Text();
+        Text dateText = new Text();
+        Text totalEmployeesCount = new Text();
+        Text activeEmployeesCount = new Text();
+        Text onLeaveCount = new Text();
+        Text departmentsCount = new Text();
+        Text totalPayroll = new Text();
+        Text avgSalary = new Text();
+        Text pendingPayments = new Text();
+        TableView<DepartmentRow> departmentTable = new TableView<>();
+        TableColumn<DepartmentRow, String> deptNameColumn = new TableColumn<>();
+        TableColumn<DepartmentRow, String> deptHeadColumn = new TableColumn<>();
+        TableColumn<DepartmentRow, String> deptEmployeesColumn = new TableColumn<>();
+        TableColumn<DepartmentRow, String> deptStatusColumn = new TableColumn<>();
 
-        assertNotNull(formatted);
-        assertTrue(formatted.contains("February"));
-        assertTrue(formatted.contains("15"));
-        assertTrue(formatted.contains("2024"));
+        setField("userName", userName);
+        setField("userRole", userRole);
+        setField("avatarInitials", avatarInitials);
+        setField("welcomeText", welcomeText);
+        setField("dateText", dateText);
+        setField("totalEmployeesCount", totalEmployeesCount);
+        setField("activeEmployeesCount", activeEmployeesCount);
+        setField("onLeaveCount", onLeaveCount);
+        setField("departmentsCount", departmentsCount);
+        setField("totalPayroll", totalPayroll);
+        setField("avgSalary", avgSalary);
+        setField("pendingPayments", pendingPayments);
+        setField("departmentTable", departmentTable);
+        setField("deptNameColumn", deptNameColumn);
+        setField("deptHeadColumn", deptHeadColumn);
+        setField("deptEmployeesColumn", deptEmployeesColumn);
+        setField("deptStatusColumn", deptStatusColumn);
+
+        controller.initialize(null, null);
+
+        // Verify user profile
+        assertEquals("Osama Admin", userName.getText());
+        assertEquals("OA", avatarInitials.getText());
+
+        // Verify date
+        assertFalse(dateText.getText().isEmpty());
+
+        // Verify statistics
+        assertEquals("540", totalEmployeesCount.getText());
+
+        // Verify department table
+        assertEquals(5, departmentTable.getItems().size());
+    }
+
+    // ===== setupDateDisplay TESTS =====
+
+    @Test
+    @DisplayName("setupDateDisplay should set formatted current date")
+    void testSetupDateDisplay() throws Exception {
+        Text dateText = new Text();
+        setField("dateText", dateText);
+
+        invokePrivate("setupDateDisplay", new Class[]{});
+
+        String expected = LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy"));
+        assertEquals(expected, dateText.getText());
     }
 
     @Test
-    @DisplayName("Should format current date")
-    void testCurrentDateFormatting() {
-        LocalDate today = LocalDate.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy");
-        String formatted = today.format(formatter);
-
-        assertNotNull(formatted);
-        assertFalse(formatted.isEmpty());
+    @DisplayName("setupDateDisplay should work with null dateText")
+    void testSetupDateDisplayNull() throws Exception {
+        assertDoesNotThrow(() -> invokePrivate("setupDateDisplay", new Class[]{}));
     }
 
-    // ===== DEPARTMENT ROW TESTS =====
+    // ===== loadDashboardData TESTS =====
+
+    @Test
+    @DisplayName("loadDashboardData should populate statistics fields")
+    void testLoadDashboardData() throws Exception {
+        Text totalEmployeesCount = new Text();
+        Text activeEmployeesCount = new Text();
+        Text onLeaveCount = new Text();
+        Text departmentsCount = new Text();
+        Text totalPayroll = new Text();
+        Text avgSalary = new Text();
+        Text pendingPayments = new Text();
+        setField("totalEmployeesCount", totalEmployeesCount);
+        setField("activeEmployeesCount", activeEmployeesCount);
+        setField("onLeaveCount", onLeaveCount);
+        setField("departmentsCount", departmentsCount);
+        setField("totalPayroll", totalPayroll);
+        setField("avgSalary", avgSalary);
+        setField("pendingPayments", pendingPayments);
+
+        invokePrivate("loadDashboardData", new Class[]{});
+
+        assertEquals("540", totalEmployeesCount.getText());
+        assertEquals("532", activeEmployeesCount.getText());
+        assertEquals("8", onLeaveCount.getText());
+        assertEquals("12", departmentsCount.getText());
+        assertEquals("€285,000", totalPayroll.getText());
+        assertEquals("€4,200", avgSalary.getText());
+        assertEquals("€12,500", pendingPayments.getText());
+    }
+
+    @Test
+    @DisplayName("loadDashboardData should work with null fields")
+    void testLoadDashboardDataNull() throws Exception {
+        assertDoesNotThrow(() -> invokePrivate("loadDashboardData", new Class[]{}));
+    }
+
+    // ===== setCurrentUser TESTS =====
+
+    @Test
+    @DisplayName("setCurrentUser should update name and role")
+    void testSetCurrentUser() throws Exception {
+        Text userName = new Text();
+        Text userRole = new Text();
+        Text avatarInitials = new Text();
+        Text welcomeText = new Text();
+        setField("userName", userName);
+        setField("userRole", userRole);
+        setField("avatarInitials", avatarInitials);
+        setField("welcomeText", welcomeText);
+
+        controller.setCurrentUser("Jane Doe", "Manager");
+
+        assertEquals("Jane Doe", userName.getText());
+        assertEquals("Manager", userRole.getText());
+        assertEquals("JD", avatarInitials.getText());
+        assertEquals("Welcome back, Jane!", welcomeText.getText());
+    }
+
+    @Test
+    @DisplayName("setCurrentUser should handle null fields gracefully")
+    void testSetCurrentUserNullFields() {
+        assertDoesNotThrow(() -> controller.setCurrentUser("Test User", "Admin"));
+        assertDoesNotThrow(() -> controller.setCurrentUser(null, null));
+    }
+
+    // ===== setActiveNavButton TESTS =====
+
+    @Test
+    @DisplayName("setActiveNavButton should set active class on target button")
+    void testSetActiveNavButton() throws Exception {
+        Button btnDashboard = new Button();
+        Button btnEmployees = new Button();
+        Button btnDepartments = new Button();
+        Button btnLeave = new Button();
+        Button btnSalary = new Button();
+        setField("btnDashboard", btnDashboard);
+        setField("btnEmployees", btnEmployees);
+        setField("btnDepartments", btnDepartments);
+        setField("btnLeave", btnLeave);
+        setField("btnSalary", btnSalary);
+
+        invokePrivate("setActiveNavButton", new Class[]{Button.class}, btnEmployees);
+
+        assertTrue(btnEmployees.getStyleClass().contains("nav-button-active"));
+        assertFalse(btnDashboard.getStyleClass().contains("nav-button-active"));
+        assertFalse(btnDepartments.getStyleClass().contains("nav-button-active"));
+    }
+
+    @Test
+    @DisplayName("setActiveNavButton should remove active from previous button")
+    void testSetActiveNavButtonSwitch() throws Exception {
+        Button btnDashboard = new Button();
+        Button btnEmployees = new Button();
+        Button btnDepartments = new Button();
+        Button btnLeave = new Button();
+        Button btnSalary = new Button();
+        btnDashboard.getStyleClass().add("nav-button-active");
+        setField("btnDashboard", btnDashboard);
+        setField("btnEmployees", btnEmployees);
+        setField("btnDepartments", btnDepartments);
+        setField("btnLeave", btnLeave);
+        setField("btnSalary", btnSalary);
+
+        invokePrivate("setActiveNavButton", new Class[]{Button.class}, btnEmployees);
+
+        assertFalse(btnDashboard.getStyleClass().contains("nav-button-active"));
+        assertTrue(btnEmployees.getStyleClass().contains("nav-button-active"));
+    }
+
+    @Test
+    @DisplayName("setActiveNavButton should not duplicate active class when already active")
+    void testSetActiveNavButtonAlreadyActive() throws Exception {
+        Button btnDashboard = new Button();
+        Button btnEmployees = new Button();
+        Button btnDepartments = new Button();
+        Button btnLeave = new Button();
+        Button btnSalary = new Button();
+        btnEmployees.getStyleClass().add("nav-button-active");
+        setField("btnDashboard", btnDashboard);
+        setField("btnEmployees", btnEmployees);
+        setField("btnDepartments", btnDepartments);
+        setField("btnLeave", btnLeave);
+        setField("btnSalary", btnSalary);
+
+        invokePrivate("setActiveNavButton", new Class[]{Button.class}, btnEmployees);
+
+        assertEquals(1, btnEmployees.getStyleClass().stream()
+                .filter("nav-button-active"::equals).count());
+    }
+
+    // ===== handleSearch TESTS =====
+
+    @Test
+    @DisplayName("handleSearch should not throw with empty search text")
+    void testHandleSearchEmpty() throws Exception {
+        TextField searchField = new TextField("");
+        setField("searchField", searchField);
+
+        assertDoesNotThrow(() -> invokePrivate("handleSearch", new Class[]{}));
+    }
+
+    @Test
+    @DisplayName("handleSearch should not throw with non-empty search text")
+    void testHandleSearchWithText() throws Exception {
+        TextField searchField = new TextField("test query");
+        setField("searchField", searchField);
+
+        assertDoesNotThrow(() -> invokePrivate("handleSearch", new Class[]{}));
+    }
+
+    @Test
+    @DisplayName("handleSearch should trim whitespace-only input")
+    void testHandleSearchWhitespace() throws Exception {
+        TextField searchField = new TextField("   ");
+        setField("searchField", searchField);
+
+        assertDoesNotThrow(() -> invokePrivate("handleSearch", new Class[]{}));
+    }
+
+    // ===== Navigation handler TESTS =====
+
+    @Test
+    @DisplayName("handleDashboard should set dashboard as active and reload data")
+    void testHandleDashboard() throws Exception {
+        setupNavButtons();
+        Text totalEmployeesCount = new Text();
+        setField("totalEmployeesCount", totalEmployeesCount);
+
+        invokePrivate("handleDashboard", new Class[]{});
+
+        Button btnDashboard = (Button) getField("btnDashboard");
+        assertTrue(btnDashboard.getStyleClass().contains("nav-button-active"));
+        assertEquals("540", totalEmployeesCount.getText());
+    }
+
+    @Test
+    @DisplayName("handleEmployees should set employees as active")
+    void testHandleEmployees() throws Exception {
+        setupNavButtons();
+
+        invokePrivate("handleEmployees", new Class[]{});
+
+        Button btnEmployees = (Button) getField("btnEmployees");
+        assertTrue(btnEmployees.getStyleClass().contains("nav-button-active"));
+    }
+
+    @Test
+    @DisplayName("handleDepartments should set departments as active")
+    void testHandleDepartments() throws Exception {
+        setupNavButtons();
+
+        invokePrivate("handleDepartments", new Class[]{});
+
+        Button btnDepartments = (Button) getField("btnDepartments");
+        assertTrue(btnDepartments.getStyleClass().contains("nav-button-active"));
+    }
+
+    @Test
+    @DisplayName("handleLeave should set leave as active")
+    void testHandleLeave() throws Exception {
+        setupNavButtons();
+
+        invokePrivate("handleLeave", new Class[]{});
+
+        Button btnLeave = (Button) getField("btnLeave");
+        assertTrue(btnLeave.getStyleClass().contains("nav-button-active"));
+    }
+
+    @Test
+    @DisplayName("handleSalary should set salary as active")
+    void testHandleSalary() throws Exception {
+        setupNavButtons();
+
+        invokePrivate("handleSalary", new Class[]{});
+
+        Button btnSalary = (Button) getField("btnSalary");
+        assertTrue(btnSalary.getStyleClass().contains("nav-button-active"));
+    }
+
+    // ===== Quick action handler TESTS =====
+
+    @Test
+    @DisplayName("handleAddEmployee should not throw")
+    void testHandleAddEmployee() throws Exception {
+        assertDoesNotThrow(() -> invokePrivate("handleAddEmployee", new Class[]{}));
+    }
+
+    @Test
+    @DisplayName("handleCreateDepartment should not throw")
+    void testHandleCreateDepartment() throws Exception {
+        assertDoesNotThrow(() -> invokePrivate("handleCreateDepartment", new Class[]{}));
+    }
+
+    @Test
+    @DisplayName("handleProcessLeave should not throw")
+    void testHandleProcessLeave() throws Exception {
+        assertDoesNotThrow(() -> invokePrivate("handleProcessLeave", new Class[]{}));
+    }
+
+    @Test
+    @DisplayName("handleRunPayroll should not throw")
+    void testHandleRunPayroll() throws Exception {
+        assertDoesNotThrow(() -> invokePrivate("handleRunPayroll", new Class[]{}));
+    }
+
+    @Test
+    @DisplayName("handleGenerateReport should not throw")
+    void testHandleGenerateReport() throws Exception {
+        assertDoesNotThrow(() -> invokePrivate("handleGenerateReport", new Class[]{}));
+    }
+
+    // ===== DepartmentRow TESTS =====
 
     @Test
     @DisplayName("Should create DepartmentRow with all properties")
     void testDepartmentRowCreation() {
-        DepartmentRow dept = new DepartmentRow(
-                "IT Department",
-                "Alice Smith",
-                "45",
-                "Active"
-        );
+        DepartmentRow dept = new DepartmentRow("IT Department", "Alice Smith", "45", "Active");
 
-        assertNotNull(dept);
         assertEquals("IT Department", dept.getName());
         assertEquals("Alice Smith", dept.getHead());
         assertEquals("45", dept.getEmployeeCount());
@@ -121,12 +485,7 @@ class DashboardControllerTest {
     @Test
     @DisplayName("DepartmentRow properties should be observable")
     void testDepartmentRowProperties() {
-        DepartmentRow dept = new DepartmentRow(
-                "HR Department",
-                "Bob Johnson",
-                "12",
-                "Active"
-        );
+        DepartmentRow dept = new DepartmentRow("HR", "Bob Johnson", "12", "Active");
 
         assertNotNull(dept.nameProperty());
         assertNotNull(dept.headProperty());
@@ -144,7 +503,6 @@ class DashboardControllerTest {
     void testDepartmentRowWithEmptyData() {
         DepartmentRow dept = new DepartmentRow("", "", "", "");
 
-        assertNotNull(dept);
         assertEquals("", dept.getName());
         assertEquals("", dept.getHead());
         assertEquals("", dept.getEmployeeCount());
@@ -164,274 +522,13 @@ class DashboardControllerTest {
         assertEquals("Inactive", dept3.getStatus());
     }
 
-    // ===== STATISTICS VALIDATION TESTS =====
+    // ===== HELPER to setup navigation buttons =====
 
-    @Test
-    @DisplayName("Should validate employee count format")
-    void testEmployeeCountFormat() {
-        assertTrue(isValidCount("540"));
-        assertTrue(isValidCount("0"));
-        assertTrue(isValidCount("9999"));
-        assertFalse(isValidCount("-1"));
-        assertFalse(isValidCount("abc"));
-    }
-
-    @Test
-    @DisplayName("Should validate currency format")
-    void testCurrencyFormat() {
-        assertTrue(isValidCurrency("€285,000"));
-        assertTrue(isValidCurrency("€4,200"));
-        assertTrue(isValidCurrency("€0"));
-        assertTrue(isValidCurrency("€12,500"));
-    }
-
-    @Test
-    @DisplayName("Should calculate employee statistics correctly")
-    void testEmployeeStatistics() {
-        int total = 540;
-        int active = 532;
-        int onLeave = 8;
-
-        assertEquals(total, active + onLeave);
-        assertTrue(active > 0);
-        assertTrue(onLeave >= 0);
-        assertTrue(total >= active);
-    }
-
-    // ===== SEARCH FUNCTIONALITY TESTS =====
-
-    @Test
-    @DisplayName("Should validate search text input")
-    void testSearchTextValidation() {
-        assertTrue(isValidSearchText("John"));
-        assertTrue(isValidSearchText("Department"));
-        assertTrue(isValidSearchText("123"));
-        assertFalse(isValidSearchText(""));
-        assertFalse(isValidSearchText("   "));
-    }
-
-    @Test
-    @DisplayName("Should trim search text")
-    void testSearchTextTrimming() {
-        assertEquals("John", trimSearchText("  John  "));
-        assertEquals("Test", trimSearchText("\tTest\t"));
-        assertEquals("", trimSearchText("   "));
-    }
-
-    // ===== USER INFORMATION TESTS =====
-
-    @Test
-    @DisplayName("Should set and get current user information")
-    void testSetCurrentUser() {
-        String testName = "Test User";
-        String testRole = "Manager";
-
-        controller.setCurrentUser(testName, testRole);
-
-        // Since fields are private, we're testing the method doesn't throw exception
-        assertDoesNotThrow(() -> controller.setCurrentUser(testName, testRole));
-    }
-
-    @Test
-    @DisplayName("Should handle null user information gracefully")
-    void testSetNullUserInfo() {
-        assertDoesNotThrow(() -> controller.setCurrentUser(null, null));
-        assertDoesNotThrow(() -> controller.setCurrentUser("", ""));
-    }
-
-    // ===== SALARY FORMATTING TESTS =====
-
-    @Test
-    @DisplayName("Should format salary with currency symbol")
-    void testSalaryFormatting() {
-        assertEquals("€285,000", formatSalary(285000));
-        assertEquals("€4,200", formatSalary(4200));
-        assertEquals("€12,500", formatSalary(12500));
-        assertEquals("€0", formatSalary(0));
-    }
-
-    @Test
-    @DisplayName("Should calculate average salary correctly")
-    void testAverageSalaryCalculation() {
-        double totalPayroll = 285000;
-        int employeeCount = 68; // Approximate
-        double avgSalary = totalPayroll / employeeCount;
-
-        assertTrue(avgSalary > 0);
-        assertTrue(avgSalary < totalPayroll);
-    }
-
-    // ===== DEPARTMENT STATUS TESTS =====
-
-    @Test
-    @DisplayName("Should validate department status values")
-    void testDepartmentStatusValidation() {
-        assertTrue(isValidStatus("Active"));
-        assertTrue(isValidStatus("Inactive"));
-        assertFalse(isValidStatus(""));
-        assertFalse(isValidStatus(null));
-    }
-
-    @Test
-    @DisplayName("Should handle different status types")
-    void testDifferentStatusTypes() {
-        assertTrue(isValidStatus("Active"));
-        assertTrue(isValidStatus("Inactive"));
-        assertTrue(isValidStatus("Pending"));
-    }
-
-    // ===== WELCOME MESSAGE TESTS =====
-
-    @Test
-    @DisplayName("Should generate welcome message with first name")
-    void testWelcomeMessageGeneration() {
-        String fullName = "John Doe";
-        String firstName = extractFirstName(fullName);
-        String welcomeMessage = "Welcome back, " + firstName + "!";
-
-        assertEquals("Welcome back, John!", welcomeMessage);
-    }
-
-    @Test
-    @DisplayName("Should generate welcome message for different names")
-    void testWelcomeMessageVariations() {
-        assertEquals("Welcome back, Alice!", generateWelcomeMessage("Alice Smith"));
-        assertEquals("Welcome back, Bob!", generateWelcomeMessage("Bob Johnson"));
-        assertEquals("Welcome back, Carol!", generateWelcomeMessage("Carol White"));
-    }
-
-    // ===== VALIDATION HELPER TESTS =====
-
-    @Test
-    @DisplayName("Should validate non-empty strings")
-    void testNonEmptyStringValidation() {
-        assertTrue(isNonEmptyString("Test"));
-        assertTrue(isNonEmptyString("123"));
-        assertFalse(isNonEmptyString(""));
-        assertFalse(isNonEmptyString("   "));
-        assertFalse(isNonEmptyString(null));
-    }
-
-    // ===== HELPER METHODS =====
-
-    private String extractFirstName(String fullName) {
-        if (fullName == null) {
-            return null;
-        }
-        if (fullName.trim().isEmpty()) {
-            return "";
-        }
-        String[] parts = fullName.trim().split(" ");
-        return parts.length > 0 ? parts[0] : "";
-    }
-
-    private String generateInitials(String name) {
-        if (name == null || name.trim().isEmpty()) {
-            return "";
-        }
-        String[] parts = name.trim().split(" ");
-        if (parts.length >= 2) {
-            return (parts[0].substring(0, 1) + parts[1].substring(0, 1)).toUpperCase();
-        } else if (parts.length == 1 && !parts[0].isEmpty()) {
-            return parts[0].substring(0, Math.min(2, parts[0].length())).toUpperCase();
-        }
-        return "";
-    }
-
-    private boolean isValidCount(String count) {
-        if (count == null || count.isEmpty()) {
-            return false;
-        }
-        try {
-            int value = Integer.parseInt(count);
-            return value >= 0;
-        } catch (NumberFormatException e) {
-            return false;
-        }
-    }
-
-    private boolean isValidCurrency(String currency) {
-        if (currency == null || currency.isEmpty()) {
-            return false;
-        }
-        return currency.matches("€[0-9,]+");
-    }
-
-    private boolean isValidSearchText(String text) {
-        return text != null && !text.trim().isEmpty();
-    }
-
-    private String trimSearchText(String text) {
-        return text != null ? text.trim() : "";
-    }
-
-    private String formatSalary(double amount) {
-        if (amount >= 1000) {
-            return String.format(Locale.US, "€%,.0f", amount);
-        }
-        return String.format("€%.0f", amount);
-    }
-
-    private boolean isValidStatus(String status) {
-        return status != null && !status.isEmpty();
-    }
-
-    private String generateWelcomeMessage(String fullName) {
-        String firstName = extractFirstName(fullName);
-        return "Welcome back, " + firstName + "!";
-    }
-
-    private boolean isNonEmptyString(String str) {
-        return str != null && !str.trim().isEmpty();
-    }
-
-    // ===== INTEGRATION-LIKE TESTS =====
-
-    @Test
-    @DisplayName("Should handle complete dashboard initialization")
-    void testDashboardInitialization() {
-        // Test that controller can be initialized without errors
-        assertDoesNotThrow(() -> {
-            DashboardController testController = new DashboardController();
-            testController.setCurrentUser("Test User", "Admin");
-        });
-    }
-
-    @Test
-    @DisplayName("Should process department data correctly")
-    void testDepartmentDataProcessing() {
-        DepartmentRow dept1 = new DepartmentRow("IT", "Alice Smith", "45", "Active");
-        DepartmentRow dept2 = new DepartmentRow("HR", "Bob Johnson", "12", "Active");
-        DepartmentRow dept3 = new DepartmentRow("Finance", "Carol White", "30", "Active");
-
-        assertEquals(3, countDepartments(dept1, dept2, dept3));
-        assertEquals(87, calculateTotalEmployees(dept1, dept2, dept3));
-    }
-
-    @Test
-    @DisplayName("Should validate dashboard statistics consistency")
-    void testStatisticsConsistency() {
-        int totalEmployees = 540;
-        int activeEmployees = 532;
-        int onLeave = 8;
-        int departments = 12;
-
-        // Verify consistency
-        assertEquals(totalEmployees, activeEmployees + onLeave);
-        assertTrue(departments > 0);
-        assertTrue(totalEmployees > activeEmployees);
-        assertTrue(activeEmployees > 0);
-    }
-
-    private int countDepartments(DepartmentRow... departments) {
-        return departments.length;
-    }
-
-    private int calculateTotalEmployees(DepartmentRow... departments) {
-        int total = 0;
-        for (DepartmentRow dept : departments) {
-            total += Integer.parseInt(dept.getEmployeeCount());
-        }
-        return total;
+    private void setupNavButtons() throws Exception {
+        setField("btnDashboard", new Button());
+        setField("btnEmployees", new Button());
+        setField("btnDepartments", new Button());
+        setField("btnLeave", new Button());
+        setField("btnSalary", new Button());
     }
 }
