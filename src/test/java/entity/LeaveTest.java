@@ -11,15 +11,19 @@ import static org.junit.jupiter.api.Assertions.*;
 class LeaveTest {
 
     private Leave leave;
+    private Employee employee;
 
     @BeforeEach
     void setUp() {
+        // Optional: create a dummy Employee for testing
+        employee = new Employee();
+
         leave = new Leave(
-                5,
                 LocalDate.of(2024, 3, 1),
                 LocalDate.of(2024, 3, 6),
                 "Vacation",
-                "Family trip to Spain"
+                "Family trip to Spain",
+                employee
         );
     }
 
@@ -27,11 +31,11 @@ class LeaveTest {
     @DisplayName("Leave should be created with constructor parameters")
     void testLeaveConstructor() {
         assertNotNull(leave);
-        assertEquals(5, leave.getDuration());
         assertEquals(LocalDate.of(2024, 3, 1), leave.getStartDate());
         assertEquals(LocalDate.of(2024, 3, 6), leave.getEndDate());
         assertEquals("Vacation", leave.getType());
         assertEquals("Family trip to Spain", leave.getReason());
+        assertEquals(employee, leave.getEmployee());
     }
 
     @Test
@@ -39,14 +43,11 @@ class LeaveTest {
     void testLeaveDefaultConstructor() {
         Leave emptyLeave = new Leave();
         assertNotNull(emptyLeave);
+        assertNull(emptyLeave.getStartDate());
+        assertNull(emptyLeave.getEndDate());
         assertNull(emptyLeave.getType());
-    }
-
-    @Test
-    @DisplayName("setDuration should update leave duration")
-    void testSetDuration() {
-        leave.setDuration(10);
-        assertEquals(10, leave.getDuration());
+        assertNull(emptyLeave.getReason());
+        assertNull(emptyLeave.getEmployee());
     }
 
     @Test
@@ -80,20 +81,18 @@ class LeaveTest {
     }
 
     @Test
+    @DisplayName("setEmployee should update leave employee")
+    void testSetEmployee() {
+        Employee newEmployee = new Employee();
+        leave.setEmployee(newEmployee);
+        assertEquals(newEmployee, leave.getEmployee());
+    }
+
+    @Test
     @DisplayName("setId should update leave id")
     void testSetId() {
         leave.setId(100);
         assertEquals(100, leave.getId());
     }
 
-    @Test
-    @DisplayName("Leave duration should match date range")
-    void testLeaveDurationMatchesDateRange() {
-        LocalDate start = LocalDate.of(2024, 5, 1);
-        LocalDate end = LocalDate.of(2024, 5, 8);
-        Leave newLeave = new Leave(7, start, end, "Vacation", "Summer break");
-
-        // Duration should be 7 days (May 1-8 inclusive is actually 8 days, but duration is set as 7)
-        assertEquals(7, newLeave.getDuration());
-    }
 }

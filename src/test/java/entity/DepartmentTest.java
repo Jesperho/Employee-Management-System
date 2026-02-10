@@ -13,19 +13,16 @@ class DepartmentTest {
 
     private Department department;
     private Company company;
-    private Manager manager;
 
     @BeforeEach
     void setUp() {
         company = new Company("TestCorp", "123 Test Street", "Finland");
-        manager = new Manager("Alice", "Johnson", "alice@test.com", "password", "Female", company);
         department = new Department(
                 25,
                 "Engineering",
                 "Software Engineering Department",
                 LocalDate.of(2020, 5, 1),
-                company,
-                manager
+                company
         );
     }
 
@@ -38,7 +35,6 @@ class DepartmentTest {
         assertEquals("Software Engineering Department", department.getDescription());
         assertEquals(LocalDate.of(2020, 5, 1), department.getCreationDate());
         assertEquals(company, department.getCompany());
-        assertEquals(manager, department.getManager());
     }
 
     @Test
@@ -86,13 +82,6 @@ class DepartmentTest {
         assertEquals(newCompany, department.getCompany());
     }
 
-    @Test
-    @DisplayName("setManager should update department manager")
-    void testSetManager() {
-        Manager newManager = new Manager("Bob", "Smith", "bob@test.com", "password", "Male", company);
-        department.setManager(newManager);
-        assertEquals(newManager, department.getManager());
-    }
 
     @Test
     @DisplayName("setId should update department id")

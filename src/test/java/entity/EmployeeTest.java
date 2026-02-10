@@ -5,6 +5,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -13,16 +15,11 @@ class EmployeeTest {
     private Employee employee;
     private Company company;
     private Department department;
-    private Position position;
-    private ContractType contractType;
 
     @BeforeEach
     void setUp() {
         company = new Company("TestCorp", "123 Test Street", "Finland");
-        Manager manager = new Manager("John", "Doe", "john@test.com", "password", "Male", company);
-        department = new Department(10, "IT", "IT Department", LocalDate.now(), company, manager);
-        position = new Position("Developer");
-        contractType = new ContractType("Full-time");
+        department = new Department(10, "IT", "IT Department", LocalDate.now(), company);
 
         employee = new Employee(
                 "Jane Smith",
@@ -32,8 +29,9 @@ class EmployeeTest {
                 5500.0,
                 company,
                 department,
-                position,
-                contractType
+                "Developer",       // role
+                "Full-time",       // contractType
+                "Senior"           // position
         );
     }
 
@@ -48,8 +46,9 @@ class EmployeeTest {
         assertEquals(5500.0, employee.getSalary());
         assertEquals(company, employee.getCompany());
         assertEquals(department, employee.getDepartment());
-        assertEquals(position, employee.getPosition());
-        assertEquals(contractType, employee.getContractType());
+        assertEquals("Developer", employee.getRole());
+        assertEquals("Full-time", employee.getContractType());
+        assertEquals("Senior", employee.getPosition());
     }
 
     @Test
@@ -59,6 +58,9 @@ class EmployeeTest {
         assertNotNull(emptyEmployee);
         assertNull(emptyEmployee.getFullName());
         assertNull(emptyEmployee.getSalary());
+        assertNull(emptyEmployee.getRole());
+        assertNull(emptyEmployee.getContractType());
+        assertNull(emptyEmployee.getPosition());
     }
 
     @Test
@@ -108,33 +110,43 @@ class EmployeeTest {
     @Test
     @DisplayName("setDepartment should update employee department")
     void testSetDepartment() {
-        Department newDepartment = new Department(20, "HR", "HR Department", LocalDate.now(), company, null);
+        Department newDepartment = new Department(20, "HR", "HR Department", LocalDate.now(), company);
         employee.setDepartment(newDepartment);
         assertEquals(newDepartment, employee.getDepartment());
     }
 
     @Test
-    @DisplayName("setPosition should update employee position")
-    void testSetPosition() {
-        Position newPosition = new Position("Manager");
-        employee.setPosition(newPosition);
-        assertEquals(newPosition, employee.getPosition());
+    @DisplayName("setRole should update employee role")
+    void testSetRole() {
+        employee.setRole("Manager");
+        assertEquals("Manager", employee.getRole());
     }
 
     @Test
     @DisplayName("setContractType should update employee contract type")
     void testSetContractType() {
-        ContractType newContractType = new ContractType("Part-time");
-        employee.setContractType(newContractType);
-        assertEquals(newContractType, employee.getContractType());
+        employee.setContractType("Part-time");
+        assertEquals("Part-time", employee.getContractType());
     }
 
     @Test
-    @DisplayName("setLeave should update employee leave")
-    void testSetLeave() {
-        Leave leave = new Leave(5, LocalDate.now(), LocalDate.now().plusDays(5), "Vacation", "Holiday");
-        employee.setLeave(leave);
-        assertEquals(leave, employee.getLeaves());
+    @DisplayName("setPosition should update employee position")
+    void testSetPosition() {
+        employee.setPosition("Lead");
+        assertEquals("Lead", employee.getPosition());
+    }
+
+    @Test
+    @DisplayName("setLeaves should update employee leaves")
+    void testSetLeaves() {
+        Leave leave1 = new Leave(LocalDate.now(), LocalDate.now().plusDays(5), "Vacation", "Holiday",employee);
+        Leave leave2 = new Leave(LocalDate.now(), LocalDate.now().plusDays(3), "Sick", "Medical",employee);
+        List<Leave> leaveList = new ArrayList<>();
+        leaveList.add(leave1);
+        leaveList.add(leave2);
+
+        employee.setLeaves(leaveList);
+        assertEquals(leaveList, employee.getLeaves());
     }
 
     @Test
