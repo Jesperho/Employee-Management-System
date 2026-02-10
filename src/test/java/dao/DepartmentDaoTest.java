@@ -3,7 +3,7 @@ package dao;
 import datasource.MariaDbConnection;
 import entity.Company;
 import entity.Department;
-import entity.Manager;
+import entity.Admin;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 
@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class DepartmentDaoTest {
 
-    private DepartmentDao dao = new DepartmentDaoImpl();
+    private DepartmentDao dao = new DepartmentDao();
 
     private Department createDepartmentWithDependencies() {
 
@@ -23,12 +23,9 @@ public class DepartmentDaoTest {
         Company company = new Company("TestCo", "Street 1", "Finland");
         em.persist(company);
 
-        Manager manager = new Manager(
-                "Alice",
-                "Smith",
+        Admin manager = new Admin(
                 "alice@test.com",
                 "pass123",
-                "Female",
                 company
         );
         em.persist(manager);
@@ -38,8 +35,7 @@ public class DepartmentDaoTest {
                 "IT",
                 "Tech department",
                 LocalDate.now(),
-                company,
-                manager
+                company
         );
 
         em.getTransaction().commit();

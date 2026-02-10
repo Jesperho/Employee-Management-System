@@ -4,33 +4,27 @@ package entity;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "manager")
-public class Manager {
+@Table(name = "admin")
+public class Admin {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "manager_id")
+    @Column(name = "admin_id")
     private int id;
 
-    private String firstName;
-    private String lastName;
     private String email;
     private String password;
-    private String gender;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "company_id")
     private Company company;
 
 
-    public Manager() {}
+    public Admin() {}
 
-    public Manager(String firstName, String lastName, String email, String password, String gender, Company company) {
-        this.firstName = firstName;
-        this.lastName = lastName;
+    public Admin(String email, String password, Company company) {
         this.email = email;
         this.password = password;
-        this.gender = gender;
         this.company = company;
     }
 
@@ -40,22 +34,6 @@ public class Manager {
 
     public void setId(int id) {
         this.id = id;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
     }
 
     public String getEmail() {
@@ -74,13 +52,6 @@ public class Manager {
         this.password = password;
     }
 
-    public String getGender() {
-        return gender;
-    }
-
-    public void setGender(String gender) {
-        this.gender = gender;
-    }
 
     public Company getCompany() {
         return company;
