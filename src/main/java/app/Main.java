@@ -10,17 +10,22 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/login.fxml"));
+        System.out.println("Starting Employee Management System...");
+
+        // Load dashboard directly
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/dashboard.fxml"));
         Parent root = loader.load();
 
-        Scene scene = new Scene(root, 1050, 700);
-        scene.getStylesheets().add(getClass().getResource("/css/login.css").toExternalForm());
+        Scene scene = new Scene(root, 1280, 800);
+        scene.getStylesheets().add(getClass().getResource("/css/dashboard.css").toExternalForm());
 
-        primaryStage.setTitle("Employee Management System");
+        primaryStage.setTitle("Employee Management System - Dashboard");
         primaryStage.setScene(scene);
-        primaryStage.setMinWidth(950);
-        primaryStage.setMinHeight(650);
+        primaryStage.setMinWidth(1100);
+        primaryStage.setMinHeight(700);
         primaryStage.show();
+
+        System.out.println("Dashboard loaded successfully!");
     }
 
     public static void main(String[] args) {
