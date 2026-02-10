@@ -1,8 +1,6 @@
 package entity;
 
-
 import jakarta.persistence.*;
-
 import java.time.LocalDate;
 
 @Entity
@@ -14,20 +12,24 @@ public class Leave {
     @Column(name = "leave_id")
     private int id;
 
-    private int duration;
     private LocalDate startDate;
     private LocalDate endDate;
     private String type;
     private String reason;
 
-    public Leave() {}
+    @ManyToOne
+    @JoinColumn(name = "employee_id")
+    private Employee employee;
 
-    public Leave(int duration, LocalDate startDate, LocalDate endDate, String type, String reason) {
-        this.duration = duration;
+    public Leave() {
+    }
+
+    public Leave(LocalDate startDate, LocalDate endDate, String type, String reason, Employee employee) {
         this.startDate = startDate;
         this.endDate = endDate;
         this.type = type;
         this.reason = reason;
+        this.employee = employee;
     }
 
     public int getId() {
@@ -36,14 +38,6 @@ public class Leave {
 
     public void setId(int id) {
         this.id = id;
-    }
-
-    public int getDuration() {
-        return duration;
-    }
-
-    public void setDuration(int duration) {
-        this.duration = duration;
     }
 
     public LocalDate getStartDate() {
@@ -78,5 +72,11 @@ public class Leave {
         this.reason = reason;
     }
 
+    public Employee getEmployee() {
+        return employee;
+    }
 
+    public void setEmployee(Employee employee) {
+        this.employee = employee;
+    }
 }

@@ -1,7 +1,9 @@
 package dao;
 
 import datasource.MariaDbConnection;
-import entity.*;
+import entity.Company;
+import entity.Department;
+import entity.Employee;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 
@@ -11,26 +13,24 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class EmployeeDaoTest {
 
-    private EmployeeDao dao = new EmployeeDaoImpl();
+    private EmployeeDao dao = new EmployeeDao();
 
+    // Helper method to create an Employee entity with dependencies
     private Employee createEmployeeWithDependencies() {
 
         EntityManager em = MariaDbConnection.getEntityManager();
         em.getTransaction().begin();
 
         Company company = new Company("TestCo", "Street 1", "Finland");
-        Department department = new Department(10, "IT", "Tech dept", LocalDate.now(), company, null);
-        Position position = new Position("Developer");
-        ContractType contractType = new ContractType("Full-time");
+        Department department = new Department(10, "IT", "Tech dept", LocalDate.now(), company);
 
         em.persist(company);
         em.persist(department);
-        em.persist(position);
-        em.persist(contractType);
 
         em.getTransaction().commit();
         em.close();
 
+        // Create Employee entity
         return new Employee(
                 "John Doe",
                 "Male",
@@ -39,17 +39,18 @@ public class EmployeeDaoTest {
                 3000.0,
                 company,
                 department,
-                position,
-                contractType
+                "Developer",    // role
+                "Full-time",    // contractType
+                "Engineer"      // position
         );
     }
 
     @Test
     void testCreateAndFind() {
         Employee e = createEmployeeWithDependencies();
-        dao.create(e);
+        dao.create(e);  // Persist Employee
 
-        assertTrue(e.getId() > 0);
+        assertTrue(e.getId() > 0, "Employee ID should be set after create");
 
         Employee found = dao.find(e.getId());
         assertNotNull(found);

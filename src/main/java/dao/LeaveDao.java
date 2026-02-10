@@ -1,17 +1,11 @@
 package dao;
 
 import entity.Leave;
-import java.util.List;
 
-public interface LeaveDao {
+public class LeaveDao extends BaseDao<Leave> {
+    public LeaveDao() {
+        super(Leave.class);
+    }
 
-    void create(Leave leave);
-
-    Leave find(int id);
-
-    void update(Leave leave);
-
-    void delete(int id);
-
-    List<Leave> findAll();
+    // Add Leave-specific methods here if needed
 }

@@ -1,9 +1,8 @@
 package entity;
 
-
 import jakarta.persistence.*;
-
 import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 @Table(name = "employee")
@@ -21,6 +20,10 @@ public class Employee {
     private LocalDate startDate;
     private Double salary;
 
+    private String role;
+    private String contractType;
+    private String position;
+
     @ManyToOne
     @JoinColumn(name = "company_id")
     private Company company;
@@ -29,21 +32,24 @@ public class Employee {
     @JoinColumn(name = "department_id")
     private Department department;
 
-    @ManyToOne
-    @JoinColumn(name = "position_id")
-    private Position position;
+    @OneToMany(mappedBy = "employee")
+    private List<Leave> leaves;
 
-    @ManyToOne
-    @JoinColumn(name = "contract_type_id")
-    private ContractType contractType;
+    public Employee() {
+    }
 
-    @ManyToOne
-    @JoinColumn(name="leave_id")
-    private Leave leave;
-
-    public Employee() {}
-
-    public Employee(String fullName, String gender, String description, LocalDate startDate, Double salary, Company company, Department department,  Position position, ContractType contractType) {
+    public Employee(
+            String fullName,
+            String gender,
+            String description,
+            LocalDate startDate,
+            Double salary,
+            Company company,
+            Department department,
+            String role,
+            String contractType,
+            String position
+    ) {
         this.fullName = fullName;
         this.gender = gender;
         this.description = description;
@@ -51,8 +57,9 @@ public class Employee {
         this.salary = salary;
         this.company = company;
         this.department = department;
-        this.position = position;
+        this.role = role;
         this.contractType = contractType;
+        this.position = position;
     }
 
     public int getId() {
@@ -119,28 +126,11 @@ public class Employee {
         this.department = department;
     }
 
-    public Position getPosition() {
-        return position;
+    public List<Leave> getLeaves() {
+        return leaves;
     }
 
-    public void setPosition(Position position) {
-        this.position = position;
+    public void setLeaves(List<Leave> leaves) {
+        this.leaves = leaves;
     }
-
-    public ContractType getContractType() {
-        return contractType;
-    }
-
-    public void setContractType(ContractType contractType) {
-        this.contractType = contractType;
-    }
-
-    public Leave getLeaves() {
-        return leave;
-    }
-
-    public void setLeave(Leave leave) {
-        this.leave = leave;
-    }
-
 }

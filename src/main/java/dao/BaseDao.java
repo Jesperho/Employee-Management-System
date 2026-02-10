@@ -1,56 +1,57 @@
 package dao;
 
 import datasource.MariaDbConnection;
-import entity.Leave;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 
 import java.util.List;
 
-public class LeaveDaoImpl implements LeaveDao {
+public abstract class BaseDao<T> {
 
-    @Override
-    public void create(Leave leave) {
+    private final Class<T> entityClass;
+
+    protected BaseDao(Class<T> entityClass) {
+        this.entityClass = entityClass;
+    }
+
+    public void create(T entity) {
         EntityManager em = MariaDbConnection.getEntityManager();
         try {
             em.getTransaction().begin();
-            em.persist(leave);
+            em.persist(entity);
             em.getTransaction().commit();
         } finally {
             em.close();
         }
     }
 
-    @Override
-    public Leave find(int id) {
+    public T find(int id) {
         EntityManager em = MariaDbConnection.getEntityManager();
         try {
-            return em.find(Leave.class, id);
+            return em.find(entityClass, id);
         } finally {
             em.close();
         }
     }
 
-    @Override
-    public void update(Leave leave) {
+    public void update(T entity) {
         EntityManager em = MariaDbConnection.getEntityManager();
         try {
             em.getTransaction().begin();
-            em.merge(leave);
+            em.merge(entity);
             em.getTransaction().commit();
         } finally {
             em.close();
         }
     }
 
-    @Override
     public void delete(int id) {
         EntityManager em = MariaDbConnection.getEntityManager();
         try {
             em.getTransaction().begin();
-            Leave l = em.find(Leave.class, id);
-            if (l != null) {
-                em.remove(l);
+            T entity = em.find(entityClass, id);
+            if (entity != null) {
+                em.remove(entity);
             }
             em.getTransaction().commit();
         } finally {
@@ -58,13 +59,11 @@ public class LeaveDaoImpl implements LeaveDao {
         }
     }
 
-    @Override
-    public List<Leave> findAll() {
+    public List<T> findAll() {
         EntityManager em = MariaDbConnection.getEntityManager();
         try {
-            TypedQuery<Leave> q =
-                    em.createQuery("SELECT l FROM Leave l", Leave.class);
-            return q.getResultList();
+            TypedQuery<T> query = em.createQuery("SELECT e FROM " + entityClass.getSimpleName() + " e", entityClass);
+            return query.getResultList();
         } finally {
             em.close();
         }

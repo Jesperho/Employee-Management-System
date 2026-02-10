@@ -1,7 +1,5 @@
 package entity;
 
-import entity.Company;
-import entity.Manager;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
@@ -25,20 +23,16 @@ public class Department {
     @JoinColumn(name = "company_id")
     private Company company;
 
-    @ManyToOne
-    @JoinColumn(name = "manager_id")
-    private Manager manager;
 
 
     public Department() {}
 
-    public Department(int capacity, String departmentName, String description, LocalDate creationDate, Company company, Manager manager) {
+    public Department(int capacity, String departmentName, String description, LocalDate creationDate, Company company) {
         this.capacity = capacity;
         this.departmentName = departmentName;
         this.description = description;
         this.creationDate = creationDate;
         this.company = company;
-        this.manager = manager;
     }
 
     public int getId() {
@@ -89,11 +83,4 @@ public class Department {
         this.company = company;
     }
 
-    public Manager getManager() {
-        return manager;
-    }
-
-    public void setManager(Manager manager) {
-        this.manager = manager;
-    }
 }
