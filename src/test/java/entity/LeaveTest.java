@@ -8,9 +8,6 @@ import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Unit tests for the Leave entity class.
- */
 class LeaveTest {
 
     private Leave leave;

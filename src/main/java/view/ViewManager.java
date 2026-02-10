@@ -47,7 +47,6 @@ public class ViewManager {
         loadView("/fxml/department.fxml", "/css/department.css", "Employee Management System - Departments", 1280, 800);
     }
 
-
     public static void showLeaveManagement() {
         // TODO: Implement when leave view is created
         loadView("/fxml/leave.fxml", "/css/leave.css", "Employee Management System - Leave Management", 1280, 800);

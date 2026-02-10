@@ -133,6 +133,7 @@ public class DashboardController implements Initializable {
 
     /**
      * Loads dashboard statistics from the database.
+     * In a real application, this would query the database.
      */
     private void loadDashboardData() {
         // TODO: Replace with actual database queries

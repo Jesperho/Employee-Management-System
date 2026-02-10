@@ -6,9 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Unit tests for the Manager entity class.
- */
+
 class ManagerTest {
 
     private Manager manager;

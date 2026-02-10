@@ -8,10 +8,6 @@ import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Unit tests for the Employee entity class.
- * Tests getters, setters, and constructors.
- */
 class EmployeeTest {
 
     private Employee employee;

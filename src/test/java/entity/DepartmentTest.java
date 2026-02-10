@@ -8,9 +8,7 @@ import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Unit tests for the Department entity class.
- */
+
 class DepartmentTest {
 
     private Department department;
