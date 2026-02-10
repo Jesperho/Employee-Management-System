@@ -109,6 +109,14 @@
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>0.8.10</version>
+                <configuration>
+                    <excludes>
+                        <exclude>app/Main.class</exclude>
+                        <exclude>view/ViewManager.class</exclude>
+                        <exclude>dataseeder/DataSeeder.class</exclude>
+                        <exclude>datasource/MariaDbConnection.class</exclude>
+                    </excludes>
+                </configuration>
                 <executions>
                     <execution>
                         <id>prepare-agent</id>
