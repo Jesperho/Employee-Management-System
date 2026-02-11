@@ -184,10 +184,10 @@ The Use Case Diagram in Figure 1 illustrates the main functional interactions be
 ```
                     Employee Management System
                     ┌─────────────────────────────────┐
-                    │                                 │
-                    │     Manage Department           │
-                    │    ╱                            │
-                    │   ╱                             │
+                    │       Login                     │
+                    │      /                          │
+                    │    ╱ Manage Department          │
+                    │   ╱ /                           │
          Admin ─────┼──╱ ───Manage employee records   │
                     │  ╲ \                            │
                     │   ╲ \                           │
