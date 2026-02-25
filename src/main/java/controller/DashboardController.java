@@ -173,30 +173,38 @@ public class DashboardController implements Initializable {
 
     @FXML
     private void handleEmployees() {
-        setActiveNavButton(btnEmployees);
-        // TODO: Navigate to Employees view
-        System.out.println("Navigating to Employees view...");
+        navigateTo("/fxml/employee.fxml", "/css/management.css");
     }
 
     @FXML
     private void handleDepartments() {
-        setActiveNavButton(btnDepartments);
-        // TODO: Navigate to Departments view
-        System.out.println("Navigating to Departments view...");
+        navigateTo("/fxml/department.fxml", "/css/management.css");
     }
 
     @FXML
     private void handleLeave() {
-        setActiveNavButton(btnLeave);
-        // TODO: Navigate to Leave Management view
-        System.out.println("Navigating to Leave Management view...");
+        navigateTo("/fxml/leave.fxml", "/css/management.css");
     }
 
     @FXML
     private void handleSalary() {
-        setActiveNavButton(btnSalary);
-        // TODO: Navigate to Salary view
-        System.out.println("Navigating to Salary view...");
+        navigateTo("/fxml/salary.fxml", "/css/management.css");
+    }
+
+    private void navigateTo(String fxmlPath, String cssPath) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+            Parent root = loader.load();
+            Stage stage = (Stage) btnLogout.getScene().getWindow();
+            Scene scene = new Scene(root, 1280, 800);
+            var css = getClass().getResource(cssPath);
+            if (css != null) scene.getStylesheets().add(css.toExternalForm());
+            stage.setScene(scene);
+            stage.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+            showAlert("Error", "Failed to load view: " + fxmlPath);
+        }
     }
 
     @FXML

@@ -38,23 +38,19 @@ public class ViewManager {
     }
 
     public static void showEmployees() {
-        // TODO: Implement when employee view is created
-        loadView("/fxml/employee.fxml", "/css/employee.css", "Employee Management System - Employees", 1280, 800);
+        loadView("/fxml/employee.fxml", "/css/management.css", "Employee Management System - Employees", 1280, 800);
     }
 
     public static void showDepartments() {
-        // TODO: Implement when department view is created
-        loadView("/fxml/department.fxml", "/css/department.css", "Employee Management System - Departments", 1280, 800);
+        loadView("/fxml/department.fxml", "/css/management.css", "Employee Management System - Departments", 1280, 800);
     }
 
     public static void showLeaveManagement() {
-        // TODO: Implement when leave view is created
-        loadView("/fxml/leave.fxml", "/css/leave.css", "Employee Management System - Leave Management", 1280, 800);
+        loadView("/fxml/leave.fxml", "/css/management.css", "Employee Management System - Leave Management", 1280, 800);
     }
 
     public static void showSalary() {
-        // TODO: Implement when salary view is created
-        loadView("/fxml/salary.fxml", "/css/salary.css", "Employee Management System - Salary", 1280, 800);
+        loadView("/fxml/salary.fxml", "/css/management.css", "Employee Management System - Salary", 1280, 800);
     }
 
     private static void loadView(String fxmlPath, String cssPath, String title, int width, int height) {
