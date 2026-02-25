@@ -1,5 +1,6 @@
 package controller;
 
+import entity.Admin;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -8,11 +9,14 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
+import service.AuthService;
 
 import java.net.URL;
 import java.util.ResourceBundle;
 
 public class LoginController implements Initializable {
+
+    private final AuthService authService = new AuthService();
 
     // Login Tab Fields
     @FXML private TextField loginEmail;
@@ -69,12 +73,14 @@ public class LoginController implements Initializable {
             return;
         }
 
-        // TODO: Add backend authentication logic here
-        showSuccess(loginMessage, "Login successful!");
-        System.out.println("Login - Email: " + email);
-
-        // Navigate to dashboard after successful login
-        navigateToDashboard();
+        // Authenticate against database
+        Admin admin = authService.login(email, password);
+        if (admin != null) {
+            showSuccess(loginMessage, "Login successful!");
+            navigateToDashboard();
+        } else {
+            showError(loginMessage, "Invalid email or password.");
+        }
     }
 
     /**
@@ -163,12 +169,14 @@ public class LoginController implements Initializable {
             return;
         }
 
-        // TODO: Add backend registration logic here
-        showSuccess(registerMessage, "Account created successfully!");
-        System.out.println("Company: " + company + " (" + country + ")");
-        System.out.println("Admin: " + firstName + " " + lastName + " - " + email);
-
-        clearRegisterForm();
+        // Register in database
+        boolean success = authService.register(company, country, firstName, lastName, email, gender, password);
+        if (success) {
+            showSuccess(registerMessage, "Account created successfully! Please login.");
+            clearRegisterForm();
+        } else {
+            showError(registerMessage, "Email already registered.");
+        }
     }
 
     private boolean isValidEmail(String email) {
