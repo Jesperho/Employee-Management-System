@@ -1,5 +1,11 @@
 package controller;
 
+import dao.DepartmentDao;
+import dao.EmployeeDao;
+import dao.LeaveDao;
+import entity.Department;
+import entity.Employee;
+import entity.Leave;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -16,39 +22,34 @@ import javafx.stage.Stage;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.ResourceBundle;
 
 public class DashboardController implements Initializable {
 
-    // User Profile Elements
     @FXML private Text avatarInitials;
     @FXML private Text userName;
     @FXML private Text userRole;
 
-    // Header Elements
     @FXML private Text welcomeText;
     @FXML private Text dateText;
     @FXML private TextField searchField;
 
-    // Statistics Elements
     @FXML private Text totalEmployeesCount;
     @FXML private Text activeEmployeesCount;
     @FXML private Text onLeaveCount;
     @FXML private Text departmentsCount;
 
-    // Department Table
     @FXML private TableView<DepartmentRow> departmentTable;
     @FXML private TableColumn<DepartmentRow, String> deptNameColumn;
     @FXML private TableColumn<DepartmentRow, String> deptHeadColumn;
     @FXML private TableColumn<DepartmentRow, String> deptEmployeesColumn;
     @FXML private TableColumn<DepartmentRow, String> deptStatusColumn;
 
-    // Salary Summary Elements
     @FXML private Text totalPayroll;
     @FXML private Text avgSalary;
     @FXML private Text pendingPayments;
 
-    // Navigation Buttons
     @FXML private Button btnDashboard;
     @FXML private Button btnEmployees;
     @FXML private Button btnDepartments;
@@ -56,11 +57,15 @@ public class DashboardController implements Initializable {
     @FXML private Button btnSalary;
     @FXML private Button btnLogout;
 
-    // Activities Container
     @FXML private VBox recentActivitiesContainer;
 
-    // Current user info (would be passed from login)
-    private String currentUserName = "Osama Admin";
+    // DAOs for database access
+    private final EmployeeDao employeeDao = new EmployeeDao();
+    private final DepartmentDao departmentDao = new DepartmentDao();
+    private final LeaveDao leaveDao = new LeaveDao();
+
+    // Current logged-in user info
+    private String currentUserName = "Admin";
     private String currentUserRole = "Administrator";
 
     @Override
@@ -71,103 +76,107 @@ public class DashboardController implements Initializable {
         loadDashboardData();
     }
 
-    /**
-     * Sets up the user profile section with the current user's information.
-     */
+    // Sets the user name and initials in the top profile section
     private void setupUserProfile() {
-        if (userName != null) {
-            userName.setText(currentUserName);
-        }
-        if (userRole != null) {
-            userRole.setText(currentUserRole);
-        }
+        if (userName != null) userName.setText(currentUserName);
+        if (userRole != null) userRole.setText(currentUserRole);
+
         if (avatarInitials != null) {
-            // Generate initials from name
-            String[] nameParts = currentUserName.split(" ");
+            String[] parts = currentUserName.split(" ");
             String initials = "";
-            if (nameParts.length >= 2) {
-                initials = nameParts[0].substring(0, 1) + nameParts[1].substring(0, 1);
-            } else if (nameParts.length == 1) {
-                initials = nameParts[0].substring(0, Math.min(2, nameParts[0].length()));
+            if (parts.length >= 2) {
+                initials = parts[0].substring(0, 1) + parts[1].substring(0, 1);
+            } else if (parts.length == 1) {
+                initials = parts[0].substring(0, Math.min(2, parts[0].length()));
             }
             avatarInitials.setText(initials.toUpperCase());
         }
+
         if (welcomeText != null) {
-            String firstName = currentUserName.split(" ")[0];
-            welcomeText.setText("Welcome back, " + firstName + "!");
+            welcomeText.setText("Welcome back, " + currentUserName.split(" ")[0] + "!");
         }
     }
 
-    /**
-     * Sets up the current date display in the header.
-     */
+    // Shows today's date in the header
     private void setupDateDisplay() {
         if (dateText != null) {
-            LocalDate today = LocalDate.now();
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy");
-            dateText.setText(today.format(formatter));
+            dateText.setText(LocalDate.now().format(formatter));
         }
     }
 
-    /**
-     * Configures the department overview table columns.
-     */
+    // Binds the department table columns and loads real department data from the DB
     private void setupDepartmentTable() {
-        if (departmentTable != null) {
-            deptNameColumn.setCellValueFactory(data -> data.getValue().nameProperty());
-            deptHeadColumn.setCellValueFactory(data -> data.getValue().headProperty());
-            deptEmployeesColumn.setCellValueFactory(data -> data.getValue().employeeCountProperty());
-            deptStatusColumn.setCellValueFactory(data -> data.getValue().statusProperty());
+        if (departmentTable == null) return;
 
-            // Add sample data - in real app, this would come from database
-            ObservableList<DepartmentRow> departments = FXCollections.observableArrayList(
-                    new DepartmentRow("IT Department", "Alice Smith", "45", "Active"),
-                    new DepartmentRow("HR Department", "Bob Johnson", "12", "Active"),
-                    new DepartmentRow("Marketing", "Carol White", "28", "Active"),
-                    new DepartmentRow("Finance", "David Brown", "15", "Active"),
-                    new DepartmentRow("Operations", "Eve Davis", "67", "Active")
-            );
-            departmentTable.setItems(departments);
+        deptNameColumn.setCellValueFactory(data -> data.getValue().nameProperty());
+        deptHeadColumn.setCellValueFactory(data -> data.getValue().headProperty());
+        deptEmployeesColumn.setCellValueFactory(data -> data.getValue().employeeCountProperty());
+        deptStatusColumn.setCellValueFactory(data -> data.getValue().statusProperty());
+
+        List<Department> departments = departmentDao.findAll();
+        List<Employee> allEmployees = employeeDao.findAll();
+
+        ObservableList<DepartmentRow> rows = FXCollections.observableArrayList();
+
+        for (Department dept : departments) {
+            // Count how many employees belong to this department
+            int count = 0;
+            for (Employee emp : allEmployees) {
+                if (emp.getDepartment() != null && emp.getDepartment().getId() == dept.getId()) {
+                    count++;
+                }
+            }
+            rows.add(new DepartmentRow(dept.getDepartmentName(), "N/A", String.valueOf(count), "Active"));
         }
+
+        departmentTable.setItems(rows);
     }
 
-    /**
-     * Loads dashboard statistics from the database.
-     * In a real application, this would query the database.
-     */
+    // Loads real stats from the DB into the dashboard cards
     private void loadDashboardData() {
-        // TODO: Replace with actual database queries
-        // For now, using placeholder data
+        List<Employee> employees = employeeDao.findAll();
+        List<Department> departments = departmentDao.findAll();
+        List<Leave> leaves = leaveDao.findAll();
 
-        if (totalEmployeesCount != null) {
-            totalEmployeesCount.setText("540");
+        // Count employees currently on leave (leave period covers today)
+        LocalDate today = LocalDate.now();
+        int currentlyOnLeave = 0;
+        for (Leave leave : leaves) {
+            if (leave.getStartDate() != null && leave.getEndDate() != null) {
+                if (!today.isBefore(leave.getStartDate()) && !today.isAfter(leave.getEndDate())) {
+                    currentlyOnLeave++;
+                }
+            }
         }
-        if (activeEmployeesCount != null) {
-            activeEmployeesCount.setText("532");
+
+        int total = employees.size();
+        int active = total - currentlyOnLeave;
+
+        if (totalEmployeesCount != null) totalEmployeesCount.setText(String.valueOf(total));
+        if (activeEmployeesCount != null) activeEmployeesCount.setText(String.valueOf(active));
+        if (onLeaveCount != null) onLeaveCount.setText(String.valueOf(currentlyOnLeave));
+        if (departmentsCount != null) departmentsCount.setText(String.valueOf(departments.size()));
+
+        // Calculate payroll from employee salaries
+        double total_payroll = 0;
+        int salaryCount = 0;
+        for (Employee emp : employees) {
+            if (emp.getSalary() != null) {
+                total_payroll += emp.getSalary();
+                salaryCount++;
+            }
         }
-        if (onLeaveCount != null) {
-            onLeaveCount.setText("8");
-        }
-        if (departmentsCount != null) {
-            departmentsCount.setText("12");
-        }
-        if (totalPayroll != null) {
-            totalPayroll.setText("€285,000");
-        }
-        if (avgSalary != null) {
-            avgSalary.setText("€4,200");
-        }
-        if (pendingPayments != null) {
-            pendingPayments.setText("€12,500");
-        }
+        double average = salaryCount > 0 ? total_payroll / salaryCount : 0;
+
+        if (totalPayroll != null) totalPayroll.setText(String.format("€%.0f", total_payroll));
+        if (avgSalary != null) avgSalary.setText(String.format("€%.0f", average));
+        if (pendingPayments != null) pendingPayments.setText("N/A");
     }
-
-    // ===== NAVIGATION HANDLERS =====
 
     @FXML
     private void handleDashboard() {
         setActiveNavButton(btnDashboard);
-        // Already on dashboard - refresh data
         loadDashboardData();
     }
 
@@ -191,6 +200,23 @@ public class DashboardController implements Initializable {
         navigateTo("/fxml/salary.fxml", "/css/management.css");
     }
 
+    @FXML
+    private void handleLogout() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/login.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) btnLogout.getScene().getWindow();
+            Scene scene = new Scene(root, 1050, 700);
+            scene.getStylesheets().add(getClass().getResource("/css/login.css").toExternalForm());
+            stage.setScene(scene);
+            stage.setTitle("Employee Management System - Login");
+            stage.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+            showAlert("Error", "Failed to logout. Please try again.");
+        }
+    }
+
     private void navigateTo(String fxmlPath, String cssPath) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
@@ -207,87 +233,31 @@ public class DashboardController implements Initializable {
         }
     }
 
-    @FXML
-    private void handleLogout() {
-        try {
-            // Load the login screen
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/login.fxml"));
-            Parent root = loader.load();
-
-            Stage stage = (Stage) btnLogout.getScene().getWindow();
-            Scene scene = new Scene(root, 1050, 700);
-            scene.getStylesheets().add(getClass().getResource("/css/login.css").toExternalForm());
-
-            stage.setScene(scene);
-            stage.setTitle("Employee Management System - Login");
-            stage.show();
-        } catch (Exception e) {
-            e.printStackTrace();
-            showAlert("Error", "Failed to logout. Please try again.");
-        }
-    }
-
-    /**
-     * Updates the navigation button styles to show active state.
-     */
     private void setActiveNavButton(Button activeButton) {
-        // Remove active class from all nav buttons
         btnDashboard.getStyleClass().remove("nav-button-active");
         btnEmployees.getStyleClass().remove("nav-button-active");
         btnDepartments.getStyleClass().remove("nav-button-active");
         btnLeave.getStyleClass().remove("nav-button-active");
         btnSalary.getStyleClass().remove("nav-button-active");
-
-        // Add active class to the clicked button
         if (!activeButton.getStyleClass().contains("nav-button-active")) {
             activeButton.getStyleClass().add("nav-button-active");
         }
     }
 
-    // ===== QUICK ACTION HANDLERS =====
-
     @FXML
     private void handleSearch() {
         String searchText = searchField.getText().trim();
         if (!searchText.isEmpty()) {
-            // TODO: Implement search functionality
             System.out.println("Searching for: " + searchText);
         }
     }
 
-    @FXML
-    private void handleAddEmployee() {
-        // TODO: Open Add Employee dialog/view
-        System.out.println("Opening Add Employee form...");
-    }
+    @FXML private void handleAddEmployee() { navigateTo("/fxml/employee.fxml", "/css/management.css"); }
+    @FXML private void handleCreateDepartment() { navigateTo("/fxml/department.fxml", "/css/management.css"); }
+    @FXML private void handleProcessLeave() { navigateTo("/fxml/leave.fxml", "/css/management.css"); }
+    @FXML private void handleRunPayroll() { navigateTo("/fxml/salary.fxml", "/css/management.css"); }
+    @FXML private void handleGenerateReport() { System.out.println("Generating report..."); }
 
-    @FXML
-    private void handleCreateDepartment() {
-        // TODO: Open Create Department dialog/view
-        System.out.println("Opening Create Department form...");
-    }
-
-    @FXML
-    private void handleProcessLeave() {
-        // TODO: Open Leave Processing view
-        System.out.println("Opening Leave Processing...");
-    }
-
-    @FXML
-    private void handleRunPayroll() {
-        // TODO: Open Payroll Processing
-        System.out.println("Running payroll...");
-    }
-
-    @FXML
-    private void handleGenerateReport() {
-        // TODO: Open Report Generation dialog
-        System.out.println("Generating report...");
-    }
-
-    /**
-     * Shows an alert dialog with the given title and message.
-     */
     private void showAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);
@@ -296,20 +266,14 @@ public class DashboardController implements Initializable {
         alert.showAndWait();
     }
 
-    /**
-     * Sets the current user information (called from LoginController after successful login).
-     */
+    // Called from LoginController after a successful login to pass the user's name
     public void setCurrentUser(String name, String role) {
         this.currentUserName = name;
         this.currentUserRole = role;
         setupUserProfile();
     }
 
-    // ===== INNER CLASS FOR DEPARTMENT TABLE =====
-
-    /**
-     * Data model class for department table rows.
-     */
+    // Data model for one row in the department overview table
     public static class DepartmentRow {
         private final SimpleStringProperty name;
         private final SimpleStringProperty head;
