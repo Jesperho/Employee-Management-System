@@ -102,12 +102,12 @@ Sprint 4 will focus on:
 
 ## Time Spent by Each Team Member
 
-| Team Member       | Hours Spent | Contributions                                                                                              |
-|-------------------|-------------|------------------------------------------------------------------------------------------------------------|
-| Amir Noori        | 19 hours    | Extended the project functionality based on user stories.                                                 |
-| Jesper Holmström  | 18 hours    | Implemented user authentication and authorization, and ensured proper frontend–backend integration.     |
+| Team Member       | Hours Spent | Contributions                                                                                               |
+|-------------------|-------------|-------------------------------------------------------------------------------------------------------------|
+| Amir Noori        | 19 hours    | Extended the project functionality based on user stories and wrote tests for backend                        |
+| Jesper Holmström  | 20 hours    | Implemented user authentication and authorization, and ensured proper frontend–backend integration.         |
 | Mehdi Zaidane     | 19 hours    | Designed the ER diagram and database schema, implemented Jenkins and Docker, and wrote the Sprint 3 reports. |
-| Osama Aamer       | 20 hours    | Developed the JavaFX user interface for all project screens.                                            |            |
+| Osama Aamer       | 22 hours    | Developed the JavaFX user interface for all project screens and wrote tests for frontend                 |            |
 
 ---
 
