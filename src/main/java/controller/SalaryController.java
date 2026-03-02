@@ -1,5 +1,9 @@
 package controller;
 
+import dao.DepartmentDao;
+import dao.EmployeeDao;
+import entity.Department;
+import entity.Employee;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -19,8 +23,9 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 import java.net.URL;
-import java.util.Optional;
+import java.util.List;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
 public class SalaryController implements Initializable {
 
@@ -53,18 +58,46 @@ public class SalaryController implements Initializable {
     @FXML private Button btnSalary;
     @FXML private Button btnLogout;
 
+    private final EmployeeDao employeeDao = new EmployeeDao();
+    private final DepartmentDao departmentDao = new DepartmentDao();
+
     private ObservableList<ObservableList<String>> salaryData = FXCollections.observableArrayList();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        setupFilters();
         setupTable();
-        loadSampleData();
+        loadFromDatabase();
+        setupFilters();
     }
 
+    // Loads all employees from DB and maps their salary data to the table rows
+    private void loadFromDatabase() {
+        salaryData.clear();
+        List<Employee> employees = employeeDao.findAll();
+        for (Employee emp : employees) {
+            String deptName = emp.getDepartment() != null ? emp.getDepartment().getDepartmentName() : "N/A";
+            int salary = emp.getSalary() != null ? emp.getSalary().intValue() : 0;
+            salaryData.add(FXCollections.observableArrayList(
+                    String.valueOf(emp.getId()),
+                    emp.getFullName() != null ? emp.getFullName() : "N/A",
+                    deptName,
+                    emp.getPosition() != null ? emp.getPosition() : "N/A",
+                    emp.getRole() != null ? emp.getRole() : "N/A",
+                    String.valueOf(salary),
+                    emp.getGender() != null ? emp.getGender() : "N/A"
+            ));
+        }
+        salaryTable.setItems(salaryData);
+        updateStats();
+    }
+
+    // Populates the department filter from DB
     private void setupFilters() {
-        filterDepartment.setItems(FXCollections.observableArrayList(
-                "All Departments", "IT", "HR", "Marketing", "Finance", "Design", "R&D", "Operations"));
+        List<String> deptNames = departmentDao.findAll().stream()
+                .map(Department::getDepartmentName)
+                .collect(Collectors.toList());
+        deptNames.add(0, "All Departments");
+        filterDepartment.setItems(FXCollections.observableArrayList(deptNames));
         filterDepartment.setOnAction(e -> applyFilters());
     }
 
@@ -134,32 +167,20 @@ public class SalaryController implements Initializable {
         });
     }
 
-    private void loadSampleData() {
-        salaryData.addAll(
-            FXCollections.observableArrayList("911", "Yeabsire Abebe", "IT", "Frontend Engineer", "Manager", "7200", "Female"),
-            FXCollections.observableArrayList("20", "Feven Tesfaye", "IT", "Backend Engineer", "Employee", "3200", "Female"),
-            FXCollections.observableArrayList("5", "Amanuel Beyene", "IT", "Frontend Engineer", "Employee", "2900", "Male"),
-            FXCollections.observableArrayList("588", "Tedla Atalay", "IT", "Backend Engineer", "Employee", "3400", "Male"),
-            FXCollections.observableArrayList("112", "Redwan Husein", "IT", "Backend Engineer", "Intern", "2200", "Male"),
-            FXCollections.observableArrayList("17", "Abel Beyene", "R&D", "Backend Engineer", "Specialist", "4200", "Male"),
-            FXCollections.observableArrayList("404", "Temesgen Melak", "IT", "Project Manager", "Analyst", "5200", "Male"),
-            FXCollections.observableArrayList("23", "Sara Johnson", "Design", "UI UX Designer", "Employee", "3800", "Female"),
-            FXCollections.observableArrayList("67", "Mike Peters", "HR", "HR Manager", "Manager", "6500", "Male"),
-            FXCollections.observableArrayList("89", "Lisa Chen", "Marketing", "Content Strategist", "Employee", "3600", "Female")
-        );
-        salaryTable.setItems(salaryData);
-        updateStats();
-    }
-
     private void updateStats() {
-        int total = salaryData.stream().mapToInt(r -> Integer.parseInt(r.get(5))).sum();
-        totalPayroll.setText("€" + String.format("%,d", total));
+        int total = salaryData.stream().mapToInt(r -> {
+            try { return Integer.parseInt(r.get(5)); } catch (NumberFormatException e) { return 0; }
+        }).sum();
         int avg = salaryData.isEmpty() ? 0 : total / salaryData.size();
-        avgSalary.setText("€" + String.format("%,d", avg));
-        int max = salaryData.stream().mapToInt(r -> Integer.parseInt(r.get(5))).max().orElse(0);
-        highestSalary.setText("€" + String.format("%,d", max));
+        int max = salaryData.stream().mapToInt(r -> {
+            try { return Integer.parseInt(r.get(5)); } catch (NumberFormatException e) { return 0; }
+        }).max().orElse(0);
+
+        totalPayroll.setText("€" + total);
+        avgSalary.setText("€" + avg);
+        highestSalary.setText("€" + max);
         employeesPaid.setText(String.valueOf(salaryData.size()));
-        totalPayout.setText("Total Payout: €" + String.format("%,d", total));
+        totalPayout.setText("Total Payout: €" + total);
     }
 
     private void showViewPopup(ObservableList<String> row) {
@@ -178,6 +199,7 @@ public class SalaryController implements Initializable {
         alert.showAndWait();
     }
 
+    // Opens edit popup; persists salary and role changes to the Employee entity in DB
     private void showEditSalaryPopup(ObservableList<String> row) {
         Stage popup = new Stage();
         popup.initModality(Modality.APPLICATION_MODAL);
@@ -238,18 +260,24 @@ public class SalaryController implements Initializable {
                 showAlert("Validation Error", "Please enter a new salary.");
                 return;
             }
+            double salaryValue;
             try {
-                Integer.parseInt(newSal);
+                salaryValue = Double.parseDouble(newSal);
             } catch (NumberFormatException ex) {
                 showAlert("Validation Error", "Salary must be a number.");
                 return;
             }
-            row.set(5, newSal);
-            if (positionCombo.getValue() != null) {
-                row.set(4, positionCombo.getValue());
+            // Persist the salary change to the Employee entity in DB
+            int empId = Integer.parseInt(row.get(0));
+            Employee emp = employeeDao.find(empId);
+            if (emp != null) {
+                emp.setSalary(salaryValue);
+                if (positionCombo.getValue() != null) {
+                    emp.setRole(positionCombo.getValue());
+                }
+                employeeDao.update(emp);
             }
-            salaryTable.refresh();
-            updateStats();
+            loadFromDatabase();
             popup.close();
         });
 
@@ -267,12 +295,14 @@ public class SalaryController implements Initializable {
 
     @FXML
     private void handleRunPayroll() {
+        int total = salaryData.stream().mapToInt(r -> {
+            try { return Integer.parseInt(r.get(5)); } catch (NumberFormatException e) { return 0; }
+        }).sum();
         Alert info = new Alert(Alert.AlertType.INFORMATION);
         info.setTitle("Run Payroll");
         info.setHeaderText("Payroll Processing");
-        int total = salaryData.stream().mapToInt(r -> Integer.parseInt(r.get(5))).sum();
         info.setContentText("Processing payroll for " + salaryData.size() + " employees.\n" +
-                "Total amount: €" + String.format("%,d", total) + "\n\n" +
+                "Total amount: €" + total + "\n\n" +
                 "Payroll will be processed at the end of the month.");
         info.showAndWait();
     }

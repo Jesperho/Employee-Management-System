@@ -1,5 +1,11 @@
 package controller;
 
+import dao.CompanyDao;
+import dao.DepartmentDao;
+import dao.EmployeeDao;
+import entity.Company;
+import entity.Department;
+import entity.Employee;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -19,8 +25,10 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 import java.net.URL;
+import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
 public class DepartmentController implements Initializable {
 
@@ -65,21 +73,47 @@ public class DepartmentController implements Initializable {
     @FXML private Button btnSalary;
     @FXML private Button btnLogout;
 
+    private final DepartmentDao departmentDao = new DepartmentDao();
+    private final EmployeeDao employeeDao = new EmployeeDao();
+    private final CompanyDao companyDao = new CompanyDao();
+
     private ObservableList<ObservableList<String>> deptData = FXCollections.observableArrayList();
     private ObservableList<ObservableList<String>> employeeData = FXCollections.observableArrayList();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        setupFilters();
         setupTable();
         setupEmployeeTable();
-        loadSampleData();
-        loadEmployeeData();
+        loadFromDatabase();
+        setupFilters();
     }
 
+    // Loads all departments from DB and refreshes the table and stats
+    private void loadFromDatabase() {
+        deptData.clear();
+        List<Department> departments = departmentDao.findAll();
+        for (Department dept : departments) {
+            long empCount = departmentDao.countEmployees(dept.getId());
+            deptData.add(FXCollections.observableArrayList(
+                    String.valueOf(dept.getId()),
+                    dept.getDepartmentName() != null ? dept.getDepartmentName() : "",
+                    String.valueOf(dept.getCapacity()),
+                    String.valueOf(empCount),
+                    dept.getCreationDate() != null ? dept.getCreationDate().toString() : "N/A",
+                    dept.getDescription() != null ? dept.getDescription() : ""
+            ));
+        }
+        departmentTable.setItems(deptData);
+        updateStats();
+    }
+
+    // Populates the filter dropdowns; department names come from the DB
     private void setupFilters() {
-        filterDepartment.setItems(FXCollections.observableArrayList(
-                "All Departments", "IT Department", "HR Department", "Marketing", "Finance", "Design", "R&D", "Operations", "Sales"));
+        List<String> deptNames = departmentDao.findAll().stream()
+                .map(Department::getDepartmentName)
+                .collect(Collectors.toList());
+        deptNames.add(0, "All Departments");
+        filterDepartment.setItems(FXCollections.observableArrayList(deptNames));
         filterDepartment.setOnAction(e -> applyFilters());
 
         filterCapacity.setItems(FXCollections.observableArrayList(
@@ -93,38 +127,54 @@ public class DepartmentController implements Initializable {
 
         // If a specific department is selected, show employee details for that department
         if (dept != null && !dept.equals("All Departments")) {
-            showEmployeesForDepartment(dept);
+            int deptId = -1;
+            for (ObservableList<String> row : deptData) {
+                if (row.get(1).equalsIgnoreCase(dept)) {
+                    deptId = Integer.parseInt(row.get(0));
+                    break;
+                }
+            }
+            if (deptId != -1) {
+                showEmployeesForDepartment(dept, deptId);
+            }
         } else {
             hideEmployeeSection();
         }
 
         FilteredList<ObservableList<String>> filtered = new FilteredList<>(deptData, row -> {
-            // Department name filter
             if (dept != null && !dept.equals("All Departments")) {
                 if (!row.get(1).equalsIgnoreCase(dept)) return false;
             }
-            // Capacity filter
             if (cap != null && !cap.equals("All Capacities")) {
-                int capacity = Integer.parseInt(row.get(2));
-                if (cap.equals("Small (< 30)") && capacity >= 30) return false;
-                if (cap.equals("Medium (30-50)") && (capacity < 30 || capacity > 50)) return false;
-                if (cap.equals("Large (> 50)") && capacity <= 50) return false;
+                try {
+                    int capacity = Integer.parseInt(row.get(2));
+                    if (cap.equals("Small (< 30)") && capacity >= 30) return false;
+                    if (cap.equals("Medium (30-50)") && (capacity < 30 || capacity > 50)) return false;
+                    if (cap.equals("Large (> 50)") && capacity <= 50) return false;
+                } catch (NumberFormatException ignored) {}
             }
             return true;
         });
         departmentTable.setItems(filtered);
     }
 
-    private void showEmployeesForDepartment(String deptName) {
-        // Map department filter names to the department values used in employee data
-        String matchDept = deptName.replace(" Department", "");
-
-        FilteredList<ObservableList<String>> filtered = new FilteredList<>(employeeData,
-                row -> row.get(2).equalsIgnoreCase(matchDept) || row.get(2).equalsIgnoreCase(deptName));
-
-        employeeTable.setItems(filtered);
-        employeeSectionTitle.setText("👥 Employees in " + deptName + " (" + filtered.size() + " found)");
-
+    // Loads real employees for the selected department from DB
+    private void showEmployeesForDepartment(String deptName, int deptId) {
+        List<Employee> employees = employeeDao.findByDepartment(deptId);
+        employeeData.clear();
+        for (Employee emp : employees) {
+            employeeData.add(FXCollections.observableArrayList(
+                    String.valueOf(emp.getId()),
+                    emp.getFullName() != null ? emp.getFullName() : "N/A",
+                    deptName,
+                    emp.getPosition() != null ? emp.getPosition() : "N/A",
+                    emp.getStartDate() != null ? emp.getStartDate().toString() : "N/A",
+                    emp.getContractType() != null ? emp.getContractType() : "N/A",
+                    emp.getGender() != null ? emp.getGender() : "N/A"
+            ));
+        }
+        employeeTable.setItems(employeeData);
+        employeeSectionTitle.setText("Employees in " + deptName + " (" + employees.size() + " found)");
         employeeSection.setVisible(true);
         employeeSection.setManaged(true);
     }
@@ -176,21 +226,6 @@ public class DepartmentController implements Initializable {
         });
     }
 
-    private void loadSampleData() {
-        deptData.addAll(
-            FXCollections.observableArrayList("1", "IT Department", "60", "45", "2020-01-15", "Information Technology and Software Development"),
-            FXCollections.observableArrayList("2", "HR Department", "20", "12", "2019-06-10", "Human Resources and People Management"),
-            FXCollections.observableArrayList("3", "Marketing", "35", "28", "2020-03-22", "Marketing, Branding and Communications"),
-            FXCollections.observableArrayList("4", "Finance", "25", "15", "2019-01-05", "Financial Planning and Accounting"),
-            FXCollections.observableArrayList("5", "Design", "30", "22", "2021-02-14", "UI/UX Design and Creative"),
-            FXCollections.observableArrayList("6", "R&D", "40", "35", "2020-08-01", "Research and Development"),
-            FXCollections.observableArrayList("7", "Operations", "80", "67", "2019-01-01", "Operations and Logistics"),
-            FXCollections.observableArrayList("8", "Sales", "50", "42", "2020-05-18", "Sales and Business Development")
-        );
-        departmentTable.setItems(deptData);
-        updateStats();
-    }
-
     private void setupEmployeeTable() {
         empColId.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().get(0)));
         empColName.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().get(1)));
@@ -228,29 +263,6 @@ public class DepartmentController implements Initializable {
         });
     }
 
-    private void loadEmployeeData() {
-        employeeData.addAll(
-            FXCollections.observableArrayList("911", "Yeabsire Abebe", "Design", "UI UX Designer", "28/04/2022", "Full Time", "Female"),
-            FXCollections.observableArrayList("20", "Feven Tesfaye", "IT", "Backend Engineer", "28/04/2022", "Remote", "Female"),
-            FXCollections.observableArrayList("5", "Amanuel Beyene", "Design", "UI UX Designer", "28/04/2022", "Full Time", "Male"),
-            FXCollections.observableArrayList("588", "Tedla Atalay", "IT", "Frontend Engineer", "28/04/2022", "Full Time", "Male"),
-            FXCollections.observableArrayList("112", "Redwan Husein", "IT", "Backend Engineer", "28/04/2022", "Full Time", "Male"),
-            FXCollections.observableArrayList("17", "Abel Beyene", "R&D", "Research Engineer", "28/04/2022", "Full Time", "Male"),
-            FXCollections.observableArrayList("404", "Temesgen Melak", "IT", "Project Manager", "28/04/2022", "Full Time", "Male"),
-            FXCollections.observableArrayList("23", "Sara Johnson", "IT", "Frontend Engineer", "15/01/2023", "Full Time", "Female"),
-            FXCollections.observableArrayList("67", "Mike Peters", "HR", "HR Manager", "10/06/2021", "Full Time", "Male"),
-            FXCollections.observableArrayList("89", "Lisa Chen", "Marketing", "Content Strategist", "03/09/2022", "Remote", "Female"),
-            FXCollections.observableArrayList("101", "James Wilson", "Finance", "Financial Analyst", "12/03/2021", "Full Time", "Male"),
-            FXCollections.observableArrayList("102", "Anna Berg", "HR", "Recruiter", "22/08/2022", "Full Time", "Female"),
-            FXCollections.observableArrayList("103", "David Kim", "Marketing", "Marketing Manager", "05/05/2020", "Full Time", "Male"),
-            FXCollections.observableArrayList("104", "Emily Brown", "Design", "Graphic Designer", "14/11/2021", "Full Time", "Female"),
-            FXCollections.observableArrayList("105", "Oscar Lund", "Operations", "Operations Lead", "01/02/2020", "Full Time", "Male"),
-            FXCollections.observableArrayList("106", "Maria Garcia", "Sales", "Sales Representative", "18/07/2022", "Remote", "Female"),
-            FXCollections.observableArrayList("107", "Thomas Holm", "R&D", "Data Scientist", "25/09/2021", "Full Time", "Male"),
-            FXCollections.observableArrayList("108", "Sofia Nils", "Finance", "Accountant", "30/01/2023", "Full Time", "Female")
-        );
-    }
-
     private void showEmployeeViewPopup(ObservableList<String> row) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Employee Details");
@@ -270,9 +282,13 @@ public class DepartmentController implements Initializable {
     private void updateStats() {
         totalDeptCount.setText(String.valueOf(deptData.size()));
         activeDeptCount.setText(String.valueOf(deptData.size()));
-        int totalEmp = deptData.stream().mapToInt(r -> Integer.parseInt(r.get(3))).sum();
+        int totalEmp = 0;
+        int totalCap = 0;
+        for (ObservableList<String> row : deptData) {
+            try { totalEmp += Integer.parseInt(row.get(3)); } catch (NumberFormatException ignored) {}
+            try { totalCap += Integer.parseInt(row.get(2)); } catch (NumberFormatException ignored) {}
+        }
         totalEmpInDepts.setText(String.valueOf(totalEmp));
-        int totalCap = deptData.stream().mapToInt(r -> Integer.parseInt(r.get(2))).sum();
         int pct = totalCap > 0 ? (totalEmp * 100 / totalCap) : 0;
         avgCapacity.setText(pct + "%");
     }
@@ -282,6 +298,7 @@ public class DepartmentController implements Initializable {
         showDeptFormPopup("Add New Department", null);
     }
 
+    // Opens a form popup for adding a new department (existingData = null) or editing one
     private void showDeptFormPopup(String title, ObservableList<String> existingData) {
         Stage popup = new Stage();
         popup.initModality(Modality.APPLICATION_MODAL);
@@ -305,12 +322,6 @@ public class DepartmentController implements Initializable {
         creationDate.setPromptText("Creation Date");
         creationDate.setPrefWidth(250);
 
-        ComboBox<String> budgetCombo = new ComboBox<>(FXCollections.observableArrayList(
-                "€10,000", "€25,000", "€50,000", "€100,000", "€200,000"));
-        budgetCombo.setPromptText("Budget");
-        budgetCombo.setPrefWidth(250);
-        budgetCombo.setStyle("-fx-background-color: #f8f9fa; -fx-border-color: #e0e3e8; -fx-border-radius: 8; -fx-background-radius: 8;");
-
         TextArea descriptionField = new TextArea();
         descriptionField.setPromptText("Description");
         descriptionField.setPrefRowCount(3);
@@ -319,7 +330,6 @@ public class DepartmentController implements Initializable {
         grid.add(createLabel("Department Name"), 0, 0); grid.add(nameField, 1, 0);
         grid.add(createLabel("Capacity"), 2, 0);        grid.add(capacityField, 3, 0);
         grid.add(createLabel("Creation Date"), 0, 1);   grid.add(creationDate, 1, 1);
-        grid.add(createLabel("Budget"), 2, 1);           grid.add(budgetCombo, 3, 1);
         grid.add(createLabel("Description"), 0, 2);
         GridPane.setColumnSpan(descriptionField, 3);
         grid.add(descriptionField, 1, 2);
@@ -328,6 +338,11 @@ public class DepartmentController implements Initializable {
             nameField.setText(existingData.get(1));
             capacityField.setText(existingData.get(2));
             descriptionField.setText(existingData.get(5));
+            if (!"N/A".equals(existingData.get(4))) {
+                try {
+                    creationDate.setValue(java.time.LocalDate.parse(existingData.get(4)));
+                } catch (Exception ignored) {}
+            }
         }
 
         HBox buttonBar = new HBox(15);
@@ -344,23 +359,42 @@ public class DepartmentController implements Initializable {
                 showAlert("Validation Error", "Department name is required.");
                 return;
             }
-            if (existingData == null) {
-                String id = String.valueOf(deptData.size() + 1);
-                ObservableList<String> newRow = FXCollections.observableArrayList(
-                        id, nameField.getText(),
-                        capacityField.getText().isEmpty() ? "0" : capacityField.getText(),
-                        "0",
-                        creationDate.getValue() != null ? creationDate.getValue().toString() : "N/A",
-                        descriptionField.getText()
-                );
-                deptData.add(newRow);
-            } else {
-                existingData.set(1, nameField.getText());
-                existingData.set(2, capacityField.getText().isEmpty() ? existingData.get(2) : capacityField.getText());
-                existingData.set(5, descriptionField.getText());
-                departmentTable.refresh();
+            int capacity = 0;
+            if (!capacityField.getText().isEmpty()) {
+                try {
+                    capacity = Integer.parseInt(capacityField.getText());
+                } catch (NumberFormatException ex) {
+                    showAlert("Validation Error", "Capacity must be a valid number.");
+                    return;
+                }
             }
-            updateStats();
+
+            if (existingData == null) {
+                // Use the first company in the DB as the owner
+                List<Company> companies = companyDao.findAll();
+                Company company = companies.isEmpty() ? null : companies.get(0);
+                Department newDept = new Department(
+                        capacity,
+                        nameField.getText(),
+                        descriptionField.getText(),
+                        creationDate.getValue(),
+                        company
+                );
+                departmentDao.create(newDept);
+            } else {
+                int id = Integer.parseInt(existingData.get(0));
+                Department dept = departmentDao.find(id);
+                if (dept != null) {
+                    dept.setDepartmentName(nameField.getText());
+                    dept.setCapacity(capacity);
+                    dept.setDescription(descriptionField.getText());
+                    dept.setCreationDate(creationDate.getValue());
+                    departmentDao.update(dept);
+                }
+            }
+
+            loadFromDatabase();
+            setupFilters();
             popup.close();
         });
 
@@ -376,6 +410,7 @@ public class DepartmentController implements Initializable {
         popup.showAndWait();
     }
 
+    // Uses safeDelete — blocks deletion if employees are still assigned
     private void handleDeleteDepartment(ObservableList<String> row) {
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
         confirm.setTitle("Delete Department");
@@ -383,8 +418,14 @@ public class DepartmentController implements Initializable {
         confirm.setContentText("Delete department: " + row.get(1) + "?");
         Optional<ButtonType> result = confirm.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
-            deptData.remove(row);
-            updateStats();
+            int id = Integer.parseInt(row.get(0));
+            boolean deleted = departmentDao.safeDelete(id);
+            if (!deleted) {
+                showAlert("Cannot Delete", "This department still has employees assigned to it.\nReassign or remove them first.");
+                return;
+            }
+            loadFromDatabase();
+            setupFilters();
         }
     }
 
@@ -395,18 +436,17 @@ public class DepartmentController implements Initializable {
         String cap = filterCapacity.getValue();
 
         FilteredList<ObservableList<String>> filtered = new FilteredList<>(deptData, row -> {
-            // Search filter
             if (!search.isEmpty() && !row.get(1).toLowerCase().contains(search)) return false;
-            // Department name filter
             if (dept != null && !dept.equals("All Departments")) {
                 if (!row.get(1).equalsIgnoreCase(dept)) return false;
             }
-            // Capacity filter
             if (cap != null && !cap.equals("All Capacities")) {
-                int capacity = Integer.parseInt(row.get(2));
-                if (cap.equals("Small (< 30)") && capacity >= 30) return false;
-                if (cap.equals("Medium (30-50)") && (capacity < 30 || capacity > 50)) return false;
-                if (cap.equals("Large (> 50)") && capacity <= 50) return false;
+                try {
+                    int capacity = Integer.parseInt(row.get(2));
+                    if (cap.equals("Small (< 30)") && capacity >= 30) return false;
+                    if (cap.equals("Medium (30-50)") && (capacity < 30 || capacity > 50)) return false;
+                    if (cap.equals("Large (> 50)") && capacity <= 50) return false;
+                } catch (NumberFormatException ignored) {}
             }
             return true;
         });

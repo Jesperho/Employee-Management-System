@@ -1,5 +1,9 @@
 package controller;
 
+import dao.EmployeeDao;
+import dao.LeaveDao;
+import entity.Employee;
+import entity.Leave;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -19,8 +23,8 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 import java.net.URL;
-import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
@@ -54,13 +58,40 @@ public class LeaveController implements Initializable {
     @FXML private Button btnSalary;
     @FXML private Button btnLogout;
 
+    private final LeaveDao leaveDao = new LeaveDao();
+    private final EmployeeDao employeeDao = new EmployeeDao();
+
     private ObservableList<ObservableList<String>> leaveData = FXCollections.observableArrayList();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         setupFilters();
         setupTable();
-        loadSampleData();
+        loadFromDatabase();
+    }
+
+    // Fetches all leave records from the DB and refreshes the table and stats
+    private void loadFromDatabase() {
+        leaveData.clear();
+        List<Leave> leaves = leaveDao.findAll();
+        for (Leave leave : leaves) {
+            String empName = leave.getEmployee() != null ? leave.getEmployee().getFullName() : "N/A";
+            long duration = 0;
+            if (leave.getStartDate() != null && leave.getEndDate() != null) {
+                duration = ChronoUnit.DAYS.between(leave.getStartDate(), leave.getEndDate());
+            }
+            leaveData.add(FXCollections.observableArrayList(
+                    String.valueOf(leave.getId()),
+                    empName,
+                    String.valueOf(duration),
+                    leave.getStartDate() != null ? leave.getStartDate().toString() : "N/A",
+                    leave.getEndDate() != null ? leave.getEndDate().toString() : "N/A",
+                    leave.getType() != null ? leave.getType() : "N/A",
+                    leave.getReason() != null ? leave.getReason() : ""
+            ));
+        }
+        leaveTable.setItems(leaveData);
+        updateStats();
     }
 
     private void setupFilters() {
@@ -114,30 +145,18 @@ public class LeaveController implements Initializable {
         });
     }
 
-    private void loadSampleData() {
-        leaveData.addAll(
-            FXCollections.observableArrayList("1", "Abebe Gemechu", "5", "22/04/2022", "28/04/2022", "Sick", "Personal"),
-            FXCollections.observableArrayList("2", "Aman Bey", "7", "22/04/2022", "30/04/2022", "Exam", "Examination"),
-            FXCollections.observableArrayList("3", "Feven Tesfaye", "120", "22/04/2022", "28/06/2022", "Maternity", "Child Care"),
-            FXCollections.observableArrayList("4", "Gelila Moges", "5", "22/04/2022", "28/04/2022", "Sick", "Personal"),
-            FXCollections.observableArrayList("5", "Yanet Tesfaye", "5", "22/04/2022", "28/04/2022", "Sick", "Personal"),
-            FXCollections.observableArrayList("6", "Beti Woloe", "5", "22/04/2022", "28/04/2022", "Sick", "Personal"),
-            FXCollections.observableArrayList("7", "Dawit Int", "5", "22/04/2022", "28/04/2022", "Sick", "Personal"),
-            FXCollections.observableArrayList("8", "Sara Johnson", "10", "01/06/2023", "11/06/2023", "Vacation", "Annual holiday")
-        );
-        leaveTable.setItems(leaveData);
-        updateStats();
-    }
-
     private void updateStats() {
         totalLeaves.setText(String.valueOf(leaveData.size()));
-        // Count currently active leaves (placeholder: count those with duration > 10)
-        long active = leaveData.stream().filter(r -> Integer.parseInt(r.get(2)) > 10).count();
+        long active = leaveData.stream().filter(r -> {
+            try { return Long.parseLong(r.get(2)) > 10; } catch (NumberFormatException e) { return false; }
+        }).count();
         activeLeaves.setText(String.valueOf(active));
         long sick = leaveData.stream().filter(r -> r.get(5).equalsIgnoreCase("Sick")).count();
         sickLeaves.setText(String.valueOf(sick));
-        int totalDays = leaveData.stream().mapToInt(r -> Integer.parseInt(r.get(2))).sum();
-        int avg = leaveData.isEmpty() ? 0 : totalDays / leaveData.size();
+        long totalDays = leaveData.stream().mapToLong(r -> {
+            try { return Long.parseLong(r.get(2)); } catch (NumberFormatException e) { return 0; }
+        }).sum();
+        long avg = leaveData.isEmpty() ? 0 : totalDays / leaveData.size();
         avgDuration.setText(String.valueOf(avg));
     }
 
@@ -149,7 +168,6 @@ public class LeaveController implements Initializable {
 
     @FXML
     private void handleLeaveHistory() {
-        // Scroll to table or refresh
         leaveTable.scrollTo(0);
     }
 
@@ -158,9 +176,7 @@ public class LeaveController implements Initializable {
         String search = searchField.getText().trim().toLowerCase();
 
         FilteredList<ObservableList<String>> filtered = new FilteredList<>(leaveData, row -> {
-            // Type filter
             if (type != null && !type.equals("All Types") && !row.get(5).equalsIgnoreCase(type)) return false;
-            // Search filter
             if (!search.isEmpty()) {
                 if (!row.get(1).toLowerCase().contains(search) && !row.get(5).toLowerCase().contains(search)) return false;
             }
@@ -185,6 +201,7 @@ public class LeaveController implements Initializable {
         alert.showAndWait();
     }
 
+    // Opens a form popup for adding (existingData = null) or editing a leave record
     private void showLeaveFormPopup(String title, ObservableList<String> existingData) {
         Stage popup = new Stage();
         popup.initModality(Modality.APPLICATION_MODAL);
@@ -205,7 +222,27 @@ public class LeaveController implements Initializable {
         grid.setHgap(15);
         grid.setVgap(12);
 
-        TextField employeeField = createFormField("Employee Name");
+        // Employee selector from DB
+        List<Employee> employees = employeeDao.findAll();
+        ComboBox<Employee> empCombo = new ComboBox<>(FXCollections.observableArrayList(employees));
+        empCombo.setPromptText("Select Employee");
+        empCombo.setPrefWidth(250);
+        empCombo.setStyle("-fx-background-color: #f8f9fa; -fx-border-color: #e0e3e8; -fx-border-radius: 8; -fx-background-radius: 8;");
+        empCombo.setCellFactory(lv -> new ListCell<Employee>() {
+            @Override
+            protected void updateItem(Employee e, boolean empty) {
+                super.updateItem(e, empty);
+                setText(empty || e == null ? null : e.getFullName() + " (ID: " + e.getId() + ")");
+            }
+        });
+        empCombo.setButtonCell(new ListCell<Employee>() {
+            @Override
+            protected void updateItem(Employee e, boolean empty) {
+                super.updateItem(e, empty);
+                setText(empty || e == null ? null : e.getFullName() + " (ID: " + e.getId() + ")");
+            }
+        });
+
         ComboBox<String> typeCombo = new ComboBox<>(FXCollections.observableArrayList(
                 "Sick", "Vacation", "Maternity", "Personal", "Exam", "Paternity", "Unpaid"));
         typeCombo.setPromptText("Leave Type");
@@ -232,7 +269,7 @@ public class LeaveController implements Initializable {
         reasonField.setPrefRowCount(3);
         reasonField.setStyle("-fx-background-color: #f8f9fa; -fx-border-color: #e0e3e8; -fx-border-radius: 8;");
 
-        grid.add(createLabel("Employee"), 0, 0);    grid.add(employeeField, 1, 0);
+        grid.add(createLabel("Employee"), 0, 0);    grid.add(empCombo, 1, 0);
         grid.add(createLabel("Leave Type"), 2, 0);  grid.add(typeCombo, 3, 0);
         grid.add(createLabel("Start Date"), 0, 1);  grid.add(startDatePicker, 1, 1);
         grid.add(createLabel("End Date"), 2, 1);    grid.add(endDatePicker, 3, 1);
@@ -241,11 +278,26 @@ public class LeaveController implements Initializable {
         GridPane.setColumnSpan(reasonField, 3);
         grid.add(reasonField, 1, 3);
 
+        // Pre-fill for edit — find the Leave entity by ID and pre-select its employee
         if (existingData != null) {
-            employeeField.setText(existingData.get(1));
-            durationField.setText(existingData.get(2));
-            typeCombo.setValue(existingData.get(5));
-            reasonField.setText(existingData.get(6));
+            int leaveId = Integer.parseInt(existingData.get(0));
+            Leave existing = leaveDao.find(leaveId);
+            if (existing != null) {
+                if (existing.getEmployee() != null) {
+                    for (Employee emp : employees) {
+                        if (emp.getId() == existing.getEmployee().getId()) {
+                            empCombo.setValue(emp);
+                            break;
+                        }
+                    }
+                }
+                typeCombo.setValue(existing.getType());
+                startDatePicker.setValue(existing.getStartDate());
+                endDatePicker.setValue(existing.getEndDate());
+                reasonField.setText(existing.getReason() != null ? existing.getReason() : "");
+                calcDuration(startDatePicker, endDatePicker, durationField);
+            }
+            empCombo.setDisable(true); // Don't change employee on edit
         }
 
         HBox buttonBar = new HBox(15);
@@ -261,34 +313,44 @@ public class LeaveController implements Initializable {
         cancelBtn.setStyle("-fx-background-color: white; -fx-text-fill: #e74c3c; -fx-border-color: #e74c3c; -fx-border-radius: 8; -fx-background-radius: 8; -fx-font-size: 14px; -fx-padding: 12 30; -fx-cursor: hand; -fx-font-weight: bold;");
 
         submitBtn.setOnAction(e -> {
-            if (employeeField.getText().isEmpty()) {
-                showAlert("Validation Error", "Employee name is required.");
+            if (existingData == null && empCombo.getValue() == null) {
+                showAlert("Validation Error", "Please select an employee.");
                 return;
             }
-            if (existingData == null) {
-                String id = String.valueOf(leaveData.size() + 1);
-                ObservableList<String> newRow = FXCollections.observableArrayList(
-                        id, employeeField.getText(),
-                        durationField.getText().isEmpty() ? "0" : durationField.getText(),
-                        startDatePicker.getValue() != null ? startDatePicker.getValue().toString() : "N/A",
-                        endDatePicker.getValue() != null ? endDatePicker.getValue().toString() : "N/A",
-                        typeCombo.getValue() != null ? typeCombo.getValue() : "N/A",
-                        reasonField.getText()
-                );
-                leaveData.add(newRow);
-            } else {
-                existingData.set(1, employeeField.getText());
-                existingData.set(2, durationField.getText());
-                existingData.set(5, typeCombo.getValue() != null ? typeCombo.getValue() : existingData.get(5));
-                existingData.set(6, reasonField.getText());
-                leaveTable.refresh();
+            if (typeCombo.getValue() == null) {
+                showAlert("Validation Error", "Please select a leave type.");
+                return;
             }
-            updateStats();
+
+            if (existingData == null) {
+                // Create new leave record
+                Leave newLeave = new Leave(
+                        startDatePicker.getValue(),
+                        endDatePicker.getValue(),
+                        typeCombo.getValue(),
+                        reasonField.getText(),
+                        empCombo.getValue()
+                );
+                leaveDao.create(newLeave);
+            } else {
+                // Update existing leave record by ID
+                int id = Integer.parseInt(existingData.get(0));
+                Leave leave = leaveDao.find(id);
+                if (leave != null) {
+                    leave.setType(typeCombo.getValue());
+                    leave.setStartDate(startDatePicker.getValue());
+                    leave.setEndDate(endDatePicker.getValue());
+                    leave.setReason(reasonField.getText());
+                    leaveDao.update(leave);
+                }
+            }
+
+            loadFromDatabase();
             popup.close();
         });
 
         resetBtn.setOnAction(e -> {
-            employeeField.clear();
+            empCombo.setValue(null);
             typeCombo.setValue(null);
             startDatePicker.setValue(null);
             endDatePicker.setValue(null);
@@ -315,6 +377,7 @@ public class LeaveController implements Initializable {
         }
     }
 
+    // Asks for confirmation then deletes the leave from the DB
     private void handleDeleteLeave(ObservableList<String> row) {
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
         confirm.setTitle("Delete Leave Record");
@@ -322,8 +385,9 @@ public class LeaveController implements Initializable {
         confirm.setContentText("Delete leave record for: " + row.get(1) + "?");
         Optional<ButtonType> result = confirm.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
-            leaveData.remove(row);
-            updateStats();
+            int id = Integer.parseInt(row.get(0));
+            leaveDao.delete(id);
+            loadFromDatabase();
         }
     }
 

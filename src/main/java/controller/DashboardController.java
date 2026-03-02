@@ -12,9 +12,13 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
@@ -38,6 +42,7 @@ public class DashboardController implements Initializable {
     @FXML private Text totalEmployeesCount;
     @FXML private Text activeEmployeesCount;
     @FXML private Text onLeaveCount;
+    @FXML private Text pendingLeaveText;
     @FXML private Text departmentsCount;
 
     @FXML private TableView<DepartmentRow> departmentTable;
@@ -59,12 +64,10 @@ public class DashboardController implements Initializable {
 
     @FXML private VBox recentActivitiesContainer;
 
-    // DAOs for database access
     private final EmployeeDao employeeDao = new EmployeeDao();
     private final DepartmentDao departmentDao = new DepartmentDao();
     private final LeaveDao leaveDao = new LeaveDao();
 
-    // Current logged-in user info
     private String currentUserName = "Admin";
     private String currentUserRole = "Administrator";
 
@@ -74,9 +77,9 @@ public class DashboardController implements Initializable {
         setupDateDisplay();
         setupDepartmentTable();
         loadDashboardData();
+        loadRecentActivities();
     }
 
-    // Sets the user name and initials in the top profile section
     private void setupUserProfile() {
         if (userName != null) userName.setText(currentUserName);
         if (userRole != null) userRole.setText(currentUserRole);
@@ -97,7 +100,6 @@ public class DashboardController implements Initializable {
         }
     }
 
-    // Shows today's date in the header
     private void setupDateDisplay() {
         if (dateText != null) {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy");
@@ -105,7 +107,6 @@ public class DashboardController implements Initializable {
         }
     }
 
-    // Binds the department table columns and loads real department data from the DB
     private void setupDepartmentTable() {
         if (departmentTable == null) return;
 
@@ -118,9 +119,7 @@ public class DashboardController implements Initializable {
         List<Employee> allEmployees = employeeDao.findAll();
 
         ObservableList<DepartmentRow> rows = FXCollections.observableArrayList();
-
         for (Department dept : departments) {
-            // Count how many employees belong to this department
             int count = 0;
             for (Employee emp : allEmployees) {
                 if (emp.getDepartment() != null && emp.getDepartment().getId() == dept.getId()) {
@@ -129,24 +128,29 @@ public class DashboardController implements Initializable {
             }
             rows.add(new DepartmentRow(dept.getDepartmentName(), "N/A", String.valueOf(count), "Active"));
         }
-
         departmentTable.setItems(rows);
     }
 
-    // Loads real stats from the DB into the dashboard cards
     private void loadDashboardData() {
         List<Employee> employees = employeeDao.findAll();
         List<Department> departments = departmentDao.findAll();
         List<Leave> leaves = leaveDao.findAll();
 
-        // Count employees currently on leave (leave period covers today)
         LocalDate today = LocalDate.now();
+
+        // Count employees currently on leave (today falls within their leave period)
         int currentlyOnLeave = 0;
+        // Count future/pending leave requests (start date is after today)
+        int pendingLeaves = 0;
+
         for (Leave leave : leaves) {
             if (leave.getStartDate() != null && leave.getEndDate() != null) {
                 if (!today.isBefore(leave.getStartDate()) && !today.isAfter(leave.getEndDate())) {
                     currentlyOnLeave++;
                 }
+            }
+            if (leave.getStartDate() != null && leave.getStartDate().isAfter(today)) {
+                pendingLeaves++;
             }
         }
 
@@ -156,49 +160,113 @@ public class DashboardController implements Initializable {
         if (totalEmployeesCount != null) totalEmployeesCount.setText(String.valueOf(total));
         if (activeEmployeesCount != null) activeEmployeesCount.setText(String.valueOf(active));
         if (onLeaveCount != null) onLeaveCount.setText(String.valueOf(currentlyOnLeave));
+        if (pendingLeaveText != null) pendingLeaveText.setText(pendingLeaves + " pending");
         if (departmentsCount != null) departmentsCount.setText(String.valueOf(departments.size()));
 
         // Calculate payroll from employee salaries
-        double total_payroll = 0;
+        int totalPayrollAmount = 0;
         int salaryCount = 0;
         for (Employee emp : employees) {
             if (emp.getSalary() != null) {
-                total_payroll += emp.getSalary();
+                totalPayrollAmount += emp.getSalary().intValue();
                 salaryCount++;
             }
         }
-        double average = salaryCount > 0 ? total_payroll / salaryCount : 0;
+        int avgSalaryAmount = salaryCount > 0 ? totalPayrollAmount / salaryCount : 0;
 
-        if (totalPayroll != null) totalPayroll.setText(String.format("€%.0f", total_payroll));
-        if (avgSalary != null) avgSalary.setText(String.format("€%.0f", average));
-        if (pendingPayments != null) pendingPayments.setText("N/A");
+        if (totalPayroll != null) totalPayroll.setText("€" + totalPayrollAmount);
+        if (avgSalary != null) avgSalary.setText("€" + avgSalaryAmount);
+        if (pendingPayments != null) pendingPayments.setText("€0");
+    }
+
+    // Builds recent activity items from real DB data (last added employees + leaves)
+    private void loadRecentActivities() {
+        if (recentActivitiesContainer == null) return;
+        recentActivitiesContainer.getChildren().clear();
+
+        // Last 3 employees added (sorted by ID descending)
+        List<Employee> employees = employeeDao.findAll();
+        employees.sort((a, b) -> Integer.compare(b.getId(), a.getId()));
+        int empLimit = Math.min(3, employees.size());
+        for (int i = 0; i < empLimit; i++) {
+            Employee emp = employees.get(i);
+            String dept = emp.getDepartment() != null ? emp.getDepartment().getDepartmentName() : "No Department";
+            recentActivitiesContainer.getChildren().add(
+                    createActivityItem("+", "activity-new",
+                            "New employee added",
+                            emp.getFullName() + " joined " + dept,
+                            emp.getStartDate() != null ? emp.getStartDate().toString() : "")
+            );
+        }
+
+        // Last 2 leave records added (sorted by ID descending)
+        List<Leave> leaves = leaveDao.findAll();
+        leaves.sort((a, b) -> Integer.compare(b.getId(), a.getId()));
+        int leaveLimit = Math.min(2, leaves.size());
+        for (int i = 0; i < leaveLimit; i++) {
+            Leave leave = leaves.get(i);
+            String empName = leave.getEmployee() != null ? leave.getEmployee().getFullName() : "Unknown";
+            String type = leave.getType() != null ? leave.getType() : "Leave";
+            recentActivitiesContainer.getChildren().add(
+                    createActivityItem("📅", "activity-leave",
+                            "Leave record",
+                            empName + " - " + type,
+                            leave.getStartDate() != null ? leave.getStartDate().toString() : "")
+            );
+        }
+
+        if (recentActivitiesContainer.getChildren().isEmpty()) {
+            Text empty = new Text("No recent activity.");
+            empty.setStyle("-fx-fill: #7f8c8d; -fx-font-size: 13px;");
+            recentActivitiesContainer.getChildren().add(empty);
+        }
+    }
+
+    // Builds one activity row matching the dashboard CSS structure
+    private HBox createActivityItem(String icon, String iconStyle, String title, String description, String time) {
+        HBox item = new HBox(12);
+        item.getStyleClass().add("activity-item");
+        item.setAlignment(Pos.CENTER_LEFT);
+
+        StackPane iconContainer = new StackPane();
+        iconContainer.getStyleClass().addAll("activity-icon-container", iconStyle);
+        Text iconText = new Text(icon);
+        iconText.getStyleClass().add("activity-icon");
+        iconContainer.getChildren().add(iconText);
+
+        VBox textBox = new VBox(2);
+        HBox.setHgrow(textBox, Priority.ALWAYS);
+        Text titleText = new Text(title);
+        titleText.getStyleClass().add("activity-title");
+        Text descText = new Text(description);
+        descText.getStyleClass().add("activity-description");
+        textBox.getChildren().addAll(titleText, descText);
+
+        Text timeText = new Text(time);
+        timeText.getStyleClass().add("activity-time");
+
+        item.getChildren().addAll(iconContainer, textBox, timeText);
+        return item;
     }
 
     @FXML
     private void handleDashboard() {
         setActiveNavButton(btnDashboard);
         loadDashboardData();
+        loadRecentActivities();
     }
 
     @FXML
-    private void handleEmployees() {
-        navigateTo("/fxml/employee.fxml", "/css/management.css");
-    }
+    private void handleEmployees() { navigateTo("/fxml/employee.fxml", "/css/management.css"); }
 
     @FXML
-    private void handleDepartments() {
-        navigateTo("/fxml/department.fxml", "/css/management.css");
-    }
+    private void handleDepartments() { navigateTo("/fxml/department.fxml", "/css/management.css"); }
 
     @FXML
-    private void handleLeave() {
-        navigateTo("/fxml/leave.fxml", "/css/management.css");
-    }
+    private void handleLeave() { navigateTo("/fxml/leave.fxml", "/css/management.css"); }
 
     @FXML
-    private void handleSalary() {
-        navigateTo("/fxml/salary.fxml", "/css/management.css");
-    }
+    private void handleSalary() { navigateTo("/fxml/salary.fxml", "/css/management.css"); }
 
     @FXML
     private void handleLogout() {
@@ -266,14 +334,13 @@ public class DashboardController implements Initializable {
         alert.showAndWait();
     }
 
-    // Called from LoginController after a successful login to pass the user's name
+    // Called from LoginController after successful login to pass the user's name
     public void setCurrentUser(String name, String role) {
         this.currentUserName = name;
         this.currentUserRole = role;
         setupUserProfile();
     }
 
-    // Data model for one row in the department overview table
     public static class DepartmentRow {
         private final SimpleStringProperty name;
         private final SimpleStringProperty head;

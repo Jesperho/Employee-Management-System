@@ -150,7 +150,7 @@
                                 </VBox>
                             </HBox>
                             <HBox alignment="CENTER" spacing="5">
-                                <Text text="3 pending" styleClass="stat-change-neutral"/>
+                                <Text fx:id="pendingLeaveText" text="0 pending" styleClass="stat-change-neutral"/>
                                 <Text text="requests" styleClass="stat-change-label"/>
                             </HBox>
                         </VBox>
@@ -188,50 +188,7 @@
                             </HBox>
 
                             <VBox fx:id="recentActivitiesContainer" styleClass="activities-list" spacing="12">
-                                <!-- Activity items will be populated dynamically -->
-                                <HBox styleClass="activity-item" spacing="12" alignment="CENTER_LEFT">
-                                    <StackPane styleClass="activity-icon-container, activity-new">
-                                        <Text text="+" styleClass="activity-icon"/>
-                                    </StackPane>
-                                    <VBox spacing="2" HBox.hgrow="ALWAYS">
-                                        <Text text="New employee added" styleClass="activity-title"/>
-                                        <Text text="John Doe joined IT Department" styleClass="activity-description"/>
-                                    </VBox>
-                                    <Text text="2 hours ago" styleClass="activity-time"/>
-                                </HBox>
-
-                                <HBox styleClass="activity-item" spacing="12" alignment="CENTER_LEFT">
-                                    <StackPane styleClass="activity-icon-container, activity-leave">
-                                        <Text text="📅" styleClass="activity-icon"/>
-                                    </StackPane>
-                                    <VBox spacing="2" HBox.hgrow="ALWAYS">
-                                        <Text text="Leave request approved" styleClass="activity-title"/>
-                                        <Text text="Jane Smith - Vacation (5 days)" styleClass="activity-description"/>
-                                    </VBox>
-                                    <Text text="5 hours ago" styleClass="activity-time"/>
-                                </HBox>
-
-                                <HBox styleClass="activity-item" spacing="12" alignment="CENTER_LEFT">
-                                    <StackPane styleClass="activity-icon-container, activity-update">
-                                        <Text text="✎" styleClass="activity-icon"/>
-                                    </StackPane>
-                                    <VBox spacing="2" HBox.hgrow="ALWAYS">
-                                        <Text text="Salary updated" styleClass="activity-title"/>
-                                        <Text text="Mike Johnson - HR Department" styleClass="activity-description"/>
-                                    </VBox>
-                                    <Text text="Yesterday" styleClass="activity-time"/>
-                                </HBox>
-
-                                <HBox styleClass="activity-item" spacing="12" alignment="CENTER_LEFT">
-                                    <StackPane styleClass="activity-icon-container, activity-department">
-                                        <Text text="🏢" styleClass="activity-icon"/>
-                                    </StackPane>
-                                    <VBox spacing="2" HBox.hgrow="ALWAYS">
-                                        <Text text="Department restructured" styleClass="activity-title"/>
-                                        <Text text="Marketing team expanded" styleClass="activity-description"/>
-                                    </VBox>
-                                    <Text text="2 days ago" styleClass="activity-time"/>
-                                </HBox>
+                                <!-- Populated dynamically from DB in DashboardController -->
                             </VBox>
                         </VBox>
 
