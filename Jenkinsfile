@@ -3,12 +3,13 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/Jesperho/Employee-Management-System.git'
+                // Specify the branch 'main' explicitly
+                git branch: 'main', url: 'https://github.com/Jesperho/Employee-Management-System.git'
             }
         }
         stage('Build') {
             steps {
-                bat 'mvn clean install' // sh for linux and ios
+                bat 'mvn clean install' // use sh for Linux/macOS
             }
         }
         stage('Test') {
