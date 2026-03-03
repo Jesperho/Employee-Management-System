@@ -30,7 +30,7 @@ public class AuthService {
         return null;
     }
 
-    public boolean register(String companyName, String country, String firstName,
+    public boolean register(String companyName, String address, String country, String firstName,
                             String lastName, String email, String gender, String password) {
         // Check if email already exists
         if (adminDao.findByEmail(email) != null) {
@@ -40,6 +40,7 @@ public class AuthService {
         // Create company
         Company company = new Company();
         company.setName(companyName);
+        company.setAddress(address);
         company.setCountry(country);
         companyDao.create(company);
 

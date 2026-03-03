@@ -75,14 +75,18 @@
                     <padding><Insets top="25" bottom="25" left="25" right="25"/></padding>
 
                     <!-- Page Title + Actions -->
-                    <HBox alignment="CENTER_LEFT" spacing="15">
-                        <Text text="Employee Management" styleClass="page-title"/>
-                        <Region HBox.hgrow="ALWAYS"/>
-                        <ComboBox fx:id="filterDepartment" promptText="All Departments" styleClass="filter-combo" prefWidth="160"/>
-                        <ComboBox fx:id="filterGender" promptText="All Genders" styleClass="filter-combo" prefWidth="130"/>
-                        <ComboBox fx:id="filterContract" promptText="All Contracts" styleClass="filter-combo" prefWidth="140"/>
-                        <Button text="➕ Add Employee" styleClass="action-primary" onAction="#handleAddEmployee"/>
-                    </HBox>
+                    <VBox spacing="10">
+                        <HBox alignment="CENTER_LEFT" spacing="15">
+                            <Text text="Employee Management" styleClass="page-title"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Button text="➕ Add Employee" styleClass="action-primary" onAction="#handleAddEmployee"/>
+                        </HBox>
+                        <HBox spacing="10" alignment="CENTER_LEFT">
+                            <ComboBox fx:id="filterDepartment" promptText="All Departments" styleClass="filter-combo" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+                            <ComboBox fx:id="filterGender" promptText="All Genders" styleClass="filter-combo" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+                            <ComboBox fx:id="filterContract" promptText="All Contracts" styleClass="filter-combo" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+                        </HBox>
+                    </VBox>
 
                     <!-- Stats Row -->
                     <HBox spacing="15" alignment="CENTER">

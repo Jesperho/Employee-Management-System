@@ -25,6 +25,7 @@ public class LoginController implements Initializable {
 
     // Register Tab Fields - Company
     @FXML private TextField companyName;
+    @FXML private TextField companyAddress;
     @FXML private ComboBox<String> companyCountry;
 
     // Register Tab Fields - Admin
@@ -99,7 +100,6 @@ public class LoginController implements Initializable {
             stage.setTitle("Employee Management System - Dashboard");
             stage.setMinWidth(1100);
             stage.setMinHeight(700);
-            stage.show();
         } catch (Exception e) {
             e.printStackTrace();
             showError(loginMessage, "Error loading dashboard. Please try again.");
@@ -110,6 +110,7 @@ public class LoginController implements Initializable {
     private void handleRegister() {
         // Company fields
         String company = companyName.getText().trim();
+        String address = companyAddress.getText().trim();
         String country = companyCountry.getValue();
 
         // Admin fields
@@ -164,13 +165,23 @@ public class LoginController implements Initializable {
             return;
         }
 
+        if (!password.matches(".*[A-Z].*")) {
+            showError(registerMessage, "Password must contain at least one uppercase letter.");
+            return;
+        }
+
+        if (!password.matches(".*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?].*")) {
+            showError(registerMessage, "Password must contain at least one special character.");
+            return;
+        }
+
         if (!password.equals(confirmPassword)) {
             showError(registerMessage, "Passwords do not match.");
             return;
         }
 
         // Register in database
-        boolean success = authService.register(company, country, firstName, lastName, email, gender, password);
+        boolean success = authService.register(company, address, country, firstName, lastName, email, gender, password);
         if (success) {
             showSuccess(registerMessage, "Account created successfully! Please login.");
             clearRegisterForm();
@@ -202,6 +213,7 @@ public class LoginController implements Initializable {
 
     private void clearRegisterForm() {
         companyName.clear();
+        companyAddress.clear();
         companyCountry.setValue(null);
         registerFirstName.clear();
         registerLastName.clear();

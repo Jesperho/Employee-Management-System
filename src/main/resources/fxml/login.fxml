@@ -95,6 +95,10 @@
                                 <ComboBox fx:id="companyCountry" promptText="Select country" styleClass="input-field" maxWidth="Infinity"/>
                             </VBox>
                         </HBox>
+                        <VBox spacing="5">
+                            <Label text="Address" styleClass="field-label"/>
+                            <TextField fx:id="companyAddress" promptText="Company address" styleClass="input-field"/>
+                        </VBox>
                     </VBox>
 
                     <!-- Admin Section -->
@@ -123,7 +127,7 @@
                         <HBox spacing="12">
                             <VBox spacing="5" HBox.hgrow="ALWAYS">
                                 <Label text="Password" styleClass="field-label"/>
-                                <PasswordField fx:id="registerPassword" promptText="Min 6 characters" styleClass="input-field"/>
+                                <PasswordField fx:id="registerPassword" promptText="Min 6 chars, 1 uppercase, 1 special" styleClass="input-field"/>
                             </VBox>
                             <VBox spacing="5" HBox.hgrow="ALWAYS">
                                 <Label text="Confirm Password" styleClass="field-label"/>

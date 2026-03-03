@@ -414,11 +414,12 @@ public class LeaveController implements Initializable {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
             Parent root = loader.load();
             Stage stage = (Stage) btnLogout.getScene().getWindow();
-            Scene scene = new Scene(root, 1280, 800);
+            double w = stage.getWidth();
+            double h = stage.getHeight();
+            Scene scene = new Scene(root, w, h);
             var css = getClass().getResource(cssPath);
             if (css != null) scene.getStylesheets().add(css.toExternalForm());
             stage.setScene(scene);
-            stage.show();
         } catch (Exception e) {
             e.printStackTrace();
         }
