@@ -1,25 +1,27 @@
 pipeline {
     agent any
+    tools {
+        maven 'Maven 3.8.5' // match the name you configured
+    }
     stages {
         stage('Checkout') {
             steps {
-                // Specify the branch 'main' explicitly
                 git branch: 'main', url: 'https://github.com/Jesperho/Employee-Management-System.git'
             }
         }
         stage('Build') {
             steps {
-                bat 'mvn clean install' // use sh for Linux/macOS
+                bat "${tool 'Maven 3.9'}\\bin\\mvn clean install"
             }
         }
         stage('Test') {
             steps {
-                bat 'mvn test'
+                bat "${tool 'Maven 3.9'}\\bin\\mvn test"
             }
         }
         stage('Code Coverage') {
             steps {
-                bat 'mvn jacoco:report'
+                bat "${tool 'Maven 3.9'}\\bin\\mvn jacoco:report"
             }
         }
         stage('Publish Test Results') {
