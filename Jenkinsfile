@@ -1,27 +1,33 @@
+
 pipeline {
-    agent any
-    tools {
-        maven 'Maven 3.8.5' // match the name you configured
-    }
-    stages {
-        stage('Checkout') {
+  agent any
+
+  tools {
+      maven 'Maven 3.8.5'
+  }
+
+
+  stages {
+
+      stage('Checkout') {
+          steps {
+              git branch: 'main', url: 'https://github.com/Jesperho/Employee-Management-System.git'
+          }
+      }
+
+      stage('Build') {
             steps {
-                git branch: 'main', url: 'https://github.com/Jesperho/Employee-Management-System.git'
-            }
-        }
-        stage('Build') {
-            steps {
-                bat "${tool 'Maven 3.9'}\\bin\\mvn clean install"
+                bat 'mvn clean install' // sh for linux and ios
             }
         }
         stage('Test') {
             steps {
-                bat "${tool 'Maven 3.9'}\\bin\\mvn test"
+                bat 'mvn test'
             }
         }
         stage('Code Coverage') {
             steps {
-                bat "${tool 'Maven 3.9'}\\bin\\mvn jacoco:report"
+                bat 'mvn jacoco:report'
             }
         }
         stage('Publish Test Results') {
@@ -34,5 +40,5 @@ pipeline {
                 jacoco()
             }
         }
-    }
-}
+      }
+  }
