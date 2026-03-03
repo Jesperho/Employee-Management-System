@@ -1,33 +1,17 @@
 package app;
 
 import javafx.application.Application;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.stage.Stage;
 
-public class Main extends Application {
-
-    @Override
-    public void start(Stage primaryStage) throws Exception {
-        System.out.println("Starting Employee Management System...");
-
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/login.fxml"));
-        Parent root = loader.load();
-
-        Scene scene = new Scene(root, 1050, 700);
-        scene.getStylesheets().add(getClass().getResource("/css/login.css").toExternalForm());
-
-        primaryStage.setTitle("Employee Management System - Login");
-        primaryStage.setScene(scene);
-        primaryStage.setMinWidth(950);
-        primaryStage.setMinHeight(650);
-        primaryStage.show();
-
-        System.out.println("Application started successfully!");
-    }
+public class Main {
 
     public static void main(String[] args) {
-        launch(args);
+        // Skip GUI when running in Docker
+        if (System.getenv("DOCKER") != null) {
+            System.out.println("Running in Docker: skipping JavaFX GUI launch");
+            System.out.println("Employee Management System Docker image works!");
+        } else {
+            // Launch GUI normally
+            Application.launch(GUIApplication.class, args);
+        }
     }
 }
