@@ -1,5 +1,6 @@
 # Stage 1: Build
 FROM maven:3.9.6-eclipse-temurin-21 AS build
+LABEL authors="mehdizaidane"
 WORKDIR /app
 COPY pom.xml .
 COPY . /app
