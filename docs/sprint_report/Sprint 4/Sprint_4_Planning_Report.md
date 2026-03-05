@@ -1,8 +1,8 @@
 # Sprint 4 Planning Report
 
-**Project:** Employment Management System
-**Sprint:** 4
-**Dates:** 04.03.2026 - 11.03.2026
+- **Project:** Employment Management System
+- **Sprint:** 4
+- **Dates:** 04.03.2026 - 11.03.2026
 
 ---
 
