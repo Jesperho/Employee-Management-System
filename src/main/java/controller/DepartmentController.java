@@ -79,6 +79,7 @@ public class DepartmentController implements Initializable {
 
     private ObservableList<ObservableList<String>> deptData = FXCollections.observableArrayList();
     private ObservableList<ObservableList<String>> employeeData = FXCollections.observableArrayList();
+    private List<Employee> currentDeptEmployees = new java.util.ArrayList<>();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -161,6 +162,7 @@ public class DepartmentController implements Initializable {
     // Loads real employees for the selected department from DB
     private void showEmployeesForDepartment(String deptName, int deptId) {
         List<Employee> employees = employeeDao.findByDepartment(deptId);
+        currentDeptEmployees = new java.util.ArrayList<>(employees);
         employeeData.clear();
         for (Employee emp : employees) {
             employeeData.add(FXCollections.observableArrayList(
@@ -243,6 +245,8 @@ public class DepartmentController implements Initializable {
     }
 
     private void setupEmployeeTable() {
+        employeeTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
         empColId.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().get(0)));
         empColName.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().get(1)));
         empColDept.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().get(2)));
@@ -252,22 +256,31 @@ public class DepartmentController implements Initializable {
         empColGender.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().get(6)));
 
         empColActions.setCellFactory(col -> new TableCell<>() {
-            private final Button viewBtn = new Button("View");
-            private final Button editBtn = new Button("Edit");
-            private final HBox box = new HBox(5, viewBtn, editBtn);
+            private final Button viewBtn   = new Button("View");
+            private final Button editBtn   = new Button("Edit");
+            private final Button deleteBtn = new Button("Del");
+            private final HBox   box       = new HBox(5, viewBtn, editBtn, deleteBtn);
 
             {
                 viewBtn.getStyleClass().addAll("table-action-btn", "btn-view");
                 editBtn.getStyleClass().addAll("table-action-btn", "btn-edit");
+                deleteBtn.getStyleClass().addAll("table-action-btn", "btn-delete");
                 box.setAlignment(Pos.CENTER);
 
                 viewBtn.setOnAction(e -> {
-                    ObservableList<String> row = getTableView().getItems().get(getIndex());
-                    showEmployeeViewPopup(row);
+                    int idx = getIndex();
+                    if (idx >= 0 && idx < currentDeptEmployees.size())
+                        showEmpViewPopup(currentDeptEmployees.get(idx));
                 });
                 editBtn.setOnAction(e -> {
-                    ObservableList<String> row = getTableView().getItems().get(getIndex());
-                    showEmployeeViewPopup(row);
+                    int idx = getIndex();
+                    if (idx >= 0 && idx < currentDeptEmployees.size())
+                        showEmpEditPopup(currentDeptEmployees.get(idx));
+                });
+                deleteBtn.setOnAction(e -> {
+                    int idx = getIndex();
+                    if (idx >= 0 && idx < currentDeptEmployees.size())
+                        handleDeleteEmployee(currentDeptEmployees.get(idx));
                 });
             }
 
@@ -279,20 +292,161 @@ public class DepartmentController implements Initializable {
         });
     }
 
-    private void showEmployeeViewPopup(ObservableList<String> row) {
+    private void showEmpViewPopup(Employee emp) {
+        String salary = emp.getSalary() != null ? "€" + emp.getSalary() : "N/A";
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Employee Details");
-        alert.setHeaderText("Employee: " + row.get(1));
+        alert.setHeaderText(emp.getFullName());
         alert.setContentText(
-                "ID: " + row.get(0) + "\n" +
-                "Name: " + row.get(1) + "\n" +
-                "Department: " + row.get(2) + "\n" +
-                "Job Title: " + row.get(3) + "\n" +
-                "Start Date: " + row.get(4) + "\n" +
-                "Contract: " + row.get(5) + "\n" +
-                "Gender: " + row.get(6)
+                "ID: " + emp.getId() + "\n" +
+                "Name: " + emp.getFullName() + "\n" +
+                "Department: " + (emp.getDepartment() != null ? emp.getDepartment().getDepartmentName() : "N/A") + "\n" +
+                "Position: " + (emp.getPosition() != null ? emp.getPosition() : "N/A") + "\n" +
+                "Start Date: " + (emp.getStartDate() != null ? emp.getStartDate().toString() : "N/A") + "\n" +
+                "Contract: " + (emp.getContractType() != null ? emp.getContractType() : "N/A") + "\n" +
+                "Gender: " + (emp.getGender() != null ? emp.getGender() : "N/A") + "\n" +
+                "Salary: " + salary
         );
         alert.showAndWait();
+    }
+
+    private void showEmpEditPopup(Employee emp) {
+        Stage popup = new Stage();
+        popup.initModality(Modality.APPLICATION_MODAL);
+        popup.initStyle(StageStyle.DECORATED);
+        popup.setTitle("Edit Employee");
+
+        VBox form = new VBox(15);
+        form.setPadding(new Insets(25));
+        form.setStyle("-fx-background-color: white;");
+
+        Text formTitle = new Text("Edit Employee");
+        formTitle.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-fill: #1a1f36;");
+
+        GridPane grid = new GridPane();
+        grid.setHgap(15);
+        grid.setVgap(12);
+
+        TextField nameField = createFormField("Full Name");
+        nameField.setText(emp.getFullName() != null ? emp.getFullName() : "");
+
+        ComboBox<String> genderCombo = new ComboBox<>(FXCollections.observableArrayList("Male", "Female", "Other"));
+        genderCombo.setValue(emp.getGender());
+        genderCombo.setPrefWidth(200);
+        genderCombo.setStyle("-fx-background-color: #f8f9fa; -fx-border-color: #e0e3e8; -fx-border-radius: 8; -fx-background-radius: 8;");
+
+        List<Department> departments = departmentDao.findAll();
+        ComboBox<Department> deptCombo = new ComboBox<>(FXCollections.observableArrayList(departments));
+        deptCombo.setPrefWidth(200);
+        deptCombo.setStyle("-fx-background-color: #f8f9fa; -fx-border-color: #e0e3e8; -fx-border-radius: 8; -fx-background-radius: 8;");
+        deptCombo.setCellFactory(lv -> new ListCell<>() {
+            @Override protected void updateItem(Department d, boolean empty) {
+                super.updateItem(d, empty);
+                setText(empty || d == null ? null : d.getDepartmentName());
+            }
+        });
+        deptCombo.setButtonCell(new ListCell<>() {
+            @Override protected void updateItem(Department d, boolean empty) {
+                super.updateItem(d, empty);
+                setText(empty || d == null ? null : d.getDepartmentName());
+            }
+        });
+        if (emp.getDepartment() != null) {
+            departments.stream().filter(d -> d.getId() == emp.getDepartment().getId())
+                    .findFirst().ifPresent(deptCombo::setValue);
+        }
+
+        TextField jobTitleField = createFormField("Job Title");
+        jobTitleField.setText(emp.getPosition() != null ? emp.getPosition() : "");
+
+        TextArea descField = new TextArea();
+        descField.setPromptText("Description");
+        descField.setPrefRowCount(3);
+        descField.setText(emp.getDescription() != null ? emp.getDescription() : "");
+        descField.setStyle("-fx-background-color: #f8f9fa; -fx-border-color: #e0e3e8; -fx-border-radius: 8;");
+
+        DatePicker startDate = new DatePicker(emp.getStartDate());
+        startDate.setPrefWidth(200);
+
+        ComboBox<String> contractCombo = new ComboBox<>(
+                FXCollections.observableArrayList("Full Time", "Part Time", "Remote", "Intern", "Full-time", "Part-time"));
+        contractCombo.setValue(emp.getContractType());
+        contractCombo.setPrefWidth(200);
+        contractCombo.setStyle("-fx-background-color: #f8f9fa; -fx-border-color: #e0e3e8; -fx-border-radius: 8; -fx-background-radius: 8;");
+
+        TextField salaryField = createFormField("Salary (€)");
+        if (emp.getSalary() != null) salaryField.setText(String.valueOf(emp.getSalary()));
+
+        grid.add(createLabel("Name"),        0, 0); grid.add(nameField,    1, 0);
+        grid.add(createLabel("Gender"),      2, 0); grid.add(genderCombo,  3, 0);
+        grid.add(createLabel("Department"),  0, 1); grid.add(deptCombo,    1, 1);
+        grid.add(createLabel("Job Title"),   2, 1); grid.add(jobTitleField,3, 1);
+        grid.add(createLabel("Description"), 0, 2);
+        GridPane.setColumnSpan(descField, 3);
+        grid.add(descField, 1, 2);
+        grid.add(createLabel("Start Date"),  0, 3); grid.add(startDate,    1, 3);
+        grid.add(createLabel("Contract"),    2, 3); grid.add(contractCombo,3, 3);
+        grid.add(createLabel("Salary"),      0, 4); grid.add(salaryField,  1, 4);
+
+        Button updateBtn = new Button("Update");
+        updateBtn.setStyle("-fx-background-color: linear-gradient(to right, #6c63ff, #5a52d4); -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 12 30; -fx-background-radius: 8; -fx-cursor: hand;");
+
+        Button cancelBtn = new Button("Cancel");
+        cancelBtn.setStyle("-fx-background-color: white; -fx-text-fill: #e74c3c; -fx-border-color: #e74c3c; -fx-border-radius: 8; -fx-background-radius: 8; -fx-font-size: 14px; -fx-padding: 12 30; -fx-cursor: hand; -fx-font-weight: bold;");
+
+        updateBtn.setOnAction(e -> {
+            if (nameField.getText().isEmpty()) { showAlert("Validation Error", "Name is required."); return; }
+            Double salary = null;
+            if (!salaryField.getText().isEmpty()) {
+                try { salary = Double.parseDouble(salaryField.getText()); }
+                catch (NumberFormatException ex) { showAlert("Validation Error", "Salary must be a valid number."); return; }
+            }
+            emp.setFullName(nameField.getText());
+            emp.setGender(genderCombo.getValue());
+            emp.setPosition(jobTitleField.getText());
+            emp.setDescription(descField.getText());
+            emp.setStartDate(startDate.getValue());
+            emp.setContractType(contractCombo.getValue());
+            emp.setSalary(salary);
+            emp.setDepartment(deptCombo.getValue());
+            employeeDao.update(emp);
+            // Refresh the employee section
+            if (employeeSectionTitle.getText().contains("in ")) {
+                String sectionTitle = employeeSectionTitle.getText();
+                int deptId = emp.getDepartment() != null ? emp.getDepartment().getId() : -1;
+                String dn  = emp.getDepartment() != null ? emp.getDepartment().getDepartmentName() : "";
+                if (deptId != -1) showEmployeesForDepartment(dn, deptId);
+            }
+            popup.close();
+        });
+        cancelBtn.setOnAction(e -> popup.close());
+
+        HBox buttonBar = new HBox(15);
+        buttonBar.setAlignment(Pos.CENTER_RIGHT);
+        buttonBar.getChildren().addAll(updateBtn, cancelBtn);
+
+        form.getChildren().addAll(formTitle, grid, buttonBar);
+        Scene scene = new Scene(form, 720, 490);
+        var css = getClass().getResource("/css/management.css");
+        if (css != null) scene.getStylesheets().add(css.toExternalForm());
+        popup.setScene(scene);
+        popup.showAndWait();
+    }
+
+    private void handleDeleteEmployee(Employee emp) {
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Delete Employee");
+        confirm.setHeaderText("Are you sure?");
+        confirm.setContentText("Delete employee: " + emp.getFullName() + "?");
+        java.util.Optional<ButtonType> result = confirm.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            employeeDao.delete(emp.getId());
+            // Refresh
+            if (emp.getDepartment() != null) {
+                showEmployeesForDepartment(emp.getDepartment().getDepartmentName(), emp.getDepartment().getId());
+            }
+            loadFromDatabase();
+        }
     }
 
     private void updateStats() {
