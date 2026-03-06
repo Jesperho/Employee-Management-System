@@ -1,7 +1,9 @@
 package controller;
 
+import dao.DepartmentDao;
 import dao.EmployeeDao;
 import dao.LeaveDao;
+import entity.Department;
 import entity.Employee;
 import entity.Leave;
 import javafx.beans.property.SimpleStringProperty;
@@ -32,6 +34,7 @@ public class LeaveController implements Initializable {
 
     @FXML private TextField searchField;
     @FXML private ComboBox<String> filterType;
+    @FXML private ComboBox<String> filterDepartment;
 
     @FXML private Text totalLeaves;
     @FXML private Text activeLeaves;
@@ -60,6 +63,7 @@ public class LeaveController implements Initializable {
 
     private final LeaveDao leaveDao = new LeaveDao();
     private final EmployeeDao employeeDao = new EmployeeDao();
+    private final DepartmentDao departmentDao = new DepartmentDao();
 
     private ObservableList<ObservableList<String>> leaveData = FXCollections.observableArrayList();
 
@@ -68,6 +72,10 @@ public class LeaveController implements Initializable {
         setupFilters();
         setupTable();
         loadFromDatabase();
+        // Real-time search: fire applyFilters on every keystroke
+        if (searchField != null) {
+            searchField.textProperty().addListener((obs, oldVal, newVal) -> applyFilters());
+        }
     }
 
     // Fetches all leave records from the DB and refreshes the table and stats
@@ -76,18 +84,21 @@ public class LeaveController implements Initializable {
         List<Leave> leaves = leaveDao.findAll();
         for (Leave leave : leaves) {
             String empName = leave.getEmployee() != null ? leave.getEmployee().getFullName() : "N/A";
+            String deptName = (leave.getEmployee() != null && leave.getEmployee().getDepartment() != null)
+                    ? leave.getEmployee().getDepartment().getDepartmentName() : "N/A";
             long duration = 0;
             if (leave.getStartDate() != null && leave.getEndDate() != null) {
                 duration = ChronoUnit.DAYS.between(leave.getStartDate(), leave.getEndDate());
             }
             leaveData.add(FXCollections.observableArrayList(
-                    String.valueOf(leave.getId()),
-                    empName,
-                    String.valueOf(duration),
-                    leave.getStartDate() != null ? leave.getStartDate().toString() : "N/A",
-                    leave.getEndDate() != null ? leave.getEndDate().toString() : "N/A",
-                    leave.getType() != null ? leave.getType() : "N/A",
-                    leave.getReason() != null ? leave.getReason() : ""
+                    String.valueOf(leave.getId()),  // 0
+                    empName,                        // 1
+                    String.valueOf(duration),        // 2
+                    leave.getStartDate() != null ? leave.getStartDate().toString() : "N/A", // 3
+                    leave.getEndDate()   != null ? leave.getEndDate().toString()   : "N/A", // 4
+                    leave.getType()   != null ? leave.getType()   : "N/A",  // 5
+                    leave.getReason() != null ? leave.getReason() : "",     // 6
+                    deptName                        // 7  ← department (used for filtering, not shown in table)
             ));
         }
         leaveTable.setItems(leaveData);
@@ -97,8 +108,16 @@ public class LeaveController implements Initializable {
     private void setupFilters() {
         if (filterType != null) {
             filterType.setItems(FXCollections.observableArrayList(
-                    "All Types", "Sick", "Vacation", "Maternity", "Personal", "Exam"));
+                    "All Types", "Sick", "Vacation", "Maternity", "Personal", "Exam", "Paternity", "Unpaid"));
             filterType.setOnAction(e -> applyFilters());
+        }
+        if (filterDepartment != null) {
+            List<String> deptNames = departmentDao.findAll().stream()
+                    .map(Department::getDepartmentName)
+                    .collect(java.util.stream.Collectors.toList());
+            deptNames.add(0, "All Departments");
+            filterDepartment.setItems(FXCollections.observableArrayList(deptNames));
+            filterDepartment.setOnAction(e -> applyFilters());
         }
     }
 
@@ -172,13 +191,24 @@ public class LeaveController implements Initializable {
     }
 
     private void applyFilters() {
-        String type = filterType.getValue();
-        String search = searchField.getText().trim().toLowerCase();
+        String type   = filterType != null ? filterType.getValue() : null;
+        String dept   = filterDepartment != null ? filterDepartment.getValue() : null;
+        String search = searchField != null ? searchField.getText().trim().toLowerCase() : "";
 
         FilteredList<ObservableList<String>> filtered = new FilteredList<>(leaveData, row -> {
-            if (type != null && !type.equals("All Types") && !row.get(5).equalsIgnoreCase(type)) return false;
+            // Filter by leave type
+            if (type != null && !type.equals("All Types") && !row.get(5).equalsIgnoreCase(type))
+                return false;
+            // Filter by department (stored at index 7)
+            if (dept != null && !dept.equals("All Departments") && !row.get(7).equalsIgnoreCase(dept))
+                return false;
+            // Search: match employee name, leave type, department, or reason
             if (!search.isEmpty()) {
-                if (!row.get(1).toLowerCase().contains(search) && !row.get(5).toLowerCase().contains(search)) return false;
+                boolean matches = row.get(1).toLowerCase().contains(search)  // employee name
+                        || row.get(5).toLowerCase().contains(search)          // type
+                        || row.get(7).toLowerCase().contains(search)          // department
+                        || row.get(6).toLowerCase().contains(search);         // reason
+                if (!matches) return false;
             }
             return true;
         });

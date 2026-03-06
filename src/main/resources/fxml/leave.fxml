@@ -102,6 +102,7 @@
                     <HBox alignment="CENTER_LEFT" spacing="15">
                         <Text text="Leave History" styleClass="card-title"/>
                         <Region HBox.hgrow="ALWAYS"/>
+                        <ComboBox fx:id="filterDepartment" promptText="All Departments" styleClass="filter-combo" prefWidth="160"/>
                         <ComboBox fx:id="filterType" promptText="All Types" styleClass="filter-combo" prefWidth="140"/>
                         <Button text="➕ Add Leave" styleClass="action-primary" onAction="#handleApplyLeave"/>
                     </HBox>

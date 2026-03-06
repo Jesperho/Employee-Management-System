@@ -73,6 +73,8 @@ public class SalaryController implements Initializable {
         setupTable();
         loadFromDatabase();
         setupFilters();
+        if (searchField != null)
+            searchField.textProperty().addListener((obs, o, n) -> applyFilters());
     }
 
     // Loads all employees from DB and maps their salary data to the table rows

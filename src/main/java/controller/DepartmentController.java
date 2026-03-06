@@ -97,6 +97,8 @@ public class DepartmentController implements Initializable {
         setupEmployeeTable();
         loadFromDatabase();
         setupFilters();
+        if (searchField != null)
+            searchField.textProperty().addListener((obs, o, n) -> applyFilters());
     }
 
     // Loads all departments from DB and refreshes the table and stats
@@ -133,11 +135,13 @@ public class DepartmentController implements Initializable {
     }
 
     private void applyFilters() {
-        String dept = filterDepartment.getValue();
-        String cap = filterCapacity.getValue();
+        String dept   = filterDepartment.getValue();
+        String cap    = filterCapacity.getValue();
+        String search = searchField != null ? searchField.getText().trim().toLowerCase() : "";
 
-        // If a specific department is selected, show employee details for that department
-        if (dept != null && !dept.equals("All Departments")) {
+        // Only do the full-page swap when dept filter changes AND no search text
+        // (search should filter the dept TABLE, not jump to employee view)
+        if (dept != null && !dept.equals("All Departments") && search.isEmpty()) {
             int deptId = -1;
             for (ObservableList<String> row : deptData) {
                 if (row.get(1).equalsIgnoreCase(dept)) {
@@ -147,11 +151,19 @@ public class DepartmentController implements Initializable {
             }
             if (deptId != -1) {
                 showEmployeesForDepartment(dept, deptId);
+                return; // page is swapped, no need to filter the dept table
             }
-        } else {
-            hideEmployeeSection();
+        } else if ((dept == null || dept.equals("All Departments")) && !search.isEmpty()) {
+            // Make sure we're on the dept view (not employee detail view) when searching
+            if (!deptScrollPane.isVisible()) {
+                deptScrollPane.setVisible(true);
+                deptScrollPane.setManaged(true);
+                employeeDetailView.setVisible(false);
+                employeeDetailView.setManaged(false);
+            }
         }
 
+        // row indices: 0=id, 1=name, 2=capacity, 3=empCount, 4=creationDate, 5=description
         FilteredList<ObservableList<String>> filtered = new FilteredList<>(deptData, row -> {
             if (dept != null && !dept.equals("All Departments")) {
                 if (!row.get(1).equalsIgnoreCase(dept)) return false;
@@ -159,10 +171,16 @@ public class DepartmentController implements Initializable {
             if (cap != null && !cap.equals("All Capacities")) {
                 try {
                     int capacity = Integer.parseInt(row.get(2));
-                    if (cap.equals("Small (< 30)") && capacity >= 30) return false;
-                    if (cap.equals("Medium (30-50)") && (capacity < 30 || capacity > 50)) return false;
-                    if (cap.equals("Large (> 50)") && capacity <= 50) return false;
+                    if (cap.equals("Small (< 30)")    && capacity >= 30) return false;
+                    if (cap.equals("Medium (30-50)")  && (capacity < 30 || capacity > 50)) return false;
+                    if (cap.equals("Large (> 50)")    && capacity <= 50) return false;
                 } catch (NumberFormatException ignored) {}
+            }
+            if (!search.isEmpty()) {
+                // Search by dept name (index 1) OR description (index 5)
+                boolean nameMatch = row.get(1).toLowerCase().contains(search);
+                boolean descMatch = row.size() > 5 && row.get(5).toLowerCase().contains(search);
+                if (!nameMatch && !descMatch) return false;
             }
             return true;
         });

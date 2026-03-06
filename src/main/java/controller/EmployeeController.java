@@ -74,6 +74,8 @@ public class EmployeeController implements Initializable {
         setupTable();
         setupFilters();
         loadFromDatabase();
+        if (searchField != null)
+            searchField.textProperty().addListener((obs, o, n) -> applyFilters());
     }
 
     // Fetches all employees from the DB and refreshes the table and stats
