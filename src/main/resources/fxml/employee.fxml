@@ -12,7 +12,7 @@
 
     <!-- Left Sidebar -->
     <left>
-        <VBox styleClass="sidebar" prefWidth="250" spacing="0">
+        <VBox styleClass="sidebar" prefWidth="250" minWidth="220" maxWidth="280" spacing="0">
             <VBox styleClass="sidebar-header" alignment="CENTER" spacing="5">
                 <padding><Insets top="20" bottom="20" left="15" right="15"/></padding>
                 <Text text="EMS" styleClass="logo-text"/>
@@ -53,7 +53,7 @@
 
     <!-- Main Content -->
     <center>
-        <VBox styleClass="main-content">
+        <VBox styleClass="main-content" minWidth="0">
             <!-- Header Bar -->
             <HBox styleClass="header-bar" alignment="CENTER_LEFT" spacing="20">
                 <padding><Insets top="15" bottom="15" left="25" right="25"/></padding>
@@ -63,15 +63,15 @@
                 <Region HBox.hgrow="ALWAYS"/>
                 <HBox styleClass="search-container" alignment="CENTER_LEFT" spacing="10">
                     <TextField fx:id="searchField" promptText="Search employees..."
-                               styleClass="search-field" prefWidth="300" onAction="#handleSearch"/>
+                               styleClass="search-field" prefWidth="250" maxWidth="350" onAction="#handleSearch"/>
                     <Button text="🔍" styleClass="search-button" onAction="#handleSearch"/>
                 </HBox>
                 <Button text="🔔" styleClass="icon-button"/>
             </HBox>
 
             <!-- Content -->
-            <ScrollPane styleClass="content-scroll" fitToWidth="true" VBox.vgrow="ALWAYS">
-                <VBox styleClass="dashboard-content" spacing="20">
+            <ScrollPane styleClass="content-scroll" fitToWidth="true" fitToHeight="false" VBox.vgrow="ALWAYS">
+                <VBox styleClass="dashboard-content" spacing="20" fillWidth="true">
                     <padding><Insets top="25" bottom="25" left="25" right="25"/></padding>
 
                     <!-- Page Title + Actions -->
@@ -89,7 +89,7 @@
                     </VBox>
 
                     <!-- Stats Row -->
-                    <HBox spacing="15" alignment="CENTER">
+                    <HBox spacing="15" alignment="CENTER" fillHeight="true">
                         <VBox styleClass="stat-card, stat-card-blue" HBox.hgrow="ALWAYS" spacing="5" alignment="CENTER">
                             <padding><Insets top="15" bottom="15" left="15" right="15"/></padding>
                             <Text fx:id="totalCount" text="540" styleClass="stat-number-sm"/>
@@ -113,19 +113,18 @@
                     </HBox>
 
                     <!-- Employee Table -->
-                    <VBox styleClass="content-card" spacing="0">
-                        <padding><Insets top="0" bottom="0" left="0" right="0"/></padding>
-
-                        <TableView fx:id="employeeTable" styleClass="management-table" VBox.vgrow="ALWAYS" prefHeight="450">
+                    <VBox styleClass="content-card" spacing="0" VBox.vgrow="ALWAYS">
+                        <TableView fx:id="employeeTable" styleClass="management-table"
+                                   VBox.vgrow="ALWAYS" prefHeight="420" maxHeight="Infinity" maxWidth="Infinity">
                             <columns>
-                                <TableColumn fx:id="colId" text="ID" prefWidth="60"/>
-                                <TableColumn fx:id="colName" text="Name" prefWidth="160"/>
-                                <TableColumn fx:id="colDepartment" text="Department" prefWidth="130"/>
-                                <TableColumn fx:id="colJobTitle" text="Job Title" prefWidth="140"/>
-                                <TableColumn fx:id="colStartDate" text="Start Date" prefWidth="110"/>
-                                <TableColumn fx:id="colContract" text="Contract" prefWidth="100"/>
-                                <TableColumn fx:id="colGender" text="Gender" prefWidth="80"/>
-                                <TableColumn fx:id="colActions" text="Actions" prefWidth="160"/>
+                                <TableColumn fx:id="colId" text="ID" prefWidth="55" minWidth="45"/>
+                                <TableColumn fx:id="colName" text="Name" prefWidth="155" minWidth="100"/>
+                                <TableColumn fx:id="colDepartment" text="Department" prefWidth="130" minWidth="90"/>
+                                <TableColumn fx:id="colJobTitle" text="Job Title" prefWidth="135" minWidth="90"/>
+                                <TableColumn fx:id="colStartDate" text="Start Date" prefWidth="105" minWidth="80"/>
+                                <TableColumn fx:id="colContract" text="Contract" prefWidth="95" minWidth="70"/>
+                                <TableColumn fx:id="colGender" text="Gender" prefWidth="75" minWidth="60"/>
+                                <TableColumn fx:id="colActions" text="Actions" prefWidth="140" minWidth="120"/>
                             </columns>
                         </TableView>
                     </VBox>

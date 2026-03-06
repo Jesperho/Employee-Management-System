@@ -11,7 +11,7 @@
             styleClass="dashboard-root">
 
     <left>
-        <VBox styleClass="sidebar" prefWidth="250" spacing="0">
+        <VBox styleClass="sidebar" prefWidth="250" minWidth="220" maxWidth="280" spacing="0">
             <VBox styleClass="sidebar-header" alignment="CENTER" spacing="5">
                 <padding><Insets top="20" bottom="20" left="15" right="15"/></padding>
                 <Text text="EMS" styleClass="logo-text"/>
@@ -43,28 +43,28 @@
     </left>
 
     <center>
-        <VBox styleClass="main-content">
+        <VBox styleClass="main-content" minWidth="0">
             <HBox styleClass="header-bar" alignment="CENTER_LEFT" spacing="20">
                 <padding><Insets top="15" bottom="15" left="25" right="25"/></padding>
                 <VBox spacing="2"><Text text="Dashboard / Department Management" styleClass="page-breadcrumb"/></VBox>
                 <Region HBox.hgrow="ALWAYS"/>
                 <HBox styleClass="search-container" alignment="CENTER_LEFT" spacing="10">
-                    <TextField fx:id="searchField" promptText="Search departments..." styleClass="search-field" prefWidth="300" onAction="#handleSearch"/>
+                    <TextField fx:id="searchField" promptText="Search departments..." styleClass="search-field" prefWidth="250" maxWidth="350" onAction="#handleSearch"/>
                     <Button text="🔍" styleClass="search-button" onAction="#handleSearch"/>
                 </HBox>
                 <Button text="🔔" styleClass="icon-button"/>
             </HBox>
-            <ScrollPane styleClass="content-scroll" fitToWidth="true" VBox.vgrow="ALWAYS">
-                <VBox styleClass="dashboard-content" spacing="20">
+            <ScrollPane styleClass="content-scroll" fitToWidth="true" fitToHeight="false" VBox.vgrow="ALWAYS">
+                <VBox styleClass="dashboard-content" spacing="20" fillWidth="true">
                     <padding><Insets top="25" bottom="25" left="25" right="25"/></padding>
-                    <HBox alignment="CENTER_LEFT" spacing="15">
+                    <HBox alignment="CENTER_LEFT" spacing="10" fillHeight="true">
                         <Text text="Department Management" styleClass="page-title"/>
                         <Region HBox.hgrow="ALWAYS"/>
-                        <ComboBox fx:id="filterDepartment" promptText="All Departments" styleClass="filter-combo" prefWidth="160"/>
-                        <ComboBox fx:id="filterCapacity" promptText="All Capacities" styleClass="filter-combo" prefWidth="150"/>
+                        <ComboBox fx:id="filterDepartment" promptText="All Departments" styleClass="filter-combo" prefWidth="150"/>
+                        <ComboBox fx:id="filterCapacity" promptText="All Capacities" styleClass="filter-combo" prefWidth="140"/>
                         <Button text="➕ Add Department" styleClass="action-primary" onAction="#handleAddDepartment"/>
                     </HBox>
-                    <HBox spacing="15" alignment="CENTER">
+                    <HBox spacing="15" alignment="CENTER" fillHeight="true">
                         <VBox styleClass="stat-card, stat-card-blue" HBox.hgrow="ALWAYS" spacing="5" alignment="CENTER">
                             <padding><Insets top="15" bottom="15" left="15" right="15"/></padding>
                             <Text fx:id="totalDeptCount" text="12" styleClass="stat-number-sm"/>
@@ -86,38 +86,40 @@
                             <Text text="Avg Capacity" styleClass="stat-label"/>
                         </VBox>
                     </HBox>
-                    <VBox styleClass="content-card" spacing="0">
-                        <TableView fx:id="departmentTable" styleClass="management-table" VBox.vgrow="ALWAYS" prefHeight="450">
+                    <VBox styleClass="content-card" spacing="0" VBox.vgrow="ALWAYS">
+                        <TableView fx:id="departmentTable" styleClass="management-table"
+                                   VBox.vgrow="ALWAYS" prefHeight="400" maxHeight="Infinity" maxWidth="Infinity">
                             <columns>
-                                <TableColumn fx:id="colId" text="ID" prefWidth="60"/>
-                                <TableColumn fx:id="colName" text="Department Name" prefWidth="180"/>
-                                <TableColumn fx:id="colCapacity" text="Capacity" prefWidth="100"/>
-                                <TableColumn fx:id="colEmployees" text="Employees" prefWidth="100"/>
-                                <TableColumn fx:id="colCreationDate" text="Created" prefWidth="120"/>
-                                <TableColumn fx:id="colDescription" text="Description" prefWidth="200"/>
-                                <TableColumn fx:id="colActions" text="Actions" prefWidth="160"/>
+                                <TableColumn fx:id="colId" text="ID" prefWidth="55" minWidth="45"/>
+                                <TableColumn fx:id="colName" text="Department Name" prefWidth="170" minWidth="120"/>
+                                <TableColumn fx:id="colCapacity" text="Capacity" prefWidth="90" minWidth="70"/>
+                                <TableColumn fx:id="colEmployees" text="Employees" prefWidth="90" minWidth="70"/>
+                                <TableColumn fx:id="colCreationDate" text="Created" prefWidth="110" minWidth="90"/>
+                                <TableColumn fx:id="colDescription" text="Description" prefWidth="200" minWidth="100"/>
+                                <TableColumn fx:id="colActions" text="Actions" prefWidth="140" minWidth="120"/>
                             </columns>
                         </TableView>
                     </VBox>
 
                     <!-- Employee Detail Table (shown when a specific department is selected) -->
-                    <VBox fx:id="employeeSection" styleClass="content-card" spacing="0" managed="false" visible="false">
+                    <VBox fx:id="employeeSection" styleClass="content-card" spacing="0" managed="false" visible="false" VBox.vgrow="ALWAYS">
                         <HBox alignment="CENTER_LEFT" spacing="10" styleClass="employee-section-header">
                             <padding><Insets top="12" bottom="12" left="20" right="20"/></padding>
                             <Text fx:id="employeeSectionTitle" text="Employees in Department" styleClass="card-title"/>
                             <Region HBox.hgrow="ALWAYS"/>
                             <Button text="✕ Back to All Departments" styleClass="pagination-button" onAction="#handleShowAllDepartments"/>
                         </HBox>
-                        <TableView fx:id="employeeTable" styleClass="management-table" VBox.vgrow="ALWAYS" prefHeight="400">
+                        <TableView fx:id="employeeTable" styleClass="management-table"
+                                   VBox.vgrow="ALWAYS" prefHeight="380" maxHeight="Infinity" maxWidth="Infinity">
                             <columns>
-                                <TableColumn fx:id="empColId" text="ID" prefWidth="60"/>
-                                <TableColumn fx:id="empColName" text="Name" prefWidth="160"/>
-                                <TableColumn fx:id="empColDept" text="Department" prefWidth="120"/>
-                                <TableColumn fx:id="empColJobTitle" text="Job Title" prefWidth="140"/>
-                                <TableColumn fx:id="empColStartDate" text="Start Date" prefWidth="110"/>
-                                <TableColumn fx:id="empColContract" text="Contract" prefWidth="100"/>
-                                <TableColumn fx:id="empColGender" text="Gender" prefWidth="80"/>
-                                <TableColumn fx:id="empColActions" text="Actions" prefWidth="160"/>
+                                <TableColumn fx:id="empColId" text="ID" prefWidth="55" minWidth="45"/>
+                                <TableColumn fx:id="empColName" text="Name" prefWidth="150" minWidth="100"/>
+                                <TableColumn fx:id="empColDept" text="Department" prefWidth="120" minWidth="90"/>
+                                <TableColumn fx:id="empColJobTitle" text="Job Title" prefWidth="130" minWidth="90"/>
+                                <TableColumn fx:id="empColStartDate" text="Start Date" prefWidth="100" minWidth="80"/>
+                                <TableColumn fx:id="empColContract" text="Contract" prefWidth="90" minWidth="70"/>
+                                <TableColumn fx:id="empColGender" text="Gender" prefWidth="75" minWidth="60"/>
+                                <TableColumn fx:id="empColActions" text="Actions" prefWidth="140" minWidth="120"/>
                             </columns>
                         </TableView>
                     </VBox>

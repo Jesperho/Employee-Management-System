@@ -95,6 +95,9 @@
 /* ===== MAIN CONTENT AREA ===== */
 .main-content {
     -fx-background-color: #f0f2f5;
+    -fx-min-width: 0;
+    -fx-pref-width: 100000;
+    -fx-max-width: Infinity;
 }
 
 /* Header Bar */

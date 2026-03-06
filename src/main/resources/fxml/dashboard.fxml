@@ -13,7 +13,7 @@
 
     <!-- Left Sidebar -->
     <left>
-        <VBox styleClass="sidebar" prefWidth="250" spacing="0">
+        <VBox styleClass="sidebar" prefWidth="250" minWidth="220" maxWidth="280" spacing="0">
             <!-- Logo/Brand Section -->
             <VBox styleClass="sidebar-header" alignment="CENTER" spacing="5">
                 <padding>
