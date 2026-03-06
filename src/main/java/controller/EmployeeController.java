@@ -186,23 +186,93 @@ public class EmployeeController implements Initializable {
     }
 
     private void showViewPopup(Employee emp) {
-        String deptName = getDepartmentName(emp);
-        String salary = emp.getSalary() != null ? "€" + emp.getSalary() : "N/A";
+        Stage popup = new Stage();
+        popup.initModality(Modality.APPLICATION_MODAL);
+        popup.initStyle(StageStyle.UNDECORATED);
 
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Employee Details");
-        alert.setHeaderText(emp.getFullName());
-        alert.setContentText(
-                "ID: " + emp.getId() + "\n" +
-                "Name: " + emp.getFullName() + "\n" +
-                "Department: " + deptName + "\n" +
-                "Position: " + getOrDefault(emp.getPosition()) + "\n" +
-                "Start Date: " + getOrDefault(String.valueOf(emp.getStartDate())) + "\n" +
-                "Contract: " + getOrDefault(emp.getContractType()) + "\n" +
-                "Gender: " + getOrDefault(emp.getGender()) + "\n" +
-                "Salary: " + salary
-        );
-        alert.showAndWait();
+        // Header gradient banner
+        VBox header = new VBox(6);
+        header.setAlignment(Pos.CENTER);
+        header.setPadding(new Insets(28, 30, 22, 30));
+        header.setStyle("-fx-background-color: linear-gradient(to bottom right, #1a1f36, #2d3561); -fx-background-radius: 15 15 0 0;");
+
+        // Avatar initials circle
+        StackPane avatar = new StackPane();
+        javafx.scene.shape.Circle avatarCircle = new javafx.scene.shape.Circle(32);
+        avatarCircle.setStyle("-fx-fill: linear-gradient(to bottom right, #6c63ff, #4834d4);");
+        String name = emp.getFullName() != null ? emp.getFullName() : "?";
+        String initials = name.trim().contains(" ")
+                ? String.valueOf(name.charAt(0)) + name.trim().split(" ")[1].charAt(0)
+                : String.valueOf(name.charAt(0));
+        javafx.scene.text.Text avatarTxt = new javafx.scene.text.Text(initials.toUpperCase());
+        avatarTxt.setStyle("-fx-fill: white; -fx-font-size: 18px; -fx-font-weight: bold;");
+        avatar.getChildren().addAll(avatarCircle, avatarTxt);
+
+        javafx.scene.text.Text nameText = new javafx.scene.text.Text(emp.getFullName() != null ? emp.getFullName() : "N/A");
+        nameText.setStyle("-fx-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;");
+        String deptName = getDepartmentName(emp);
+        javafx.scene.text.Text roleText = new javafx.scene.text.Text(
+                (emp.getPosition() != null ? emp.getPosition() : "Employee") + "  •  " + deptName);
+        roleText.setStyle("-fx-fill: rgba(255,255,255,0.7); -fx-font-size: 12px;");
+        header.getChildren().addAll(avatar, nameText, roleText);
+
+        // Info grid
+        GridPane grid = new GridPane();
+        grid.setHgap(20); grid.setVgap(14);
+        grid.setPadding(new Insets(24, 30, 10, 30));
+        String salary = emp.getSalary() != null ? "€" + String.format("%,.0f", emp.getSalary()) : "N/A";
+
+        addInfoCard(grid, 0, "🪪  Employee ID",  String.valueOf(emp.getId()),                  "📅  Start Date", emp.getStartDate() != null ? emp.getStartDate().toString() : "N/A");
+        addInfoCard(grid, 1, "⚧  Gender",        getOrDefault(emp.getGender()),                "📋  Contract",   getOrDefault(emp.getContractType()));
+        addInfoCard(grid, 2, "💰  Salary",        salary,                                       "🏢  Department", deptName);
+        if (emp.getDescription() != null && !emp.getDescription().isEmpty())
+            addInfoCard(grid, 3, "📝  Description", emp.getDescription(), "", "");
+
+        Button closeBtn = new Button("✕  Close");
+        closeBtn.setStyle("-fx-background-color: linear-gradient(to right, #6c63ff, #5a52d4); -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 13px; -fx-padding: 10 30; -fx-background-radius: 8; -fx-cursor: hand;");
+        closeBtn.setOnAction(e -> popup.close());
+        HBox footer = new HBox(closeBtn);
+        footer.setAlignment(Pos.CENTER_RIGHT);
+        footer.setPadding(new Insets(10, 30, 24, 30));
+
+        VBox card = new VBox();
+        card.setStyle("-fx-background-color: white; -fx-background-radius: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 20, 0, 0, 5);");
+        card.getChildren().addAll(header, grid, footer);
+        card.setMaxWidth(460);
+
+        StackPane root = new StackPane(card);
+        root.setStyle("-fx-background-color: transparent;");
+        root.setPadding(new Insets(10));
+
+        Scene scene = new Scene(root);
+        scene.setFill(javafx.scene.paint.Color.TRANSPARENT);
+        var css = getClass().getResource("/css/management.css");
+        if (css != null) scene.getStylesheets().add(css.toExternalForm());
+        popup.setScene(scene);
+        popup.showAndWait();
+    }
+
+    private void addInfoCard(GridPane grid, int row, String label1, String val1, String label2, String val2) {
+        Label l1 = new Label(label1);
+        l1.setStyle("-fx-text-fill: #7f8c8d; -fx-font-size: 11px; -fx-font-weight: bold;");
+        Label v1 = new Label(val1);
+        v1.setStyle("-fx-text-fill: #1a1f36; -fx-font-size: 13px; -fx-font-weight: bold;");
+        VBox col1 = new VBox(3, l1, v1);
+        col1.setStyle("-fx-background-color: #f8f9ff; -fx-background-radius: 8; -fx-padding: 10 14;");
+        col1.setMinWidth(160);
+        grid.add(col1, 0, row);
+        if (!label2.isEmpty()) {
+            Label l2 = new Label(label2);
+            l2.setStyle("-fx-text-fill: #7f8c8d; -fx-font-size: 11px; -fx-font-weight: bold;");
+            Label v2 = new Label(val2);
+            v2.setStyle("-fx-text-fill: #1a1f36; -fx-font-size: 13px; -fx-font-weight: bold;");
+            VBox col2 = new VBox(3, l2, v2);
+            col2.setStyle("-fx-background-color: #f8f9ff; -fx-background-radius: 8; -fx-padding: 10 14;");
+            col2.setMinWidth(160);
+            grid.add(col2, 1, row);
+        } else {
+            GridPane.setColumnSpan(col1, 2);
+        }
     }
 
     private void showEditPopup(Employee emp) {

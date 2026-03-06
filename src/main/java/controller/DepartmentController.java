@@ -52,7 +52,17 @@ public class DepartmentController implements Initializable {
 
     @FXML private Text pageInfo;
 
-    // Employee detail section (shown when filtering by specific department)
+    // Employee detail view (full-page swap on double-click)
+    @FXML private ScrollPane deptScrollPane;
+    @FXML private VBox employeeDetailView;
+    @FXML private Button btnBackToDepts;
+    @FXML private TextField empSearchField;
+    @FXML private Text empStatTotal;
+    @FXML private Text empStatFullTime;
+    @FXML private Text empStatPartTime;
+    @FXML private Text empStatAvgSalary;
+
+    // Employee detail section
     @FXML private VBox employeeSection;
     @FXML private Text employeeSectionTitle;
     @FXML private TableView<ObservableList<String>> employeeTable;
@@ -159,10 +169,32 @@ public class DepartmentController implements Initializable {
         departmentTable.setItems(filtered);
     }
 
-    // Loads real employees for the selected department from DB
+    // Loads employees for a dept and swaps to the full-page employee detail view
     private void showEmployeesForDepartment(String deptName, int deptId) {
         List<Employee> employees = employeeDao.findByDepartment(deptId);
         currentDeptEmployees = new java.util.ArrayList<>(employees);
+        populateEmployeeTable(employees, deptName);
+
+        // Update stats
+        long ft = employees.stream().filter(e -> "Full-time".equalsIgnoreCase(e.getContractType()) || "Full Time".equalsIgnoreCase(e.getContractType())).count();
+        long pt = employees.stream().filter(e -> "Part-time".equalsIgnoreCase(e.getContractType()) || "Part Time".equalsIgnoreCase(e.getContractType())).count();
+        double avg = employees.stream().filter(e -> e.getSalary() != null).mapToDouble(e -> e.getSalary()).average().orElse(0);
+
+        if (empStatTotal != null)    empStatTotal.setText(String.valueOf(employees.size()));
+        if (empStatFullTime != null) empStatFullTime.setText(String.valueOf(ft));
+        if (empStatPartTime != null) empStatPartTime.setText(String.valueOf(pt));
+        if (empStatAvgSalary != null) empStatAvgSalary.setText("€" + (int) avg);
+
+        employeeSectionTitle.setText("🏢  " + deptName + "  —  " + employees.size() + " Employees");
+
+        // Swap to employee detail view
+        deptScrollPane.setVisible(false);
+        deptScrollPane.setManaged(false);
+        employeeDetailView.setVisible(true);
+        employeeDetailView.setManaged(true);
+    }
+
+    private void populateEmployeeTable(List<Employee> employees, String deptName) {
         employeeData.clear();
         for (Employee emp : employees) {
             employeeData.add(FXCollections.observableArrayList(
@@ -176,20 +208,36 @@ public class DepartmentController implements Initializable {
             ));
         }
         employeeTable.setItems(employeeData);
-        employeeSectionTitle.setText("Employees in " + deptName + " (" + employees.size() + " found)");
-        employeeSection.setVisible(true);
-        employeeSection.setManaged(true);
     }
 
     private void hideEmployeeSection() {
-        employeeSection.setVisible(false);
-        employeeSection.setManaged(false);
+        // no-op kept for compatibility
     }
 
     @FXML
     private void handleShowAllDepartments() {
+        // Swap back to dept view
+        employeeDetailView.setVisible(false);
+        employeeDetailView.setManaged(false);
+        deptScrollPane.setVisible(true);
+        deptScrollPane.setManaged(true);
         filterDepartment.setValue("All Departments");
-        applyFilters();
+    }
+
+    @FXML
+    private void handleEmployeeSearch() {
+        String q = empSearchField.getText().trim().toLowerCase();
+        if (q.isEmpty()) {
+            employeeTable.setItems(employeeData);
+            return;
+        }
+        javafx.collections.transformation.FilteredList<ObservableList<String>> filtered =
+                new javafx.collections.transformation.FilteredList<>(employeeData, row ->
+                        row.get(1).toLowerCase().contains(q) ||
+                        row.get(3).toLowerCase().contains(q) ||
+                        row.get(5).toLowerCase().contains(q)
+                );
+        employeeTable.setItems(filtered);
     }
 
     private void setupTable() {
@@ -293,21 +341,99 @@ public class DepartmentController implements Initializable {
     }
 
     private void showEmpViewPopup(Employee emp) {
-        String salary = emp.getSalary() != null ? "€" + emp.getSalary() : "N/A";
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Employee Details");
-        alert.setHeaderText(emp.getFullName());
-        alert.setContentText(
-                "ID: " + emp.getId() + "\n" +
-                "Name: " + emp.getFullName() + "\n" +
-                "Department: " + (emp.getDepartment() != null ? emp.getDepartment().getDepartmentName() : "N/A") + "\n" +
-                "Position: " + (emp.getPosition() != null ? emp.getPosition() : "N/A") + "\n" +
-                "Start Date: " + (emp.getStartDate() != null ? emp.getStartDate().toString() : "N/A") + "\n" +
-                "Contract: " + (emp.getContractType() != null ? emp.getContractType() : "N/A") + "\n" +
-                "Gender: " + (emp.getGender() != null ? emp.getGender() : "N/A") + "\n" +
-                "Salary: " + salary
-        );
-        alert.showAndWait();
+        Stage popup = new Stage();
+        popup.initModality(Modality.APPLICATION_MODAL);
+        popup.initStyle(StageStyle.UNDECORATED);
+        popup.setTitle("Employee Details");
+
+        // Header gradient banner
+        VBox header = new VBox(6);
+        header.setAlignment(Pos.CENTER);
+        header.setPadding(new Insets(28, 30, 22, 30));
+        header.setStyle("-fx-background-color: linear-gradient(to bottom right, #1a1f36, #2d3561); -fx-background-radius: 15 15 0 0;");
+
+        // Avatar circle with initials
+        StackPane avatar = new StackPane();
+        javafx.scene.shape.Circle avatarCircle = new javafx.scene.shape.Circle(32);
+        avatarCircle.setStyle("-fx-fill: linear-gradient(to bottom right, #6c63ff, #4834d4);");
+        String initials = emp.getFullName() != null && !emp.getFullName().isEmpty()
+                ? (emp.getFullName().trim().contains(" ")
+                    ? String.valueOf(emp.getFullName().charAt(0)) + emp.getFullName().trim().split(" ")[1].charAt(0)
+                    : String.valueOf(emp.getFullName().charAt(0)))
+                : "?";
+        javafx.scene.text.Text avatarText = new javafx.scene.text.Text(initials.toUpperCase());
+        avatarText.setStyle("-fx-fill: white; -fx-font-size: 18px; -fx-font-weight: bold;");
+        avatar.getChildren().addAll(avatarCircle, avatarText);
+
+        javafx.scene.text.Text nameText = new javafx.scene.text.Text(emp.getFullName() != null ? emp.getFullName() : "N/A");
+        nameText.setStyle("-fx-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;");
+        String deptName = emp.getDepartment() != null ? emp.getDepartment().getDepartmentName() : "N/A";
+        javafx.scene.text.Text roleText = new javafx.scene.text.Text(
+                (emp.getPosition() != null ? emp.getPosition() : "Employee") + "  •  " + deptName);
+        roleText.setStyle("-fx-fill: rgba(255,255,255,0.7); -fx-font-size: 12px;");
+        header.getChildren().addAll(avatar, nameText, roleText);
+
+        // Info grid
+        GridPane grid = new GridPane();
+        grid.setHgap(20);
+        grid.setVgap(14);
+        grid.setPadding(new Insets(24, 30, 10, 30));
+
+        String salary = emp.getSalary() != null ? "€" + String.format("%,.0f", emp.getSalary()) : "N/A";
+        addInfoRow(grid, 0, "🪪  Employee ID",  String.valueOf(emp.getId()),                    "📅  Start Date",  emp.getStartDate() != null ? emp.getStartDate().toString() : "N/A");
+        addInfoRow(grid, 1, "⚧  Gender",        emp.getGender() != null ? emp.getGender() : "N/A", "📋  Contract",  emp.getContractType() != null ? emp.getContractType() : "N/A");
+        addInfoRow(grid, 2, "💰  Salary",        salary,                                        "🏢  Department", deptName);
+        if (emp.getDescription() != null && !emp.getDescription().isEmpty()) {
+            addInfoRow(grid, 3, "📝  Description", emp.getDescription(), "", "");
+        }
+
+        // Close button
+        Button closeBtn = new Button("✕  Close");
+        closeBtn.setStyle("-fx-background-color: linear-gradient(to right, #6c63ff, #5a52d4); -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 13px; -fx-padding: 10 30; -fx-background-radius: 8; -fx-cursor: hand;");
+        closeBtn.setOnAction(e -> popup.close());
+        HBox footer = new HBox(closeBtn);
+        footer.setAlignment(Pos.CENTER_RIGHT);
+        footer.setPadding(new Insets(10, 30, 24, 30));
+
+        VBox card = new VBox();
+        card.setStyle("-fx-background-color: white; -fx-background-radius: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 20, 0, 0, 5);");
+        card.getChildren().addAll(header, grid, footer);
+        card.setMaxWidth(460);
+
+        StackPane root = new StackPane(card);
+        root.setStyle("-fx-background-color: transparent;");
+        root.setPadding(new Insets(10));
+
+        Scene scene = new Scene(root);
+        scene.setFill(javafx.scene.paint.Color.TRANSPARENT);
+        var css = getClass().getResource("/css/management.css");
+        if (css != null) scene.getStylesheets().add(css.toExternalForm());
+        popup.setScene(scene);
+        popup.showAndWait();
+    }
+
+    private void addInfoRow(GridPane grid, int row, String label1, String val1, String label2, String val2) {
+        Label l1 = new Label(label1);
+        l1.setStyle("-fx-text-fill: #7f8c8d; -fx-font-size: 11px; -fx-font-weight: bold;");
+        Label v1 = new Label(val1);
+        v1.setStyle("-fx-text-fill: #1a1f36; -fx-font-size: 13px; -fx-font-weight: bold;");
+        VBox col1 = new VBox(3, l1, v1);
+        col1.setStyle("-fx-background-color: #f8f9ff; -fx-background-radius: 8; -fx-padding: 10 14;");
+        col1.setMinWidth(160);
+        grid.add(col1, 0, row);
+
+        if (!label2.isEmpty()) {
+            Label l2 = new Label(label2);
+            l2.setStyle("-fx-text-fill: #7f8c8d; -fx-font-size: 11px; -fx-font-weight: bold;");
+            Label v2 = new Label(val2);
+            v2.setStyle("-fx-text-fill: #1a1f36; -fx-font-size: 13px; -fx-font-weight: bold;");
+            VBox col2 = new VBox(3, l2, v2);
+            col2.setStyle("-fx-background-color: #f8f9ff; -fx-background-radius: 8; -fx-padding: 10 14;");
+            col2.setMinWidth(160);
+            grid.add(col2, 1, row);
+        } else {
+            GridPane.setColumnSpan(col1, 2);
+        }
     }
 
     private void showEmpEditPopup(Employee emp) {
