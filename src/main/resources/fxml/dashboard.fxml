@@ -184,7 +184,7 @@
                             <HBox alignment="CENTER_LEFT">
                                 <Text text="Recent Activities" styleClass="card-title"/>
                                 <Region HBox.hgrow="ALWAYS"/>
-                                <Button text="View All" styleClass="link-button"/>
+                                <Button text="View More →" styleClass="link-button" onAction="#handleViewMoreActivities"/>
                             </HBox>
 
                             <VBox fx:id="recentActivitiesContainer" styleClass="activities-list" spacing="12">
