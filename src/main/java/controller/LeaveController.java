@@ -186,19 +186,129 @@ public class LeaveController implements Initializable {
     }
 
     private void showViewPopup(ObservableList<String> row) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Leave Details");
-        alert.setHeaderText("Leave for: " + row.get(1));
-        alert.setContentText(
-                "ID: " + row.get(0) + "\n" +
-                "Employee: " + row.get(1) + "\n" +
-                "Duration: " + row.get(2) + " days\n" +
-                "Start Date: " + row.get(3) + "\n" +
-                "End Date: " + row.get(4) + "\n" +
-                "Type: " + row.get(5) + "\n" +
-                "Reason: " + row.get(6)
-        );
-        alert.showAndWait();
+        Stage popup = new Stage();
+        popup.initModality(Modality.APPLICATION_MODAL);
+        popup.initStyle(StageStyle.UNDECORATED);
+
+        // Pick accent color by leave type
+        String type = row.get(5);
+        String[] colors = getLeaveColors(type);
+        String gradFrom = colors[0], gradTo = colors[1], accent = colors[2], lightBg = colors[3];
+
+        // Header
+        VBox header = new VBox(6);
+        header.setAlignment(Pos.CENTER);
+        header.setPadding(new Insets(28, 30, 22, 30));
+        header.setStyle("-fx-background-color: linear-gradient(to bottom right, " + gradFrom + ", " + gradTo + "); -fx-background-radius: 15 15 0 0;");
+
+        // Avatar initials
+        StackPane avatar = new StackPane();
+        javafx.scene.shape.Circle avatarCircle = new javafx.scene.shape.Circle(32);
+        avatarCircle.setStyle("-fx-fill: rgba(255,255,255,0.2);");
+        String n = row.get(1) != null ? row.get(1) : "?";
+        String initials = n.trim().contains(" ")
+                ? String.valueOf(n.charAt(0)) + n.trim().split(" ")[1].charAt(0)
+                : String.valueOf(n.charAt(0));
+        javafx.scene.text.Text avatarTxt = new javafx.scene.text.Text(initials.toUpperCase());
+        avatarTxt.setStyle("-fx-fill: white; -fx-font-size: 18px; -fx-font-weight: bold;");
+        avatar.getChildren().addAll(avatarCircle, avatarTxt);
+
+        javafx.scene.text.Text nameText = new javafx.scene.text.Text(row.get(1));
+        nameText.setStyle("-fx-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;");
+
+        // Type badge
+        Label typeBadge = new Label(getLeaveEmoji(type) + "  " + type);
+        typeBadge.setStyle("-fx-background-color: rgba(255,255,255,0.2); -fx-text-fill: white; " +
+                "-fx-font-size: 13px; -fx-font-weight: bold; -fx-padding: 5 16; -fx-background-radius: 20;");
+
+        // Duration badge
+        Label durBadge = new Label("🗓  " + row.get(2) + " days");
+        durBadge.setStyle("-fx-background-color: rgba(0,0,0,0.15); -fx-text-fill: white; " +
+                "-fx-font-size: 13px; -fx-font-weight: bold; -fx-padding: 5 16; -fx-background-radius: 20;");
+
+        HBox badges = new HBox(10, typeBadge, durBadge);
+        badges.setAlignment(Pos.CENTER);
+        header.getChildren().addAll(avatar, nameText, badges);
+
+        // Info grid
+        GridPane grid = new GridPane();
+        grid.setHgap(20); grid.setVgap(14);
+        grid.setPadding(new Insets(24, 30, 10, 30));
+
+        addLeaveInfoCard(grid, 0, "🪪  Leave ID",    row.get(0),  "📋  Type",       type,       lightBg, accent);
+        addLeaveInfoCard(grid, 1, "📅  Start Date",  row.get(3),  "📅  End Date",   row.get(4), lightBg, accent);
+        addLeaveInfoCard(grid, 2, "⏱  Duration",     row.get(2) + " days", "📝  Reason", row.get(6).isEmpty() ? "—" : row.get(6), lightBg, accent);
+
+        Button closeBtn = new Button("✕  Close");
+        closeBtn.setStyle("-fx-background-color: linear-gradient(to right, " + gradFrom + ", " + gradTo + "); " +
+                "-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 13px; " +
+                "-fx-padding: 10 30; -fx-background-radius: 8; -fx-cursor: hand;");
+        closeBtn.setOnAction(e -> popup.close());
+        HBox footer = new HBox(closeBtn);
+        footer.setAlignment(Pos.CENTER_RIGHT);
+        footer.setPadding(new Insets(10, 30, 24, 30));
+
+        VBox card = new VBox();
+        card.setStyle("-fx-background-color: white; -fx-background-radius: 15; " +
+                "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 20, 0, 0, 5);");
+        card.getChildren().addAll(header, grid, footer);
+        card.setMaxWidth(460);
+
+        StackPane root = new StackPane(card);
+        root.setStyle("-fx-background-color: transparent;");
+        root.setPadding(new Insets(10));
+        Scene scene = new Scene(root);
+        scene.setFill(javafx.scene.paint.Color.TRANSPARENT);
+        var css = getClass().getResource("/css/management.css");
+        if (css != null) scene.getStylesheets().add(css.toExternalForm());
+        popup.setScene(scene);
+        popup.showAndWait();
+    }
+
+    private String[] getLeaveColors(String type) {
+        if (type == null) return new String[]{"#1a1f36", "#2d3561", "#6c63ff", "#f0f0ff"};
+        return switch (type.toLowerCase()) {
+            case "sick", "sick leave"    -> new String[]{"#7b1111", "#c0392b", "#e74c3c", "#fdf0f0"};
+            case "vacation"              -> new String[]{"#0a3d62", "#1565c0", "#2196f3", "#e3f2fd"};
+            case "maternity", "paternity"-> new String[]{"#4a0a77", "#7b1fa2", "#9c27b0", "#f3e5f5"};
+            case "personal"              -> new String[]{"#1a4a1a", "#2e7d32", "#388e3c", "#e8f5e9"};
+            default                      -> new String[]{"#1a1f36", "#2d3561", "#6c63ff", "#f0f0ff"};
+        };
+    }
+
+    private String getLeaveEmoji(String type) {
+        if (type == null) return "📋";
+        return switch (type.toLowerCase()) {
+            case "sick", "sick leave" -> "🤒";
+            case "vacation"           -> "🏖";
+            case "maternity"          -> "👶";
+            case "personal"           -> "🏠";
+            default                   -> "📋";
+        };
+    }
+
+    private void addLeaveInfoCard(GridPane grid, int row,
+                                   String l1, String v1, String l2, String v2,
+                                   String bg, String accent) {
+        Label lbl1 = new Label(l1);
+        lbl1.setStyle("-fx-text-fill: #7f8c8d; -fx-font-size: 11px; -fx-font-weight: bold;");
+        Label val1 = new Label(v1);
+        val1.setStyle("-fx-text-fill: #1a1f36; -fx-font-size: 13px; -fx-font-weight: bold;");
+        VBox c1 = new VBox(3, lbl1, val1);
+        c1.setStyle("-fx-background-color: " + bg + "; -fx-background-radius: 8; -fx-padding: 10 14;");
+        c1.setMinWidth(160);
+        grid.add(c1, 0, row);
+
+        Label lbl2 = new Label(l2);
+        lbl2.setStyle("-fx-text-fill: #7f8c8d; -fx-font-size: 11px; -fx-font-weight: bold;");
+        Label val2 = new Label(v2);
+        val2.setWrapText(true);
+        val2.setMaxWidth(160);
+        val2.setStyle("-fx-text-fill: #1a1f36; -fx-font-size: 13px; -fx-font-weight: bold;");
+        VBox c2 = new VBox(3, lbl2, val2);
+        c2.setStyle("-fx-background-color: " + bg + "; -fx-background-radius: 8; -fx-padding: 10 14;");
+        c2.setMinWidth(160);
+        grid.add(c2, 1, row);
     }
 
     // Opens a form popup for adding (existingData = null) or editing a leave record
