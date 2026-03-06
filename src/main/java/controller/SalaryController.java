@@ -52,7 +52,7 @@ public class SalaryController implements Initializable {
     @FXML private TableColumn<ObservableList<String>, String> colGender;
     @FXML private TableColumn<ObservableList<String>, String> colActions;
 
-    @FXML private Text totalPayout;
+    @FXML private Text totalPayout; // kept for backward compat — node removed from FXML
     @FXML private Text pageInfo;
 
     // Navigation
@@ -67,6 +67,8 @@ public class SalaryController implements Initializable {
     private final DepartmentDao departmentDao = new DepartmentDao();
 
     private ObservableList<ObservableList<String>> salaryData = FXCollections.observableArrayList();
+    // Tracks the rows currently visible after filtering — used for stats & payroll
+    private List<ObservableList<String>> currentFilteredData = new java.util.ArrayList<>();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -95,6 +97,7 @@ public class SalaryController implements Initializable {
             ));
         }
         salaryTable.setItems(salaryData);
+        currentFilteredData = new java.util.ArrayList<>(salaryData);
         updateStats();
     }
 
@@ -120,6 +123,10 @@ public class SalaryController implements Initializable {
             return true;
         });
         salaryTable.setItems(filtered);
+
+        // Keep a snapshot of the visible rows so stats + payroll use only what's shown
+        currentFilteredData = new java.util.ArrayList<>(filtered);
+        updateFilteredStats(currentFilteredData, dept);
     }
 
     private void setupTable() {
@@ -175,19 +182,23 @@ public class SalaryController implements Initializable {
     }
 
     private void updateStats() {
-        int total = salaryData.stream().mapToInt(r -> {
+        updateFilteredStats(salaryData, null);
+    }
+
+    // Updates the 4 stat cards based on any subset of rows (filtered or all)
+    private void updateFilteredStats(List<ObservableList<String>> rows, String deptLabel) {
+        int total = rows.stream().mapToInt(r -> {
             try { return Integer.parseInt(r.get(5)); } catch (NumberFormatException e) { return 0; }
         }).sum();
-        int avg = salaryData.isEmpty() ? 0 : total / salaryData.size();
-        int max = salaryData.stream().mapToInt(r -> {
+        int avg = rows.isEmpty() ? 0 : total / rows.size();
+        int max = rows.stream().mapToInt(r -> {
             try { return Integer.parseInt(r.get(5)); } catch (NumberFormatException e) { return 0; }
         }).max().orElse(0);
 
         totalPayroll.setText("€" + total);
         avgSalary.setText("€" + avg);
         highestSalary.setText("€" + max);
-        employeesPaid.setText(String.valueOf(salaryData.size()));
-        totalPayout.setText("Total Payout: €" + total);
+        employeesPaid.setText(String.valueOf(rows.size()));
     }
 
     private void showViewPopup(ObservableList<String> row) {
@@ -376,10 +387,20 @@ public class SalaryController implements Initializable {
 
     @FXML
     private void handleRunPayroll() {
-        int total = salaryData.stream().mapToInt(r -> {
+        // Use the currently filtered/visible rows — respects dept filter
+        List<ObservableList<String>> dataToProcess = currentFilteredData.isEmpty() && filterDepartment.getValue() == null
+                ? new java.util.ArrayList<>(salaryData)
+                : currentFilteredData;
+
+        int total    = dataToProcess.stream().mapToInt(r -> {
             try { return Integer.parseInt(r.get(5)); } catch (NumberFormatException e) { return 0; }
         }).sum();
-        int empCount = salaryData.size();
+        int empCount = dataToProcess.size();
+
+        // Label for which dept (or all)
+        String deptVal = filterDepartment.getValue();
+        boolean isDeptFilter = deptVal != null && !deptVal.equals("All Departments");
+        String scopeLabel = isDeptFilter ? deptVal + " Department" : "All Departments";
 
         Stage popup = new Stage();
         popup.initModality(Modality.APPLICATION_MODAL);
@@ -393,9 +414,16 @@ public class SalaryController implements Initializable {
 
         javafx.scene.text.Text titleTxt = new javafx.scene.text.Text("💵  Run Payroll");
         titleTxt.setStyle("-fx-fill: white; -fx-font-size: 22px; -fx-font-weight: bold;");
-        javafx.scene.text.Text subTxt = new javafx.scene.text.Text("Processing salaries for all employees...");
+
+        // Scope badge
+        Label scopeBadge = new Label((isDeptFilter ? "🏢 " : "🌐 ") + scopeLabel);
+        scopeBadge.setStyle("-fx-background-color: rgba(255,255,255,0.15); -fx-text-fill: rgba(255,255,255,0.85);" +
+                            "-fx-font-size: 12px; -fx-font-weight: bold; -fx-padding: 4 14; -fx-background-radius: 20;");
+
+        javafx.scene.text.Text subTxt = new javafx.scene.text.Text(
+                "Processing salaries for " + empCount + " employee" + (empCount == 1 ? "" : "s") + "...");
         subTxt.setStyle("-fx-fill: rgba(255,255,255,0.65); -fx-font-size: 12px;");
-        header.getChildren().addAll(titleTxt, subTxt);
+        header.getChildren().addAll(titleTxt, scopeBadge, subTxt);
 
         // Animated counter label
         Label counterLabel = new Label("€ 0");
@@ -427,7 +455,8 @@ public class SalaryController implements Initializable {
         summaryRow.getChildren().addAll(
             makeSummaryCard("👥 Employees", String.valueOf(empCount), "#dbeafe", "#1d4ed8"),
             makeSummaryCard("💰 Total Payout", "€ " + String.format("%,d", total), "#d1fae5", "#065f46"),
-            makeSummaryCard("📊 Avg Salary", "€ " + String.format("%,d", empCount > 0 ? total / empCount : 0), "#fef3c7", "#92400e")
+            makeSummaryCard("📊 Avg Salary", "€ " + String.format("%,d", empCount > 0 ? total / empCount : 0), "#fef3c7", "#92400e"),
+            makeSummaryCard("🏢 Scope", isDeptFilter ? deptVal : "All", "#f3e5f5", "#6a1b9a")
         );
 
         Button doneBtn = new Button("✓  Done");

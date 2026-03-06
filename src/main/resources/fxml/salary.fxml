@@ -106,9 +106,6 @@
                         </TableView>
                     </VBox>
 
-                    <HBox alignment="CENTER_LEFT" spacing="10">
-                        <Text fx:id="totalPayout" text="Total Payout: €122,000" styleClass="total-payout"/>
-                    </HBox>
 
                     <HBox alignment="CENTER" spacing="10">
                         <Button text="◀ Previous" styleClass="pagination-button" onAction="#handlePreviousPage"/>
