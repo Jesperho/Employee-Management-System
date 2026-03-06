@@ -191,12 +191,28 @@ public class DepartmentController implements Initializable {
     }
 
     private void setupTable() {
+        departmentTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
         colId.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().get(0)));
         colName.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().get(1)));
         colCapacity.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().get(2)));
         colEmployees.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().get(3)));
         colCreationDate.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().get(4)));
         colDescription.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().get(5)));
+
+        // Double-click a row to show employees for that department
+        departmentTable.setRowFactory(tv -> {
+            TableRow<ObservableList<String>> row = new TableRow<>();
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && !row.isEmpty()) {
+                    ObservableList<String> rowData = row.getItem();
+                    String deptName = rowData.get(1);
+                    int deptId = Integer.parseInt(rowData.get(0));
+                    showEmployeesForDepartment(deptName, deptId);
+                }
+            });
+            return row;
+        });
 
         colActions.setCellFactory(col -> new TableCell<>() {
             private final Button editBtn = new Button("Edit");
