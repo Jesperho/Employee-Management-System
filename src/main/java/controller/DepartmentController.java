@@ -83,6 +83,11 @@ public class DepartmentController implements Initializable {
     @FXML private Button btnSalary;
     @FXML private Button btnLogout;
 
+    // Sidebar user profile (populated from UserSession)
+    @FXML private Text avatarInitials;
+    @FXML private Text userName;
+    @FXML private Text userRole;
+
     private final DepartmentDao departmentDao = new DepartmentDao();
     private final EmployeeDao employeeDao = new EmployeeDao();
     private final CompanyDao companyDao = new CompanyDao();
@@ -93,12 +98,20 @@ public class DepartmentController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        updateUserProfile();
         setupTable();
         setupEmployeeTable();
         loadFromDatabase();
         setupFilters();
         if (searchField != null)
             searchField.textProperty().addListener((obs, o, n) -> applyFilters());
+    }
+
+    private void updateUserProfile() {
+        app.UserSession s = app.UserSession.getInstance();
+        if (avatarInitials != null) avatarInitials.setText(s.getInitials());
+        if (userName != null) userName.setText(s.getFullName());
+        if (userRole != null) userRole.setText(s.getRole());
     }
 
     // Loads all departments from DB and refreshes the table and stats

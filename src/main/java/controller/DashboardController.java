@@ -74,9 +74,6 @@ public class DashboardController implements Initializable {
     private final DepartmentDao departmentDao = new DepartmentDao();
     private final LeaveDao leaveDao = new LeaveDao();
 
-    private String currentUserName = "Admin";
-    private String currentUserRole = "Administrator";
-
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         setupUserProfile();
@@ -87,22 +84,13 @@ public class DashboardController implements Initializable {
     }
 
     private void setupUserProfile() {
-        if (userName != null) userName.setText(currentUserName);
-        if (userRole != null) userRole.setText(currentUserRole);
-
-        if (avatarInitials != null) {
-            String[] parts = currentUserName.split(" ");
-            String initials = "";
-            if (parts.length >= 2) {
-                initials = parts[0].substring(0, 1) + parts[1].substring(0, 1);
-            } else if (parts.length == 1) {
-                initials = parts[0].substring(0, Math.min(2, parts[0].length()));
-            }
-            avatarInitials.setText(initials.toUpperCase());
-        }
-
+        app.UserSession s = app.UserSession.getInstance();
+        if (userName != null) userName.setText(s.getFullName());
+        if (userRole != null) userRole.setText(s.getRole());
+        if (avatarInitials != null) avatarInitials.setText(s.getInitials());
         if (welcomeText != null) {
-            welcomeText.setText("Welcome back, " + currentUserName.split(" ")[0] + "!");
+            String firstName = s.getFullName().split(" ")[0];
+            welcomeText.setText("Welcome back, " + firstName + "!");
         }
     }
 
@@ -592,8 +580,7 @@ public class DashboardController implements Initializable {
 
     // Called from LoginController after successful login to pass the user's name
     public void setCurrentUser(String name, String role) {
-        this.currentUserName = name;
-        this.currentUserRole = role;
+        app.UserSession.getInstance().setUser(name, role);
         setupUserProfile();
     }
 

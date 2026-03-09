@@ -55,6 +55,11 @@ public class SalaryController implements Initializable {
     @FXML private Text totalPayout; // kept for backward compat — node removed from FXML
     @FXML private Text pageInfo;
 
+    // Sidebar user profile (populated from UserSession)
+    @FXML private Text avatarInitials;
+    @FXML private Text userName;
+    @FXML private Text userRole;
+
     // Navigation
     @FXML private Button btnDashboard;
     @FXML private Button btnEmployees;
@@ -72,11 +77,19 @@ public class SalaryController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        updateUserProfile();
         setupTable();
         loadFromDatabase();
         setupFilters();
         if (searchField != null)
             searchField.textProperty().addListener((obs, o, n) -> applyFilters());
+    }
+
+    private void updateUserProfile() {
+        app.UserSession s = app.UserSession.getInstance();
+        if (avatarInitials != null) avatarInitials.setText(s.getInitials());
+        if (userName != null) userName.setText(s.getFullName());
+        if (userRole != null) userRole.setText(s.getRole());
     }
 
     // Loads all employees from DB and maps their salary data to the table rows

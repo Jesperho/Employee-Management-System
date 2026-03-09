@@ -1,6 +1,7 @@
 package controller;
 
 import entity.Admin;
+import app.UserSession;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -77,6 +78,12 @@ public class LoginController implements Initializable {
         // Authenticate against database
         Admin admin = authService.login(email, password);
         if (admin != null) {
+            // Derive a display name from the email prefix (e.g. "john.doe@..." → "John Doe")
+            String emailPrefix = admin.getEmail() != null
+                    ? admin.getEmail().split("@")[0] : "Admin";
+            // Capitalise and replace dots/underscores with spaces
+            String displayName = capitaliseEmailPrefix(emailPrefix);
+            UserSession.getInstance().setUser(displayName, "Administrator");
             showSuccess(loginMessage, "Login successful!");
             navigateToDashboard();
         } else {
@@ -221,5 +228,19 @@ public class LoginController implements Initializable {
         registerGender.setValue(null);
         registerPassword.clear();
         registerConfirmPassword.clear();
+    }
+
+    /** Converts "john.doe" or "john_doe" into "John Doe" */
+    private String capitaliseEmailPrefix(String prefix) {
+        String[] parts = prefix.split("[._\\-]");
+        StringBuilder sb = new StringBuilder();
+        for (String part : parts) {
+            if (!part.isEmpty()) {
+                if (sb.length() > 0) sb.append(" ");
+                sb.append(Character.toUpperCase(part.charAt(0)));
+                if (part.length() > 1) sb.append(part.substring(1).toLowerCase());
+            }
+        }
+        return sb.length() > 0 ? sb.toString() : prefix;
     }
 }

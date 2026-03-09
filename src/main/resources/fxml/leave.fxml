@@ -21,10 +21,10 @@
                 <padding><Insets top="15" bottom="15" left="15" right="15"/></padding>
                 <StackPane styleClass="avatar-container">
                     <Circle radius="35" styleClass="avatar-circle"/>
-                    <Text text="OA" styleClass="avatar-text"/>
+                    <Text fx:id="avatarInitials" text="AD" styleClass="avatar-text"/>
                 </StackPane>
-                <Text text="Osama Admin" styleClass="user-name"/>
-                <Text text="Administrator" styleClass="user-role"/>
+                <Text fx:id="userName" text="Admin" styleClass="user-name"/>
+                <Text fx:id="userRole" text="Administrator" styleClass="user-role"/>
             </VBox>
             <VBox styleClass="nav-menu" spacing="5">
                 <padding><Insets top="10" bottom="10" left="10" right="10"/></padding>

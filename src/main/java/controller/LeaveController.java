@@ -55,6 +55,11 @@ public class LeaveController implements Initializable {
 
     @FXML private Text pageInfo;
 
+    // Sidebar user profile (populated from UserSession)
+    @FXML private Text avatarInitials;
+    @FXML private Text userName;
+    @FXML private Text userRole;
+
     // Navigation
     @FXML private Button btnDashboard;
     @FXML private Button btnEmployees;
@@ -71,6 +76,7 @@ public class LeaveController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        updateUserProfile();
         setupFilters();
         setupTable();
         loadFromDatabase();
@@ -78,6 +84,13 @@ public class LeaveController implements Initializable {
         if (searchField != null) {
             searchField.textProperty().addListener((obs, oldVal, newVal) -> applyFilters());
         }
+    }
+
+    private void updateUserProfile() {
+        app.UserSession s = app.UserSession.getInstance();
+        if (avatarInitials != null) avatarInitials.setText(s.getInitials());
+        if (userName != null) userName.setText(s.getFullName());
+        if (userRole != null) userRole.setText(s.getRole());
     }
 
     // Fetches all leave records from the DB and refreshes the table and stats

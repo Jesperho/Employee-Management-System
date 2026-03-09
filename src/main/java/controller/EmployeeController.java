@@ -54,6 +54,11 @@ public class EmployeeController implements Initializable {
 
     @FXML private Text pageInfo;
 
+    // Sidebar user profile (populated from UserSession)
+    @FXML private Text avatarInitials;
+    @FXML private Text userName;
+    @FXML private Text userRole;
+
     @FXML private Button btnDashboard;
     @FXML private Button btnEmployees;
     @FXML private Button btnDepartments;
@@ -71,11 +76,19 @@ public class EmployeeController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        updateUserProfile();
         setupTable();
         setupFilters();
         loadFromDatabase();
         if (searchField != null)
             searchField.textProperty().addListener((obs, o, n) -> applyFilters());
+    }
+
+    private void updateUserProfile() {
+        app.UserSession s = app.UserSession.getInstance();
+        if (avatarInitials != null) avatarInitials.setText(s.getInitials());
+        if (userName != null) userName.setText(s.getFullName());
+        if (userRole != null) userRole.setText(s.getRole());
     }
 
     // Fetches all employees from the DB and refreshes the table and stats
@@ -181,9 +194,12 @@ public class EmployeeController implements Initializable {
         totalCount.setText(String.valueOf(employeeData.size()));
         long ft = 0, rm = 0, in = 0;
         for (Employee emp : employeeData) {
-            if ("Full Time".equalsIgnoreCase(emp.getContractType())) ft++;
-            if ("Remote".equalsIgnoreCase(emp.getContractType())) rm++;
-            if ("Intern".equalsIgnoreCase(emp.getContractType())) in++;
+            String ct = emp.getContractType();
+            if (ct == null) continue;
+            String ctLower = ct.toLowerCase().replace("-", " ").trim();
+            if (ctLower.equals("full time")) ft++;
+            else if (ctLower.equals("remote")) rm++;
+            else if (ctLower.equals("intern")) in++;
         }
         fullTimeCount.setText(String.valueOf(ft));
         remoteCount.setText(String.valueOf(rm));
