@@ -130,6 +130,7 @@ public class SalaryController implements Initializable {
     }
 
     private void setupTable() {
+        salaryTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         colId.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().get(0)));
         colName.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().get(1)));
         colDepartment.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().get(2)));

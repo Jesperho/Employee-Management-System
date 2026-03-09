@@ -26,6 +26,7 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 import java.net.URL;
+import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
@@ -123,6 +124,7 @@ public class LeaveController implements Initializable {
     }
 
     private void setupTable() {
+        leaveTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         colId.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().get(0)));
         colEmployee.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().get(1)));
         colDuration.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().get(2)));
@@ -131,16 +133,23 @@ public class LeaveController implements Initializable {
         colType.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().get(5)));
         colReason.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().get(6)));
 
+        colActions.setMinWidth(160);
         colActions.setCellFactory(col -> new TableCell<>() {
             private final Button editBtn = new Button("Edit");
             private final Button viewBtn = new Button("View");
             private final Button deleteBtn = new Button("Del");
-            private final HBox box = new HBox(5, viewBtn, editBtn, deleteBtn);
+            private final HBox box = new HBox(4, viewBtn, editBtn, deleteBtn);
 
             {
                 viewBtn.getStyleClass().addAll("table-action-btn", "btn-view");
                 editBtn.getStyleClass().addAll("table-action-btn", "btn-edit");
                 deleteBtn.getStyleClass().addAll("table-action-btn", "btn-delete");
+                // Compact sizing so all 3 fit
+                for (Button b : new Button[]{viewBtn, editBtn, deleteBtn}) {
+                    b.setMinWidth(42);
+                    b.setPrefWidth(42);
+                    b.setMaxWidth(52);
+                }
                 box.setAlignment(Pos.CENTER);
 
                 viewBtn.setOnAction(e -> {
@@ -166,13 +175,28 @@ public class LeaveController implements Initializable {
     }
 
     private void updateStats() {
+        LocalDate today = LocalDate.now();
+
         totalLeaves.setText(String.valueOf(leaveData.size()));
+
+        // Currently on leave: today is between start and end date
         long active = leaveData.stream().filter(r -> {
-            try { return Long.parseLong(r.get(2)) > 10; } catch (NumberFormatException e) { return false; }
+            try {
+                String startStr = r.get(3);
+                String endStr = r.get(4);
+                if (startStr.equals("N/A") || endStr.equals("N/A")) return false;
+                LocalDate start = LocalDate.parse(startStr);
+                LocalDate end = LocalDate.parse(endStr);
+                return !today.isBefore(start) && !today.isAfter(end);
+            } catch (Exception e) { return false; }
         }).count();
         activeLeaves.setText(String.valueOf(active));
+
+        // Sick leaves: type == "Sick"
         long sick = leaveData.stream().filter(r -> r.get(5).equalsIgnoreCase("Sick")).count();
         sickLeaves.setText(String.valueOf(sick));
+
+        // Avg duration in days
         long totalDays = leaveData.stream().mapToLong(r -> {
             try { return Long.parseLong(r.get(2)); } catch (NumberFormatException e) { return 0; }
         }).sum();

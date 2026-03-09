@@ -131,6 +131,7 @@ public class EmployeeController implements Initializable {
 
     // Binds each table column to the correct Employee field
     private void setupTable() {
+        employeeTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         colId.setCellValueFactory(data -> new SimpleStringProperty(String.valueOf(data.getValue().getId())));
         colName.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getFullName()));
         colDepartment.setCellValueFactory(data -> new SimpleStringProperty(getDepartmentName(data.getValue())));
@@ -143,16 +144,23 @@ public class EmployeeController implements Initializable {
         colGender.setCellValueFactory(data -> new SimpleStringProperty(getOrDefault(data.getValue().getGender())));
 
         // Actions column renders View / Edit / Delete buttons for each row
+        colActions.setMinWidth(160);
         colActions.setCellFactory(col -> new TableCell<>() {
             private final Button viewBtn = new Button("View");
             private final Button editBtn = new Button("Edit");
             private final Button deleteBtn = new Button("Del");
-            private final HBox box = new HBox(5, viewBtn, editBtn, deleteBtn);
+            private final HBox box = new HBox(4, viewBtn, editBtn, deleteBtn);
 
             {
                 viewBtn.getStyleClass().addAll("table-action-btn", "btn-view");
                 editBtn.getStyleClass().addAll("table-action-btn", "btn-edit");
                 deleteBtn.getStyleClass().addAll("table-action-btn", "btn-delete");
+                // Compact sizing so all 3 fit
+                for (Button b : new Button[]{viewBtn, editBtn, deleteBtn}) {
+                    b.setMinWidth(42);
+                    b.setPrefWidth(42);
+                    b.setMaxWidth(52);
+                }
                 box.setAlignment(Pos.CENTER);
 
                 viewBtn.setOnAction(e -> showViewPopup(getTableView().getItems().get(getIndex())));

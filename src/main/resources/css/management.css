@@ -224,9 +224,20 @@
     -fx-background-color: white;
     -fx-border-color: transparent;
     -fx-background-radius: 0 0 15 15;
-    -fx-pref-width: 100000;
+    -fx-pref-width: Infinity;
     -fx-max-width: Infinity;
     -fx-min-width: 0;
+}
+.management-table .virtual-flow .scroll-bar:horizontal,
+.management-table .virtual-flow .scroll-bar:horizontal .thumb,
+.management-table .virtual-flow .scroll-bar:horizontal .track,
+.management-table .virtual-flow .scroll-bar:horizontal .increment-button,
+.management-table .virtual-flow .scroll-bar:horizontal .decrement-button {
+    -fx-pref-height: 0;
+    -fx-min-height: 0;
+    -fx-max-height: 0;
+    -fx-opacity: 0;
+    -fx-padding: 0;
 }
 .management-table .column-header-background {
     -fx-background-color: #1a1f36;
@@ -266,11 +277,12 @@
 /* ===== TABLE ACTION BUTTONS ===== */
 .table-action-btn {
     -fx-background-radius: 6;
-    -fx-padding: 6 12;
+    -fx-padding: 5 8;
     -fx-font-size: 11px;
     -fx-font-weight: bold;
     -fx-cursor: hand;
-    -fx-min-width: 55;
+    -fx-min-width: 42;
+    -fx-pref-width: 42;
 }
 .btn-view {
     -fx-background-color: #3498db;

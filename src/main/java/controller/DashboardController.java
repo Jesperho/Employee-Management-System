@@ -46,6 +46,11 @@ public class DashboardController implements Initializable {
     @FXML private Text pendingLeaveText;
     @FXML private Text departmentsCount;
 
+    // Dynamic sub-labels under each stat card
+    @FXML private Text employeeChangeText;
+    @FXML private Text attendanceRateText;
+    @FXML private Text deptStatusText;
+
     @FXML private TableView<DepartmentRow> departmentTable;
     @FXML private TableColumn<DepartmentRow, String> deptNameColumn;
     @FXML private TableColumn<DepartmentRow, String> deptHeadColumn;
@@ -164,6 +169,45 @@ public class DashboardController implements Initializable {
         if (pendingLeaveText != null) pendingLeaveText.setText(pendingLeaves + " pending");
         if (departmentsCount != null) departmentsCount.setText(String.valueOf(departments.size()));
 
+        // Dynamic sub-labels
+        // Attendance rate = active / total * 100
+        if (attendanceRateText != null) {
+            if (total > 0) {
+                double rate = (active * 100.0) / total;
+                attendanceRateText.setText(String.format("%.1f%%", rate));
+            } else {
+                attendanceRateText.setText("N/A");
+            }
+        }
+
+        // "All active" vs how many departments have employees
+        if (deptStatusText != null) {
+            long activeDepts = departments.stream()
+                .filter(d -> departmentDao.countEmployees(d.getId()) > 0)
+                .count();
+            if (activeDepts == departments.size() && !departments.isEmpty()) {
+                deptStatusText.setText("All active");
+            } else {
+                deptStatusText.setText(activeDepts + " active");
+            }
+        }
+
+        // Employee change: show leave count relative to total as a simple indicator
+        if (employeeChangeText != null) {
+            if (total > 0) {
+                double leaveRate = (currentlyOnLeave * 100.0) / total;
+                if (currentlyOnLeave == 0) {
+                    employeeChangeText.setText("✓ Full staff");
+                    employeeChangeText.getStyleClass().setAll("stat-change-positive");
+                } else {
+                    employeeChangeText.setText(String.format("%.0f%% on leave", leaveRate));
+                    employeeChangeText.getStyleClass().setAll("stat-change-neutral");
+                }
+            } else {
+                employeeChangeText.setText("No data");
+            }
+        }
+
         // Calculate payroll from employee salaries
         int totalPayrollAmount = 0;
         int salaryCount = 0;
@@ -175,8 +219,8 @@ public class DashboardController implements Initializable {
         }
         int avgSalaryAmount = salaryCount > 0 ? totalPayrollAmount / salaryCount : 0;
 
-        if (totalPayroll != null) totalPayroll.setText("€" + totalPayrollAmount);
-        if (avgSalary != null) avgSalary.setText("€" + avgSalaryAmount);
+        if (totalPayroll != null) totalPayroll.setText("€" + String.format("%,d", totalPayrollAmount));
+        if (avgSalary != null) avgSalary.setText("€" + String.format("%,d", avgSalaryAmount));
         if (pendingPayments != null) pendingPayments.setText("€0");
     }
 
