@@ -89,13 +89,13 @@
                     <VBox styleClass="content-card" spacing="0">
                         <TableView fx:id="departmentTable" styleClass="management-table" VBox.vgrow="ALWAYS" prefHeight="450">
                             <columns>
-                                <TableColumn fx:id="colId" text="ID" prefWidth="60"/>
-                                <TableColumn fx:id="colName" text="Department Name" prefWidth="180"/>
-                                <TableColumn fx:id="colCapacity" text="Capacity" prefWidth="100"/>
-                                <TableColumn fx:id="colEmployees" text="Employees" prefWidth="100"/>
-                                <TableColumn fx:id="colCreationDate" text="Created" prefWidth="120"/>
-                                <TableColumn fx:id="colDescription" text="Description" prefWidth="200"/>
-                                <TableColumn fx:id="colActions" text="Actions" prefWidth="160"/>
+                                <TableColumn fx:id="colId" text="ID" prefWidth="50" minWidth="40"/>
+                                <TableColumn fx:id="colName" text="Department Name" prefWidth="160" minWidth="80"/>
+                                <TableColumn fx:id="colCapacity" text="Capacity" prefWidth="80" minWidth="60"/>
+                                <TableColumn fx:id="colEmployees" text="Employees" prefWidth="85" minWidth="60"/>
+                                <TableColumn fx:id="colCreationDate" text="Created" prefWidth="105" minWidth="70"/>
+                                <TableColumn fx:id="colDescription" text="Description" prefWidth="170" minWidth="60"/>
+                                <TableColumn fx:id="colActions" text="Actions" prefWidth="140" minWidth="130"/>
                             </columns>
                         </TableView>
                     </VBox>
@@ -110,14 +110,14 @@
                         </HBox>
                         <TableView fx:id="employeeTable" styleClass="management-table" VBox.vgrow="ALWAYS" prefHeight="400">
                             <columns>
-                                <TableColumn fx:id="empColId" text="ID" prefWidth="60"/>
-                                <TableColumn fx:id="empColName" text="Name" prefWidth="160"/>
-                                <TableColumn fx:id="empColDept" text="Department" prefWidth="120"/>
-                                <TableColumn fx:id="empColJobTitle" text="Job Title" prefWidth="140"/>
-                                <TableColumn fx:id="empColStartDate" text="Start Date" prefWidth="110"/>
-                                <TableColumn fx:id="empColContract" text="Contract" prefWidth="100"/>
-                                <TableColumn fx:id="empColGender" text="Gender" prefWidth="80"/>
-                                <TableColumn fx:id="empColActions" text="Actions" prefWidth="160"/>
+                                <TableColumn fx:id="empColId" text="ID" prefWidth="50" minWidth="40"/>
+                                <TableColumn fx:id="empColName" text="Name" prefWidth="150" minWidth="80"/>
+                                <TableColumn fx:id="empColDept" text="Department" prefWidth="105" minWidth="60"/>
+                                <TableColumn fx:id="empColJobTitle" text="Job Title" prefWidth="120" minWidth="60"/>
+                                <TableColumn fx:id="empColStartDate" text="Start Date" prefWidth="100" minWidth="70"/>
+                                <TableColumn fx:id="empColContract" text="Contract" prefWidth="90" minWidth="60"/>
+                                <TableColumn fx:id="empColGender" text="Gender" prefWidth="70" minWidth="55"/>
+                                <TableColumn fx:id="empColActions" text="Actions" prefWidth="160" minWidth="130"/>
                             </columns>
                         </TableView>
                     </VBox>

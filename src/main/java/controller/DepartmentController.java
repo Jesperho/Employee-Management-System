@@ -305,11 +305,40 @@ public class DepartmentController implements Initializable {
         popup.initStyle(StageStyle.DECORATED);
         popup.setTitle(title);
 
+        Scene scene;
+        var css = getClass().getResource("/css/management.css");
+
+        if (existingData != null) {
+            // Edit mode: TabPane with Department Info + Employees tabs
+            TabPane tabPane = new TabPane();
+            tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
+
+            Tab infoTab = new Tab("Department Info");
+            infoTab.setContent(buildDeptForm(popup, existingData));
+
+            Tab empTab = new Tab("Employees");
+            int deptId = Integer.parseInt(existingData.get(0));
+            empTab.setContent(buildEditPopupEmployeesTab(deptId, existingData.get(1)));
+
+            tabPane.getTabs().addAll(infoTab, empTab);
+            scene = new Scene(tabPane, 900, 520);
+        } else {
+            // Add mode: plain form
+            scene = new Scene(buildDeptForm(popup, null), 700, 380);
+        }
+
+        if (css != null) scene.getStylesheets().add(css.toExternalForm());
+        popup.setScene(scene);
+        popup.showAndWait();
+    }
+
+    private VBox buildDeptForm(Stage popup, ObservableList<String> existingData) {
         VBox form = new VBox(15);
         form.setPadding(new Insets(25));
         form.setStyle("-fx-background-color: white;");
 
-        Text formTitle = new Text(title);
+        String formTitleText = existingData == null ? "Add New Department" : "Edit Department";
+        Text formTitle = new Text(formTitleText);
         formTitle.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-fill: #1a1f36;");
 
         GridPane grid = new GridPane();
@@ -400,14 +429,69 @@ public class DepartmentController implements Initializable {
 
         cancelBtn.setOnAction(e -> popup.close());
         buttonBar.getChildren().addAll(submitBtn, cancelBtn);
-
         form.getChildren().addAll(formTitle, grid, buttonBar);
+        return form;
+    }
 
-        Scene scene = new Scene(form, 700, 380);
-        var css = getClass().getResource("/css/management.css");
-        if (css != null) scene.getStylesheets().add(css.toExternalForm());
-        popup.setScene(scene);
-        popup.showAndWait();
+    private VBox buildEditPopupEmployeesTab(int deptId, String deptName) {
+        VBox container = new VBox(12);
+        container.setPadding(new Insets(15));
+        container.setStyle("-fx-background-color: white;");
+
+        List<Employee> employees = employeeDao.findByDepartment(deptId);
+
+        Text header = new Text("Employees in " + deptName + " (" + employees.size() + ")");
+        header.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-fill: #1a1f36;");
+
+        TableView<ObservableList<String>> table = new TableView<>();
+        table.getStyleClass().add("management-table");
+        VBox.setVgrow(table, Priority.ALWAYS);
+
+        ObservableList<ObservableList<String>> data = FXCollections.observableArrayList();
+        for (Employee emp : employees) {
+            data.add(FXCollections.observableArrayList(
+                    String.valueOf(emp.getId()),
+                    emp.getFullName() != null ? emp.getFullName() : "N/A",
+                    emp.getPosition() != null ? emp.getPosition() : "N/A",
+                    emp.getStartDate() != null ? emp.getStartDate().toString() : "N/A",
+                    emp.getContractType() != null ? emp.getContractType() : "N/A",
+                    emp.getGender() != null ? emp.getGender() : "N/A"
+            ));
+        }
+
+        TableColumn<ObservableList<String>, String> cId = new TableColumn<>("ID");
+        cId.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().get(0)));
+        cId.setPrefWidth(55);
+
+        TableColumn<ObservableList<String>, String> cName = new TableColumn<>("Name");
+        cName.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().get(1)));
+        cName.setPrefWidth(200);
+
+        TableColumn<ObservableList<String>, String> cTitle = new TableColumn<>("Job Title");
+        cTitle.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().get(2)));
+        cTitle.setPrefWidth(170);
+
+        TableColumn<ObservableList<String>, String> cStart = new TableColumn<>("Start Date");
+        cStart.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().get(3)));
+        cStart.setPrefWidth(110);
+
+        TableColumn<ObservableList<String>, String> cContract = new TableColumn<>("Contract");
+        cContract.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().get(4)));
+        cContract.setPrefWidth(110);
+
+        TableColumn<ObservableList<String>, String> cGender = new TableColumn<>("Gender");
+        cGender.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().get(5)));
+        cGender.setPrefWidth(90);
+
+        table.getColumns().addAll(cId, cName, cTitle, cStart, cContract, cGender);
+        table.setItems(data);
+
+        if (employees.isEmpty()) {
+            table.setPlaceholder(new Label("No employees in this department."));
+        }
+
+        container.getChildren().addAll(header, table);
+        return container;
     }
 
     // Uses safeDelete — blocks deletion if employees are still assigned
