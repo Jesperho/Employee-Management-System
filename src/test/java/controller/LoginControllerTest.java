@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * Tests login validation, registration validation, and form handling.
  */
 class LoginControllerTest {
-    /*
+
     private LoginController controller;
 
     @BeforeAll
@@ -33,6 +33,7 @@ class LoginControllerTest {
         setField("loginPassword", new PasswordField());
         setField("loginMessage", new Label());
         setField("companyName", new TextField());
+        setField("companyAddress", new TextField());
         setField("companyCountry", new ComboBox<String>());
         setField("registerFirstName", new TextField());
         setField("registerLastName", new TextField());
@@ -336,9 +337,10 @@ class LoginControllerTest {
     @Test
     @DisplayName("handleRegister should show error for mismatched passwords")
     void testHandleRegisterPasswordMismatch() throws Exception {
-        fillRegistrationFieldsUntilPassword("password123");
+        // Password must pass uppercase + special char checks before reaching mismatch check
+        fillRegistrationFieldsUntilPassword("Password1!");
         PasswordField confirmPassword = (PasswordField) getField("registerConfirmPassword");
-        confirmPassword.setText("different123");
+        confirmPassword.setText("Different1!");
 
         invokePrivate("handleRegister", new Class[]{});
 
@@ -349,9 +351,9 @@ class LoginControllerTest {
     @Test
     @DisplayName("handleRegister should attempt registration with valid data")
     void testHandleRegisterSuccess() throws Exception {
-        fillRegistrationFieldsUntilPassword("password123");
+        fillRegistrationFieldsUntilPassword("Password1!");
         PasswordField confirmPassword = (PasswordField) getField("registerConfirmPassword");
-        confirmPassword.setText("password123");
+        confirmPassword.setText("Password1!");
         // Passes all validation — hits DB. Just verify no unhandled exception escapes.
         try {
             invokePrivate("handleRegister", new Class[]{});
@@ -507,5 +509,5 @@ class LoginControllerTest {
     private boolean isFieldValid(String field) {
         return field != null && !field.trim().isEmpty();
     }
-    */
+
 }
