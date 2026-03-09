@@ -12,16 +12,17 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 import java.net.URL;
 import java.time.LocalDate;
@@ -248,6 +249,217 @@ public class DashboardController implements Initializable {
         item.getChildren().addAll(iconContainer, textBox, timeText);
         return item;
     }
+
+    // ── "View More" Recent Activity Popup ─────────────────────────────────────
+    @FXML
+    private void handleViewMoreActivities() {
+        Stage popup = new Stage();
+        popup.initModality(Modality.APPLICATION_MODAL);
+        popup.initStyle(StageStyle.UNDECORATED);
+
+        // ── Header ──────────────────────────────────────────────────────────
+        HBox header = new HBox();
+        header.setAlignment(Pos.CENTER_LEFT);
+        header.setPadding(new Insets(22, 25, 18, 25));
+        header.setSpacing(12);
+        header.setStyle("-fx-background-color: linear-gradient(to right, #1a1f36, #2d3561);" +
+                        "-fx-background-radius: 15 15 0 0;");
+
+        StackPane iconWrap = new StackPane();
+        javafx.scene.shape.Circle iconCircle = new javafx.scene.shape.Circle(20);
+        iconCircle.setStyle("-fx-fill: rgba(108,99,255,0.35);");
+        Label iconLbl = new Label("🕐");
+        iconLbl.setStyle("-fx-font-size: 16px;");
+        iconWrap.getChildren().addAll(iconCircle, iconLbl);
+
+        VBox titleBox = new VBox(2);
+        Label titleLbl = new Label("Recent Activities");
+        titleLbl.setStyle("-fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold;");
+        Label subLbl  = new Label("All employee and leave events from the system");
+        subLbl.setStyle("-fx-text-fill: rgba(255,255,255,0.6); -fx-font-size: 11px;");
+        titleBox.getChildren().addAll(titleLbl, subLbl);
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        Button closeBtn = new Button("✕");
+        closeBtn.setStyle("-fx-background-color: rgba(255,255,255,0.1); -fx-text-fill: white;" +
+                          "-fx-background-radius: 6; -fx-font-size: 14px; -fx-cursor: hand;" +
+                          "-fx-padding: 4 10;");
+        closeBtn.setOnAction(e -> popup.close());
+
+        header.getChildren().addAll(iconWrap, titleBox, spacer, closeBtn);
+
+        // ── Build activity entries ────────────────────────────────────────
+        VBox activityList = new VBox(0);
+        activityList.setStyle("-fx-background-color: white;");
+
+        List<Employee> employees = employeeDao.findAll();
+        employees.sort((a, b) -> Integer.compare(b.getId(), a.getId()));
+
+        List<Leave> leaves = leaveDao.findAll();
+        leaves.sort((a, b) -> Integer.compare(b.getId(), a.getId()));
+
+        // Interleave entries: all employees + all leaves, styled differently
+        int maxRows = Math.max(employees.size(), leaves.size());
+        int empIdx = 0, leaveIdx = 0;
+        int rowNum = 0;
+
+        while (empIdx < employees.size() || leaveIdx < leaves.size()) {
+            if (empIdx < employees.size()) {
+                Employee emp = employees.get(empIdx++);
+                String dept = emp.getDepartment() != null
+                        ? emp.getDepartment().getDepartmentName() : "No Department";
+                String date = emp.getStartDate() != null ? emp.getStartDate().toString() : "—";
+                activityList.getChildren().add(
+                    buildActivityRow(rowNum++,
+                        "👤", "#e8f4ff", "#1565c0",
+                        "New Employee Added",
+                        emp.getFullName() + " joined " + dept,
+                        date, "Employee", "#1565c0", "#dbeafe"));
+            }
+            if (leaveIdx < leaves.size()) {
+                Leave leave = leaves.get(leaveIdx++);
+                String empName = leave.getEmployee() != null
+                        ? leave.getEmployee().getFullName() : "Unknown";
+                String type  = leave.getType() != null ? leave.getType() : "Leave";
+                String date  = leave.getStartDate() != null ? leave.getStartDate().toString() : "—";
+                String[] lc  = getActivityLeaveColor(type);
+                activityList.getChildren().add(
+                    buildActivityRow(rowNum++,
+                        getActivityLeaveEmoji(type), lc[0], lc[1],
+                        type + " Leave",
+                        empName + " — " + leave.getReason() != null ? (empName + " — " + (leave.getReason() != null && !leave.getReason().isEmpty() ? leave.getReason() : "No reason")) : empName,
+                        date, type, lc[1], lc[2]));
+            }
+        }
+
+        if (activityList.getChildren().isEmpty()) {
+            Label empty = new Label("No activity found.");
+            empty.setStyle("-fx-text-fill: #7f8c8d; -fx-font-size: 14px; -fx-padding: 30;");
+            activityList.getChildren().add(empty);
+        }
+
+        // ── Scroll pane wraps list ────────────────────────────────────────
+        ScrollPane scroll = new ScrollPane(activityList);
+        scroll.setFitToWidth(true);
+        scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scroll.setStyle("-fx-background-color: white; -fx-border-color: transparent;");
+        scroll.setPrefHeight(460);
+
+        // ── Footer ───────────────────────────────────────────────────────
+        HBox footer = new HBox();
+        footer.setAlignment(Pos.CENTER_RIGHT);
+        footer.setPadding(new Insets(14, 25, 16, 25));
+        footer.setStyle("-fx-background-color: #f8f9ff; -fx-background-radius: 0 0 15 15;" +
+                        "-fx-border-color: #e8eaf0; -fx-border-width: 1 0 0 0;");
+        Label countLbl = new Label(
+            "Showing " + activityList.getChildren().size() + " activities  •  " +
+            employees.size() + " employees  •  " + leaves.size() + " leave records");
+        countLbl.setStyle("-fx-text-fill: #7f8c8d; -fx-font-size: 11px;");
+        HBox.setHgrow(countLbl, Priority.ALWAYS);
+
+        Button doneBtn = new Button("Close");
+        doneBtn.setStyle("-fx-background-color: linear-gradient(to right,#6c63ff,#5a52d4);" +
+                         "-fx-text-fill:white;-fx-font-weight:bold;-fx-font-size:13px;" +
+                         "-fx-padding:9 28;-fx-background-radius:8;-fx-cursor:hand;");
+        doneBtn.setOnAction(e -> popup.close());
+        footer.getChildren().addAll(countLbl, doneBtn);
+
+        // ── Assemble card ─────────────────────────────────────────────────
+        VBox card = new VBox();
+        card.setStyle("-fx-background-color: white; -fx-background-radius: 15;" +
+                      "-fx-effect: dropshadow(gaussian,rgba(0,0,0,0.28),24,0,0,6);");
+        card.getChildren().addAll(header, scroll, footer);
+        card.setMaxWidth(600);
+        card.setMinWidth(560);
+
+        StackPane root = new StackPane(card);
+        root.setStyle("-fx-background-color: transparent;");
+        root.setPadding(new Insets(12));
+
+        Scene scene = new Scene(root);
+        scene.setFill(Color.TRANSPARENT);
+        popup.setScene(scene);
+        popup.showAndWait();
+    }
+
+    /** Builds one styled row in the activity popup list */
+    private HBox buildActivityRow(int index, String emoji, String iconBg, String iconFg,
+                                   String title, String detail, String date,
+                                   String badgeText, String badgeFg, String badgeBg) {
+        HBox row = new HBox(14);
+        row.setAlignment(Pos.CENTER_LEFT);
+        row.setPadding(new Insets(14, 22, 14, 22));
+        row.setStyle("-fx-background-color: " + (index % 2 == 0 ? "white" : "#fafbff") + ";" +
+                     "-fx-border-color: #f0f2f8; -fx-border-width: 0 0 1 0;");
+
+        // Icon bubble
+        StackPane bubble = new StackPane();
+        bubble.setMinSize(42, 42);
+        bubble.setMaxSize(42, 42);
+        javafx.scene.shape.Circle bg = new javafx.scene.shape.Circle(21);
+        bg.setStyle("-fx-fill: " + iconBg + ";");
+        Label emojiLbl = new Label(emoji);
+        emojiLbl.setStyle("-fx-font-size: 16px;");
+        bubble.getChildren().addAll(bg, emojiLbl);
+
+        // Text section
+        VBox textBox = new VBox(3);
+        HBox.setHgrow(textBox, Priority.ALWAYS);
+
+        HBox titleRow = new HBox(8);
+        titleRow.setAlignment(Pos.CENTER_LEFT);
+        Label titleLbl = new Label(title);
+        titleLbl.setStyle("-fx-text-fill: #1a1f36; -fx-font-size: 13px; -fx-font-weight: bold;");
+
+        // Badge
+        Label badge = new Label(badgeText);
+        badge.setStyle("-fx-background-color: " + badgeBg + "; -fx-text-fill: " + badgeFg + ";" +
+                       "-fx-font-size: 10px; -fx-font-weight: bold; -fx-padding: 2 8;" +
+                       "-fx-background-radius: 10;");
+        titleRow.getChildren().addAll(titleLbl, badge);
+
+        Label detailLbl = new Label(detail);
+        detailLbl.setStyle("-fx-text-fill: #5f6c7b; -fx-font-size: 12px;");
+        detailLbl.setWrapText(true);
+        detailLbl.setMaxWidth(350);
+        textBox.getChildren().addAll(titleRow, detailLbl);
+
+        // Date on the right
+        Label dateLbl = new Label("📅 " + date);
+        dateLbl.setStyle("-fx-text-fill: #9ba8b7; -fx-font-size: 11px;");
+        dateLbl.setMinWidth(95);
+        dateLbl.setAlignment(Pos.CENTER_RIGHT);
+
+        row.getChildren().addAll(bubble, textBox, dateLbl);
+        return row;
+    }
+
+    private String[] getActivityLeaveColor(String type) {
+        if (type == null) return new String[]{"#f0f0ff", "#6c63ff", "#ede9ff"};
+        return switch (type.toLowerCase()) {
+            case "sick"      -> new String[]{"#fff0f0", "#c0392b", "#fde8e8"};
+            case "vacation"  -> new String[]{"#e3f2fd", "#1565c0", "#dbeafe"};
+            case "maternity" -> new String[]{"#f3e5f5", "#7b1fa2", "#ede7f6"};
+            case "personal"  -> new String[]{"#e8f5e9", "#2e7d32", "#dcfce7"};
+            case "exam"      -> new String[]{"#fff8e1", "#f57f17", "#fef9c3"};
+            default          -> new String[]{"#f0f0ff", "#6c63ff", "#ede9ff"};
+        };
+    }
+
+    private String getActivityLeaveEmoji(String type) {
+        if (type == null) return "📋";
+        return switch (type.toLowerCase()) {
+            case "sick"      -> "🤒";
+            case "vacation"  -> "🏖";
+            case "maternity" -> "👶";
+            case "personal"  -> "🏠";
+            case "exam"      -> "📚";
+            default          -> "📋";
+        };
+    }
+    // ─────────────────────────────────────────────────────────────────────────
 
     @FXML
     private void handleDashboard() {

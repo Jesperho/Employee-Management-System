@@ -82,6 +82,9 @@
 /* ===== MAIN CONTENT ===== */
 .main-content {
     -fx-background-color: #f0f2f5;
+    -fx-min-width: 0;
+    -fx-pref-width: 100000;
+    -fx-max-width: Infinity;
 }
 .header-bar {
     -fx-background-color: white;
@@ -221,6 +224,9 @@
     -fx-background-color: white;
     -fx-border-color: transparent;
     -fx-background-radius: 0 0 15 15;
+    -fx-pref-width: 100000;
+    -fx-max-width: Infinity;
+    -fx-min-width: 0;
 }
 .management-table .column-header-background {
     -fx-background-color: #1a1f36;

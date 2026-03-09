@@ -22,9 +22,14 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
+import javafx.util.Duration;
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class SalaryController implements Initializable {
@@ -47,7 +52,7 @@ public class SalaryController implements Initializable {
     @FXML private TableColumn<ObservableList<String>, String> colGender;
     @FXML private TableColumn<ObservableList<String>, String> colActions;
 
-    @FXML private Text totalPayout;
+    @FXML private Text totalPayout; // kept for backward compat — node removed from FXML
     @FXML private Text pageInfo;
 
     // Navigation
@@ -62,12 +67,16 @@ public class SalaryController implements Initializable {
     private final DepartmentDao departmentDao = new DepartmentDao();
 
     private ObservableList<ObservableList<String>> salaryData = FXCollections.observableArrayList();
+    // Tracks the rows currently visible after filtering — used for stats & payroll
+    private List<ObservableList<String>> currentFilteredData = new java.util.ArrayList<>();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         setupTable();
         loadFromDatabase();
         setupFilters();
+        if (searchField != null)
+            searchField.textProperty().addListener((obs, o, n) -> applyFilters());
     }
 
     // Loads all employees from DB and maps their salary data to the table rows
@@ -88,6 +97,7 @@ public class SalaryController implements Initializable {
             ));
         }
         salaryTable.setItems(salaryData);
+        currentFilteredData = new java.util.ArrayList<>(salaryData);
         updateStats();
     }
 
@@ -113,6 +123,10 @@ public class SalaryController implements Initializable {
             return true;
         });
         salaryTable.setItems(filtered);
+
+        // Keep a snapshot of the visible rows so stats + payroll use only what's shown
+        currentFilteredData = new java.util.ArrayList<>(filtered);
+        updateFilteredStats(currentFilteredData, dept);
     }
 
     private void setupTable() {
@@ -168,35 +182,113 @@ public class SalaryController implements Initializable {
     }
 
     private void updateStats() {
-        int total = salaryData.stream().mapToInt(r -> {
+        updateFilteredStats(salaryData, null);
+    }
+
+    // Updates the 4 stat cards based on any subset of rows (filtered or all)
+    private void updateFilteredStats(List<ObservableList<String>> rows, String deptLabel) {
+        int total = rows.stream().mapToInt(r -> {
             try { return Integer.parseInt(r.get(5)); } catch (NumberFormatException e) { return 0; }
         }).sum();
-        int avg = salaryData.isEmpty() ? 0 : total / salaryData.size();
-        int max = salaryData.stream().mapToInt(r -> {
+        int avg = rows.isEmpty() ? 0 : total / rows.size();
+        int max = rows.stream().mapToInt(r -> {
             try { return Integer.parseInt(r.get(5)); } catch (NumberFormatException e) { return 0; }
         }).max().orElse(0);
 
         totalPayroll.setText("€" + total);
         avgSalary.setText("€" + avg);
         highestSalary.setText("€" + max);
-        employeesPaid.setText(String.valueOf(salaryData.size()));
-        totalPayout.setText("Total Payout: €" + total);
+        employeesPaid.setText(String.valueOf(rows.size()));
     }
 
     private void showViewPopup(ObservableList<String> row) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Salary Details");
-        alert.setHeaderText("Employee: " + row.get(1));
-        alert.setContentText(
-                "ID: " + row.get(0) + "\n" +
-                "Name: " + row.get(1) + "\n" +
-                "Department: " + row.get(2) + "\n" +
-                "Job Title: " + row.get(3) + "\n" +
-                "Position: " + row.get(4) + "\n" +
-                "Salary: €" + row.get(5) + "\n" +
-                "Gender: " + row.get(6)
-        );
-        alert.showAndWait();
+        Stage popup = new Stage();
+        popup.initModality(Modality.APPLICATION_MODAL);
+        popup.initStyle(StageStyle.UNDECORATED);
+
+        // Header — green salary theme
+        VBox header = new VBox(6);
+        header.setAlignment(Pos.CENTER);
+        header.setPadding(new Insets(28, 30, 22, 30));
+        header.setStyle("-fx-background-color: linear-gradient(to bottom right, #1a3a2a, #1e6b45); -fx-background-radius: 15 15 0 0;");
+
+        // Avatar initials
+        StackPane avatar = new StackPane();
+        javafx.scene.shape.Circle avatarCircle = new javafx.scene.shape.Circle(32);
+        avatarCircle.setStyle("-fx-fill: linear-gradient(to bottom right, #27ae60, #1e8449);");
+        String n = row.get(1) != null ? row.get(1) : "?";
+        String initials = n.trim().contains(" ")
+                ? String.valueOf(n.charAt(0)) + n.trim().split(" ")[1].charAt(0)
+                : String.valueOf(n.charAt(0));
+        javafx.scene.text.Text avatarTxt = new javafx.scene.text.Text(initials.toUpperCase());
+        avatarTxt.setStyle("-fx-fill: white; -fx-font-size: 18px; -fx-font-weight: bold;");
+        avatar.getChildren().addAll(avatarCircle, avatarTxt);
+
+        javafx.scene.text.Text nameText = new javafx.scene.text.Text(row.get(1));
+        nameText.setStyle("-fx-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;");
+        javafx.scene.text.Text roleText = new javafx.scene.text.Text(row.get(3) + "  •  " + row.get(2));
+        roleText.setStyle("-fx-fill: rgba(255,255,255,0.7); -fx-font-size: 12px;");
+
+        // Salary badge
+        Label salaryBadge = new Label("€ " + row.get(5));
+        salaryBadge.setStyle("-fx-background-color: rgba(255,255,255,0.15); -fx-text-fill: #a8f5c0; " +
+                "-fx-font-size: 22px; -fx-font-weight: bold; -fx-padding: 8 20; -fx-background-radius: 25;");
+        header.getChildren().addAll(avatar, nameText, roleText, salaryBadge);
+
+        // Info grid
+        GridPane grid = new GridPane();
+        grid.setHgap(20); grid.setVgap(14);
+        grid.setPadding(new Insets(24, 30, 10, 30));
+        addSalaryInfoCard(grid, 0, "🪪  Employee ID",  row.get(0),  "⚧  Gender",     row.get(6));
+        addSalaryInfoCard(grid, 1, "🏢  Department",   row.get(2),  "📋  Job Title",   row.get(3));
+        addSalaryInfoCard(grid, 2, "🎯  Position",     row.get(4),  "💰  Monthly Salary", "€ " + row.get(5));
+
+        Button closeBtn = new Button("✕  Close");
+        closeBtn.setStyle("-fx-background-color: linear-gradient(to right, #27ae60, #1e8449); -fx-text-fill: white; " +
+                "-fx-font-weight: bold; -fx-font-size: 13px; -fx-padding: 10 30; -fx-background-radius: 8; -fx-cursor: hand;");
+        closeBtn.setOnAction(e -> popup.close());
+        HBox footer = new HBox(closeBtn);
+        footer.setAlignment(Pos.CENTER_RIGHT);
+        footer.setPadding(new Insets(10, 30, 24, 30));
+
+        VBox card = new VBox();
+        card.setStyle("-fx-background-color: white; -fx-background-radius: 15; " +
+                "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 20, 0, 0, 5);");
+        card.getChildren().addAll(header, grid, footer);
+        card.setMaxWidth(460);
+
+        StackPane root = new StackPane(card);
+        root.setStyle("-fx-background-color: transparent;");
+        root.setPadding(new Insets(10));
+
+        Scene scene = new Scene(root);
+        scene.setFill(javafx.scene.paint.Color.TRANSPARENT);
+        var css = getClass().getResource("/css/management.css");
+        if (css != null) scene.getStylesheets().add(css.toExternalForm());
+        popup.setScene(scene);
+        popup.showAndWait();
+    }
+
+    private void addSalaryInfoCard(GridPane grid, int row,
+                                    String l1, String v1, String l2, String v2) {
+        Label lbl1 = new Label(l1);
+        lbl1.setStyle("-fx-text-fill: #7f8c8d; -fx-font-size: 11px; -fx-font-weight: bold;");
+        Label val1 = new Label(v1);
+        val1.setStyle("-fx-text-fill: #1a1f36; -fx-font-size: 13px; -fx-font-weight: bold;");
+        VBox c1 = new VBox(3, lbl1, val1);
+        c1.setStyle("-fx-background-color: #f0faf4; -fx-background-radius: 8; -fx-padding: 10 14;");
+        c1.setMinWidth(160);
+        grid.add(c1, 0, row);
+
+        Label lbl2 = new Label(l2);
+        lbl2.setStyle("-fx-text-fill: #7f8c8d; -fx-font-size: 11px; -fx-font-weight: bold;");
+        Label val2 = new Label(v2);
+        val2.setStyle("-fx-text-fill: " + (l2.contains("Salary") ? "#27ae60" : "#1a1f36") +
+                "; -fx-font-size: 13px; -fx-font-weight: bold;");
+        VBox c2 = new VBox(3, lbl2, val2);
+        c2.setStyle("-fx-background-color: #f0faf4; -fx-background-radius: 8; -fx-padding: 10 14;");
+        c2.setMinWidth(160);
+        grid.add(c2, 1, row);
     }
 
     // Opens edit popup; persists salary and role changes to the Employee entity in DB
@@ -295,16 +387,153 @@ public class SalaryController implements Initializable {
 
     @FXML
     private void handleRunPayroll() {
-        int total = salaryData.stream().mapToInt(r -> {
+        // Use the currently filtered/visible rows — respects dept filter
+        List<ObservableList<String>> dataToProcess = currentFilteredData.isEmpty() && filterDepartment.getValue() == null
+                ? new java.util.ArrayList<>(salaryData)
+                : currentFilteredData;
+
+        int total    = dataToProcess.stream().mapToInt(r -> {
             try { return Integer.parseInt(r.get(5)); } catch (NumberFormatException e) { return 0; }
         }).sum();
-        Alert info = new Alert(Alert.AlertType.INFORMATION);
-        info.setTitle("Run Payroll");
-        info.setHeaderText("Payroll Processing");
-        info.setContentText("Processing payroll for " + salaryData.size() + " employees.\n" +
-                "Total amount: €" + total + "\n\n" +
-                "Payroll will be processed at the end of the month.");
-        info.showAndWait();
+        int empCount = dataToProcess.size();
+
+        // Label for which dept (or all)
+        String deptVal = filterDepartment.getValue();
+        boolean isDeptFilter = deptVal != null && !deptVal.equals("All Departments");
+        String scopeLabel = isDeptFilter ? deptVal + " Department" : "All Departments";
+
+        Stage popup = new Stage();
+        popup.initModality(Modality.APPLICATION_MODAL);
+        popup.initStyle(StageStyle.UNDECORATED);
+
+        // Header
+        VBox header = new VBox(8);
+        header.setAlignment(Pos.CENTER);
+        header.setPadding(new Insets(28, 30, 20, 30));
+        header.setStyle("-fx-background-color: linear-gradient(to bottom right, #1a1f36, #2d3561); -fx-background-radius: 15 15 0 0;");
+
+        javafx.scene.text.Text titleTxt = new javafx.scene.text.Text("💵  Run Payroll");
+        titleTxt.setStyle("-fx-fill: white; -fx-font-size: 22px; -fx-font-weight: bold;");
+
+        // Scope badge
+        Label scopeBadge = new Label((isDeptFilter ? "🏢 " : "🌐 ") + scopeLabel);
+        scopeBadge.setStyle("-fx-background-color: rgba(255,255,255,0.15); -fx-text-fill: rgba(255,255,255,0.85);" +
+                            "-fx-font-size: 12px; -fx-font-weight: bold; -fx-padding: 4 14; -fx-background-radius: 20;");
+
+        javafx.scene.text.Text subTxt = new javafx.scene.text.Text(
+                "Processing salaries for " + empCount + " employee" + (empCount == 1 ? "" : "s") + "...");
+        subTxt.setStyle("-fx-fill: rgba(255,255,255,0.65); -fx-font-size: 12px;");
+        header.getChildren().addAll(titleTxt, scopeBadge, subTxt);
+
+        // Animated counter label
+        Label counterLabel = new Label("€ 0");
+        counterLabel.setStyle("-fx-font-size: 42px; -fx-font-weight: bold; -fx-text-fill: #27ae60;");
+        counterLabel.setAlignment(Pos.CENTER);
+        counterLabel.setMaxWidth(Double.MAX_VALUE);
+
+        // Progress bar
+        javafx.scene.control.ProgressBar progressBar = new javafx.scene.control.ProgressBar(0);
+        progressBar.setMaxWidth(Double.MAX_VALUE);
+        progressBar.setPrefHeight(12);
+        progressBar.setStyle("-fx-accent: #27ae60; -fx-background-color: #e8f5e9; -fx-background-radius: 6; -fx-effect: null;");
+
+        Label statusLabel = new Label("Initializing payroll run...");
+        statusLabel.setStyle("-fx-text-fill: #7f8c8d; -fx-font-size: 12px;");
+        statusLabel.setAlignment(Pos.CENTER);
+        statusLabel.setMaxWidth(Double.MAX_VALUE);
+
+        VBox body = new VBox(16, counterLabel, progressBar, statusLabel);
+        body.setAlignment(Pos.CENTER);
+        body.setPadding(new Insets(28, 35, 10, 35));
+
+        // Summary cards (shown after animation)
+        HBox summaryRow = new HBox(12);
+        summaryRow.setAlignment(Pos.CENTER);
+        summaryRow.setPadding(new Insets(0, 30, 0, 30));
+        summaryRow.setVisible(false);
+
+        summaryRow.getChildren().addAll(
+            makeSummaryCard("👥 Employees", String.valueOf(empCount), "#dbeafe", "#1d4ed8"),
+            makeSummaryCard("💰 Total Payout", "€ " + String.format("%,d", total), "#d1fae5", "#065f46"),
+            makeSummaryCard("📊 Avg Salary", "€ " + String.format("%,d", empCount > 0 ? total / empCount : 0), "#fef3c7", "#92400e"),
+            makeSummaryCard("🏢 Scope", isDeptFilter ? deptVal : "All", "#f3e5f5", "#6a1b9a")
+        );
+
+        Button doneBtn = new Button("✓  Done");
+        doneBtn.setStyle("-fx-background-color: linear-gradient(to right, #27ae60, #1e8449); -fx-text-fill: white; " +
+                "-fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 11 35; -fx-background-radius: 8; -fx-cursor: hand;");
+        doneBtn.setVisible(false);
+        doneBtn.setOnAction(e -> popup.close());
+        HBox footer = new HBox(doneBtn);
+        footer.setAlignment(Pos.CENTER_RIGHT);
+        footer.setPadding(new Insets(10, 30, 24, 30));
+
+        VBox card = new VBox();
+        card.setStyle("-fx-background-color: white; -fx-background-radius: 15; " +
+                "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.28), 22, 0, 0, 6);");
+        card.getChildren().addAll(header, body, summaryRow, footer);
+        card.setMaxWidth(480);
+        card.setMinWidth(420);
+
+        StackPane root = new StackPane(card);
+        root.setStyle("-fx-background-color: transparent;");
+        root.setPadding(new Insets(10));
+        Scene scene = new Scene(root);
+        scene.setFill(javafx.scene.paint.Color.TRANSPARENT);
+        var css = getClass().getResource("/css/management.css");
+        if (css != null) scene.getStylesheets().add(css.toExternalForm());
+        popup.setScene(scene);
+        popup.show();
+
+        // ── Animated counting sequence ────────────────────────────
+        String[] steps = {
+            "Validating employee records...",
+            "Calculating base salaries...",
+            "Applying deductions & bonuses...",
+            "Generating payslips...",
+            "Finalising transactions...",
+            "✅ Payroll complete!"
+        };
+        AtomicInteger stepIdx = new AtomicInteger(0);
+        AtomicInteger displayed = new AtomicInteger(0);
+
+        Timeline countUp = new Timeline();
+        int frames = 60;
+        for (int i = 1; i <= frames; i++) {
+            final int frame = i;
+            countUp.getKeyFrames().add(new KeyFrame(Duration.millis(i * 30L), e -> {
+                int current = (int)((frame / (double) frames) * total);
+                counterLabel.setText("€ " + String.format("%,d", current));
+                progressBar.setProgress(frame / (double) frames);
+                int stepFor = Math.min((frame / (frames / steps.length)), steps.length - 1);
+                if (stepFor > stepIdx.get()) {
+                    stepIdx.set(stepFor);
+                    statusLabel.setText(steps[stepFor]);
+                }
+            }));
+        }
+
+        countUp.setOnFinished(e -> {
+            counterLabel.setText("€ " + String.format("%,d", total));
+            statusLabel.setText("✅  Payroll complete!  " + empCount + " employees processed.");
+            statusLabel.setStyle("-fx-text-fill: #27ae60; -fx-font-size: 13px; -fx-font-weight: bold;");
+            summaryRow.setVisible(true);
+            doneBtn.setVisible(true);
+        });
+        countUp.play();
+    }
+
+    private VBox makeSummaryCard(String label, String value, String bg, String fg) {
+        Label lbl = new Label(label);
+        lbl.setStyle("-fx-text-fill: " + fg + "; -fx-font-size: 10px; -fx-font-weight: bold;");
+        Label val = new Label(value);
+        val.setStyle("-fx-text-fill: " + fg + "; -fx-font-size: 14px; -fx-font-weight: bold;");
+        VBox box = new VBox(3, lbl, val);
+        box.setAlignment(Pos.CENTER);
+        box.setStyle("-fx-background-color: " + bg + "; -fx-background-radius: 10; -fx-padding: 12 16;");
+        HBox.setHgrow(box, Priority.ALWAYS);
+        box.setMaxWidth(Double.MAX_VALUE);
+        return box;
     }
 
     @FXML

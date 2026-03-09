@@ -13,7 +13,7 @@
 
     <!-- Left Sidebar -->
     <left>
-        <VBox styleClass="sidebar" prefWidth="250" spacing="0">
+        <VBox styleClass="sidebar" prefWidth="250" minWidth="220" maxWidth="280" spacing="0">
             <!-- Logo/Brand Section -->
             <VBox styleClass="sidebar-header" alignment="CENTER" spacing="5">
                 <padding>
@@ -184,7 +184,7 @@
                             <HBox alignment="CENTER_LEFT">
                                 <Text text="Recent Activities" styleClass="card-title"/>
                                 <Region HBox.hgrow="ALWAYS"/>
-                                <Button text="View All" styleClass="link-button"/>
+                                <Button text="View More →" styleClass="link-button" onAction="#handleViewMoreActivities"/>
                             </HBox>
 
                             <VBox fx:id="recentActivitiesContainer" styleClass="activities-list" spacing="12">

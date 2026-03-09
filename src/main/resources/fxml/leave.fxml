@@ -11,7 +11,7 @@
             styleClass="dashboard-root">
 
     <left>
-        <VBox styleClass="sidebar" prefWidth="250" spacing="0">
+        <VBox styleClass="sidebar" prefWidth="250" minWidth="220" maxWidth="280" spacing="0">
             <VBox styleClass="sidebar-header" alignment="CENTER" spacing="5">
                 <padding><Insets top="20" bottom="20" left="15" right="15"/></padding>
                 <Text text="EMS" styleClass="logo-text"/>
@@ -43,18 +43,18 @@
     </left>
 
     <center>
-        <VBox styleClass="main-content">
+        <VBox styleClass="main-content" minWidth="0">
             <HBox styleClass="header-bar" alignment="CENTER_LEFT" spacing="20">
                 <padding><Insets top="15" bottom="15" left="25" right="25"/></padding>
                 <VBox spacing="2"><Text text="Dashboard / Leave Management" styleClass="page-breadcrumb"/></VBox>
                 <Region HBox.hgrow="ALWAYS"/>
                 <HBox styleClass="search-container" alignment="CENTER_LEFT" spacing="10">
-                    <TextField fx:id="searchField" promptText="Search leave records..." styleClass="search-field" prefWidth="300" onAction="#handleSearch"/>
+                    <TextField fx:id="searchField" promptText="Search leave records..." styleClass="search-field" prefWidth="250" maxWidth="350" onAction="#handleSearch"/>
                     <Button text="🔍" styleClass="search-button" onAction="#handleSearch"/>
                 </HBox>
                 <Button text="🔔" styleClass="icon-button"/>
             </HBox>
-            <ScrollPane styleClass="content-scroll" fitToWidth="true" VBox.vgrow="ALWAYS">
+            <ScrollPane styleClass="content-scroll" fitToWidth="true" fitToHeight="false" VBox.vgrow="ALWAYS">
                 <VBox styleClass="dashboard-content" spacing="20">
                     <padding><Insets top="25" bottom="25" left="25" right="25"/></padding>
 
@@ -102,21 +102,23 @@
                     <HBox alignment="CENTER_LEFT" spacing="15">
                         <Text text="Leave History" styleClass="card-title"/>
                         <Region HBox.hgrow="ALWAYS"/>
+                        <ComboBox fx:id="filterDepartment" promptText="All Departments" styleClass="filter-combo" prefWidth="160"/>
                         <ComboBox fx:id="filterType" promptText="All Types" styleClass="filter-combo" prefWidth="140"/>
                         <Button text="➕ Add Leave" styleClass="action-primary" onAction="#handleApplyLeave"/>
                     </HBox>
 
-                    <VBox styleClass="content-card" spacing="0">
-                        <TableView fx:id="leaveTable" styleClass="management-table" VBox.vgrow="ALWAYS" prefHeight="400">
+                    <VBox styleClass="content-card" spacing="0" VBox.vgrow="ALWAYS">
+                        <TableView fx:id="leaveTable" styleClass="management-table"
+                                   VBox.vgrow="ALWAYS" prefHeight="400" maxHeight="Infinity" maxWidth="Infinity">
                             <columns>
-                                <TableColumn fx:id="colId" text="ID" prefWidth="50"/>
-                                <TableColumn fx:id="colEmployee" text="Employee" prefWidth="150"/>
-                                <TableColumn fx:id="colDuration" text="Duration (days)" prefWidth="110"/>
-                                <TableColumn fx:id="colStartDate" text="Start Date" prefWidth="110"/>
-                                <TableColumn fx:id="colEndDate" text="End Date" prefWidth="110"/>
-                                <TableColumn fx:id="colType" text="Type" prefWidth="100"/>
-                                <TableColumn fx:id="colReason" text="Reason" prefWidth="130"/>
-                                <TableColumn fx:id="colActions" text="Actions" prefWidth="160"/>
+                                <TableColumn fx:id="colId" text="ID" prefWidth="50" minWidth="40"/>
+                                <TableColumn fx:id="colEmployee" text="Employee" prefWidth="145" minWidth="100"/>
+                                <TableColumn fx:id="colDuration" text="Duration (days)" prefWidth="110" minWidth="80"/>
+                                <TableColumn fx:id="colStartDate" text="Start Date" prefWidth="105" minWidth="80"/>
+                                <TableColumn fx:id="colEndDate" text="End Date" prefWidth="105" minWidth="80"/>
+                                <TableColumn fx:id="colType" text="Type" prefWidth="95" minWidth="70"/>
+                                <TableColumn fx:id="colReason" text="Reason" prefWidth="125" minWidth="90"/>
+                                <TableColumn fx:id="colActions" text="Actions" prefWidth="140" minWidth="120"/>
                             </columns>
                         </TableView>
                     </VBox>

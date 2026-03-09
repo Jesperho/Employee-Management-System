@@ -52,7 +52,17 @@ public class DepartmentController implements Initializable {
 
     @FXML private Text pageInfo;
 
-    // Employee detail section (shown when filtering by specific department)
+    // Employee detail view (full-page swap on double-click)
+    @FXML private ScrollPane deptScrollPane;
+    @FXML private VBox employeeDetailView;
+    @FXML private Button btnBackToDepts;
+    @FXML private TextField empSearchField;
+    @FXML private Text empStatTotal;
+    @FXML private Text empStatFullTime;
+    @FXML private Text empStatPartTime;
+    @FXML private Text empStatAvgSalary;
+
+    // Employee detail section
     @FXML private VBox employeeSection;
     @FXML private Text employeeSectionTitle;
     @FXML private TableView<ObservableList<String>> employeeTable;
@@ -79,6 +89,7 @@ public class DepartmentController implements Initializable {
 
     private ObservableList<ObservableList<String>> deptData = FXCollections.observableArrayList();
     private ObservableList<ObservableList<String>> employeeData = FXCollections.observableArrayList();
+    private List<Employee> currentDeptEmployees = new java.util.ArrayList<>();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -86,6 +97,8 @@ public class DepartmentController implements Initializable {
         setupEmployeeTable();
         loadFromDatabase();
         setupFilters();
+        if (searchField != null)
+            searchField.textProperty().addListener((obs, o, n) -> applyFilters());
     }
 
     // Loads all departments from DB and refreshes the table and stats
@@ -122,11 +135,13 @@ public class DepartmentController implements Initializable {
     }
 
     private void applyFilters() {
-        String dept = filterDepartment.getValue();
-        String cap = filterCapacity.getValue();
+        String dept   = filterDepartment.getValue();
+        String cap    = filterCapacity.getValue();
+        String search = searchField != null ? searchField.getText().trim().toLowerCase() : "";
 
-        // If a specific department is selected, show employee details for that department
-        if (dept != null && !dept.equals("All Departments")) {
+        // Only do the full-page swap when dept filter changes AND no search text
+        // (search should filter the dept TABLE, not jump to employee view)
+        if (dept != null && !dept.equals("All Departments") && search.isEmpty()) {
             int deptId = -1;
             for (ObservableList<String> row : deptData) {
                 if (row.get(1).equalsIgnoreCase(dept)) {
@@ -136,11 +151,19 @@ public class DepartmentController implements Initializable {
             }
             if (deptId != -1) {
                 showEmployeesForDepartment(dept, deptId);
+                return; // page is swapped, no need to filter the dept table
             }
-        } else {
-            hideEmployeeSection();
+        } else if ((dept == null || dept.equals("All Departments")) && !search.isEmpty()) {
+            // Make sure we're on the dept view (not employee detail view) when searching
+            if (!deptScrollPane.isVisible()) {
+                deptScrollPane.setVisible(true);
+                deptScrollPane.setManaged(true);
+                employeeDetailView.setVisible(false);
+                employeeDetailView.setManaged(false);
+            }
         }
 
+        // row indices: 0=id, 1=name, 2=capacity, 3=empCount, 4=creationDate, 5=description
         FilteredList<ObservableList<String>> filtered = new FilteredList<>(deptData, row -> {
             if (dept != null && !dept.equals("All Departments")) {
                 if (!row.get(1).equalsIgnoreCase(dept)) return false;
@@ -148,19 +171,48 @@ public class DepartmentController implements Initializable {
             if (cap != null && !cap.equals("All Capacities")) {
                 try {
                     int capacity = Integer.parseInt(row.get(2));
-                    if (cap.equals("Small (< 30)") && capacity >= 30) return false;
-                    if (cap.equals("Medium (30-50)") && (capacity < 30 || capacity > 50)) return false;
-                    if (cap.equals("Large (> 50)") && capacity <= 50) return false;
+                    if (cap.equals("Small (< 30)")    && capacity >= 30) return false;
+                    if (cap.equals("Medium (30-50)")  && (capacity < 30 || capacity > 50)) return false;
+                    if (cap.equals("Large (> 50)")    && capacity <= 50) return false;
                 } catch (NumberFormatException ignored) {}
+            }
+            if (!search.isEmpty()) {
+                // Search by dept name (index 1) OR description (index 5)
+                boolean nameMatch = row.get(1).toLowerCase().contains(search);
+                boolean descMatch = row.size() > 5 && row.get(5).toLowerCase().contains(search);
+                if (!nameMatch && !descMatch) return false;
             }
             return true;
         });
         departmentTable.setItems(filtered);
     }
 
-    // Loads real employees for the selected department from DB
+    // Loads employees for a dept and swaps to the full-page employee detail view
     private void showEmployeesForDepartment(String deptName, int deptId) {
         List<Employee> employees = employeeDao.findByDepartment(deptId);
+        currentDeptEmployees = new java.util.ArrayList<>(employees);
+        populateEmployeeTable(employees, deptName);
+
+        // Update stats
+        long ft = employees.stream().filter(e -> "Full-time".equalsIgnoreCase(e.getContractType()) || "Full Time".equalsIgnoreCase(e.getContractType())).count();
+        long pt = employees.stream().filter(e -> "Part-time".equalsIgnoreCase(e.getContractType()) || "Part Time".equalsIgnoreCase(e.getContractType())).count();
+        double avg = employees.stream().filter(e -> e.getSalary() != null).mapToDouble(e -> e.getSalary()).average().orElse(0);
+
+        if (empStatTotal != null)    empStatTotal.setText(String.valueOf(employees.size()));
+        if (empStatFullTime != null) empStatFullTime.setText(String.valueOf(ft));
+        if (empStatPartTime != null) empStatPartTime.setText(String.valueOf(pt));
+        if (empStatAvgSalary != null) empStatAvgSalary.setText("€" + (int) avg);
+
+        employeeSectionTitle.setText("🏢  " + deptName + "  —  " + employees.size() + " Employees");
+
+        // Swap to employee detail view
+        deptScrollPane.setVisible(false);
+        deptScrollPane.setManaged(false);
+        employeeDetailView.setVisible(true);
+        employeeDetailView.setManaged(true);
+    }
+
+    private void populateEmployeeTable(List<Employee> employees, String deptName) {
         employeeData.clear();
         for (Employee emp : employees) {
             employeeData.add(FXCollections.observableArrayList(
@@ -174,29 +226,61 @@ public class DepartmentController implements Initializable {
             ));
         }
         employeeTable.setItems(employeeData);
-        employeeSectionTitle.setText("Employees in " + deptName + " (" + employees.size() + " found)");
-        employeeSection.setVisible(true);
-        employeeSection.setManaged(true);
     }
 
     private void hideEmployeeSection() {
-        employeeSection.setVisible(false);
-        employeeSection.setManaged(false);
+        // no-op kept for compatibility
     }
 
     @FXML
     private void handleShowAllDepartments() {
+        // Swap back to dept view
+        employeeDetailView.setVisible(false);
+        employeeDetailView.setManaged(false);
+        deptScrollPane.setVisible(true);
+        deptScrollPane.setManaged(true);
         filterDepartment.setValue("All Departments");
-        applyFilters();
+    }
+
+    @FXML
+    private void handleEmployeeSearch() {
+        String q = empSearchField.getText().trim().toLowerCase();
+        if (q.isEmpty()) {
+            employeeTable.setItems(employeeData);
+            return;
+        }
+        javafx.collections.transformation.FilteredList<ObservableList<String>> filtered =
+                new javafx.collections.transformation.FilteredList<>(employeeData, row ->
+                        row.get(1).toLowerCase().contains(q) ||
+                        row.get(3).toLowerCase().contains(q) ||
+                        row.get(5).toLowerCase().contains(q)
+                );
+        employeeTable.setItems(filtered);
     }
 
     private void setupTable() {
+        departmentTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
         colId.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().get(0)));
         colName.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().get(1)));
         colCapacity.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().get(2)));
         colEmployees.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().get(3)));
         colCreationDate.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().get(4)));
         colDescription.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().get(5)));
+
+        // Double-click a row to show employees for that department
+        departmentTable.setRowFactory(tv -> {
+            TableRow<ObservableList<String>> row = new TableRow<>();
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && !row.isEmpty()) {
+                    ObservableList<String> rowData = row.getItem();
+                    String deptName = rowData.get(1);
+                    int deptId = Integer.parseInt(rowData.get(0));
+                    showEmployeesForDepartment(deptName, deptId);
+                }
+            });
+            return row;
+        });
 
         colActions.setCellFactory(col -> new TableCell<>() {
             private final Button editBtn = new Button("Edit");
@@ -227,6 +311,8 @@ public class DepartmentController implements Initializable {
     }
 
     private void setupEmployeeTable() {
+        employeeTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
         empColId.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().get(0)));
         empColName.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().get(1)));
         empColDept.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().get(2)));
@@ -236,22 +322,31 @@ public class DepartmentController implements Initializable {
         empColGender.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().get(6)));
 
         empColActions.setCellFactory(col -> new TableCell<>() {
-            private final Button viewBtn = new Button("View");
-            private final Button editBtn = new Button("Edit");
-            private final HBox box = new HBox(5, viewBtn, editBtn);
+            private final Button viewBtn   = new Button("View");
+            private final Button editBtn   = new Button("Edit");
+            private final Button deleteBtn = new Button("Del");
+            private final HBox   box       = new HBox(5, viewBtn, editBtn, deleteBtn);
 
             {
                 viewBtn.getStyleClass().addAll("table-action-btn", "btn-view");
                 editBtn.getStyleClass().addAll("table-action-btn", "btn-edit");
+                deleteBtn.getStyleClass().addAll("table-action-btn", "btn-delete");
                 box.setAlignment(Pos.CENTER);
 
                 viewBtn.setOnAction(e -> {
-                    ObservableList<String> row = getTableView().getItems().get(getIndex());
-                    showEmployeeViewPopup(row);
+                    int idx = getIndex();
+                    if (idx >= 0 && idx < currentDeptEmployees.size())
+                        showEmpViewPopup(currentDeptEmployees.get(idx));
                 });
                 editBtn.setOnAction(e -> {
-                    ObservableList<String> row = getTableView().getItems().get(getIndex());
-                    showEmployeeViewPopup(row);
+                    int idx = getIndex();
+                    if (idx >= 0 && idx < currentDeptEmployees.size())
+                        showEmpEditPopup(currentDeptEmployees.get(idx));
+                });
+                deleteBtn.setOnAction(e -> {
+                    int idx = getIndex();
+                    if (idx >= 0 && idx < currentDeptEmployees.size())
+                        handleDeleteEmployee(currentDeptEmployees.get(idx));
                 });
             }
 
@@ -263,20 +358,239 @@ public class DepartmentController implements Initializable {
         });
     }
 
-    private void showEmployeeViewPopup(ObservableList<String> row) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Employee Details");
-        alert.setHeaderText("Employee: " + row.get(1));
-        alert.setContentText(
-                "ID: " + row.get(0) + "\n" +
-                "Name: " + row.get(1) + "\n" +
-                "Department: " + row.get(2) + "\n" +
-                "Job Title: " + row.get(3) + "\n" +
-                "Start Date: " + row.get(4) + "\n" +
-                "Contract: " + row.get(5) + "\n" +
-                "Gender: " + row.get(6)
-        );
-        alert.showAndWait();
+    private void showEmpViewPopup(Employee emp) {
+        Stage popup = new Stage();
+        popup.initModality(Modality.APPLICATION_MODAL);
+        popup.initStyle(StageStyle.UNDECORATED);
+        popup.setTitle("Employee Details");
+
+        // Header gradient banner
+        VBox header = new VBox(6);
+        header.setAlignment(Pos.CENTER);
+        header.setPadding(new Insets(28, 30, 22, 30));
+        header.setStyle("-fx-background-color: linear-gradient(to bottom right, #1a1f36, #2d3561); -fx-background-radius: 15 15 0 0;");
+
+        // Avatar circle with initials
+        StackPane avatar = new StackPane();
+        javafx.scene.shape.Circle avatarCircle = new javafx.scene.shape.Circle(32);
+        avatarCircle.setStyle("-fx-fill: linear-gradient(to bottom right, #6c63ff, #4834d4);");
+        String initials = emp.getFullName() != null && !emp.getFullName().isEmpty()
+                ? (emp.getFullName().trim().contains(" ")
+                    ? String.valueOf(emp.getFullName().charAt(0)) + emp.getFullName().trim().split(" ")[1].charAt(0)
+                    : String.valueOf(emp.getFullName().charAt(0)))
+                : "?";
+        javafx.scene.text.Text avatarText = new javafx.scene.text.Text(initials.toUpperCase());
+        avatarText.setStyle("-fx-fill: white; -fx-font-size: 18px; -fx-font-weight: bold;");
+        avatar.getChildren().addAll(avatarCircle, avatarText);
+
+        javafx.scene.text.Text nameText = new javafx.scene.text.Text(emp.getFullName() != null ? emp.getFullName() : "N/A");
+        nameText.setStyle("-fx-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;");
+        String deptName = emp.getDepartment() != null ? emp.getDepartment().getDepartmentName() : "N/A";
+        javafx.scene.text.Text roleText = new javafx.scene.text.Text(
+                (emp.getPosition() != null ? emp.getPosition() : "Employee") + "  •  " + deptName);
+        roleText.setStyle("-fx-fill: rgba(255,255,255,0.7); -fx-font-size: 12px;");
+        header.getChildren().addAll(avatar, nameText, roleText);
+
+        // Info grid
+        GridPane grid = new GridPane();
+        grid.setHgap(20);
+        grid.setVgap(14);
+        grid.setPadding(new Insets(24, 30, 10, 30));
+
+        String salary = emp.getSalary() != null ? "€" + String.format("%,.0f", emp.getSalary()) : "N/A";
+        addInfoRow(grid, 0, "🪪  Employee ID",  String.valueOf(emp.getId()),                    "📅  Start Date",  emp.getStartDate() != null ? emp.getStartDate().toString() : "N/A");
+        addInfoRow(grid, 1, "⚧  Gender",        emp.getGender() != null ? emp.getGender() : "N/A", "📋  Contract",  emp.getContractType() != null ? emp.getContractType() : "N/A");
+        addInfoRow(grid, 2, "💰  Salary",        salary,                                        "🏢  Department", deptName);
+        if (emp.getDescription() != null && !emp.getDescription().isEmpty()) {
+            addInfoRow(grid, 3, "📝  Description", emp.getDescription(), "", "");
+        }
+
+        // Close button
+        Button closeBtn = new Button("✕  Close");
+        closeBtn.setStyle("-fx-background-color: linear-gradient(to right, #6c63ff, #5a52d4); -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 13px; -fx-padding: 10 30; -fx-background-radius: 8; -fx-cursor: hand;");
+        closeBtn.setOnAction(e -> popup.close());
+        HBox footer = new HBox(closeBtn);
+        footer.setAlignment(Pos.CENTER_RIGHT);
+        footer.setPadding(new Insets(10, 30, 24, 30));
+
+        VBox card = new VBox();
+        card.setStyle("-fx-background-color: white; -fx-background-radius: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 20, 0, 0, 5);");
+        card.getChildren().addAll(header, grid, footer);
+        card.setMaxWidth(460);
+
+        StackPane root = new StackPane(card);
+        root.setStyle("-fx-background-color: transparent;");
+        root.setPadding(new Insets(10));
+
+        Scene scene = new Scene(root);
+        scene.setFill(javafx.scene.paint.Color.TRANSPARENT);
+        var css = getClass().getResource("/css/management.css");
+        if (css != null) scene.getStylesheets().add(css.toExternalForm());
+        popup.setScene(scene);
+        popup.showAndWait();
+    }
+
+    private void addInfoRow(GridPane grid, int row, String label1, String val1, String label2, String val2) {
+        Label l1 = new Label(label1);
+        l1.setStyle("-fx-text-fill: #7f8c8d; -fx-font-size: 11px; -fx-font-weight: bold;");
+        Label v1 = new Label(val1);
+        v1.setStyle("-fx-text-fill: #1a1f36; -fx-font-size: 13px; -fx-font-weight: bold;");
+        VBox col1 = new VBox(3, l1, v1);
+        col1.setStyle("-fx-background-color: #f8f9ff; -fx-background-radius: 8; -fx-padding: 10 14;");
+        col1.setMinWidth(160);
+        grid.add(col1, 0, row);
+
+        if (!label2.isEmpty()) {
+            Label l2 = new Label(label2);
+            l2.setStyle("-fx-text-fill: #7f8c8d; -fx-font-size: 11px; -fx-font-weight: bold;");
+            Label v2 = new Label(val2);
+            v2.setStyle("-fx-text-fill: #1a1f36; -fx-font-size: 13px; -fx-font-weight: bold;");
+            VBox col2 = new VBox(3, l2, v2);
+            col2.setStyle("-fx-background-color: #f8f9ff; -fx-background-radius: 8; -fx-padding: 10 14;");
+            col2.setMinWidth(160);
+            grid.add(col2, 1, row);
+        } else {
+            GridPane.setColumnSpan(col1, 2);
+        }
+    }
+
+    private void showEmpEditPopup(Employee emp) {
+        Stage popup = new Stage();
+        popup.initModality(Modality.APPLICATION_MODAL);
+        popup.initStyle(StageStyle.DECORATED);
+        popup.setTitle("Edit Employee");
+
+        VBox form = new VBox(15);
+        form.setPadding(new Insets(25));
+        form.setStyle("-fx-background-color: white;");
+
+        Text formTitle = new Text("Edit Employee");
+        formTitle.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-fill: #1a1f36;");
+
+        GridPane grid = new GridPane();
+        grid.setHgap(15);
+        grid.setVgap(12);
+
+        TextField nameField = createFormField("Full Name");
+        nameField.setText(emp.getFullName() != null ? emp.getFullName() : "");
+
+        ComboBox<String> genderCombo = new ComboBox<>(FXCollections.observableArrayList("Male", "Female", "Other"));
+        genderCombo.setValue(emp.getGender());
+        genderCombo.setPrefWidth(200);
+        genderCombo.setStyle("-fx-background-color: #f8f9fa; -fx-border-color: #e0e3e8; -fx-border-radius: 8; -fx-background-radius: 8;");
+
+        List<Department> departments = departmentDao.findAll();
+        ComboBox<Department> deptCombo = new ComboBox<>(FXCollections.observableArrayList(departments));
+        deptCombo.setPrefWidth(200);
+        deptCombo.setStyle("-fx-background-color: #f8f9fa; -fx-border-color: #e0e3e8; -fx-border-radius: 8; -fx-background-radius: 8;");
+        deptCombo.setCellFactory(lv -> new ListCell<>() {
+            @Override protected void updateItem(Department d, boolean empty) {
+                super.updateItem(d, empty);
+                setText(empty || d == null ? null : d.getDepartmentName());
+            }
+        });
+        deptCombo.setButtonCell(new ListCell<>() {
+            @Override protected void updateItem(Department d, boolean empty) {
+                super.updateItem(d, empty);
+                setText(empty || d == null ? null : d.getDepartmentName());
+            }
+        });
+        if (emp.getDepartment() != null) {
+            departments.stream().filter(d -> d.getId() == emp.getDepartment().getId())
+                    .findFirst().ifPresent(deptCombo::setValue);
+        }
+
+        TextField jobTitleField = createFormField("Job Title");
+        jobTitleField.setText(emp.getPosition() != null ? emp.getPosition() : "");
+
+        TextArea descField = new TextArea();
+        descField.setPromptText("Description");
+        descField.setPrefRowCount(3);
+        descField.setText(emp.getDescription() != null ? emp.getDescription() : "");
+        descField.setStyle("-fx-background-color: #f8f9fa; -fx-border-color: #e0e3e8; -fx-border-radius: 8;");
+
+        DatePicker startDate = new DatePicker(emp.getStartDate());
+        startDate.setPrefWidth(200);
+
+        ComboBox<String> contractCombo = new ComboBox<>(
+                FXCollections.observableArrayList("Full Time", "Part Time", "Remote", "Intern", "Full-time", "Part-time"));
+        contractCombo.setValue(emp.getContractType());
+        contractCombo.setPrefWidth(200);
+        contractCombo.setStyle("-fx-background-color: #f8f9fa; -fx-border-color: #e0e3e8; -fx-border-radius: 8; -fx-background-radius: 8;");
+
+        TextField salaryField = createFormField("Salary (€)");
+        if (emp.getSalary() != null) salaryField.setText(String.valueOf(emp.getSalary()));
+
+        grid.add(createLabel("Name"),        0, 0); grid.add(nameField,    1, 0);
+        grid.add(createLabel("Gender"),      2, 0); grid.add(genderCombo,  3, 0);
+        grid.add(createLabel("Department"),  0, 1); grid.add(deptCombo,    1, 1);
+        grid.add(createLabel("Job Title"),   2, 1); grid.add(jobTitleField,3, 1);
+        grid.add(createLabel("Description"), 0, 2);
+        GridPane.setColumnSpan(descField, 3);
+        grid.add(descField, 1, 2);
+        grid.add(createLabel("Start Date"),  0, 3); grid.add(startDate,    1, 3);
+        grid.add(createLabel("Contract"),    2, 3); grid.add(contractCombo,3, 3);
+        grid.add(createLabel("Salary"),      0, 4); grid.add(salaryField,  1, 4);
+
+        Button updateBtn = new Button("Update");
+        updateBtn.setStyle("-fx-background-color: linear-gradient(to right, #6c63ff, #5a52d4); -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 12 30; -fx-background-radius: 8; -fx-cursor: hand;");
+
+        Button cancelBtn = new Button("Cancel");
+        cancelBtn.setStyle("-fx-background-color: white; -fx-text-fill: #e74c3c; -fx-border-color: #e74c3c; -fx-border-radius: 8; -fx-background-radius: 8; -fx-font-size: 14px; -fx-padding: 12 30; -fx-cursor: hand; -fx-font-weight: bold;");
+
+        updateBtn.setOnAction(e -> {
+            if (nameField.getText().isEmpty()) { showAlert("Validation Error", "Name is required."); return; }
+            Double salary = null;
+            if (!salaryField.getText().isEmpty()) {
+                try { salary = Double.parseDouble(salaryField.getText()); }
+                catch (NumberFormatException ex) { showAlert("Validation Error", "Salary must be a valid number."); return; }
+            }
+            emp.setFullName(nameField.getText());
+            emp.setGender(genderCombo.getValue());
+            emp.setPosition(jobTitleField.getText());
+            emp.setDescription(descField.getText());
+            emp.setStartDate(startDate.getValue());
+            emp.setContractType(contractCombo.getValue());
+            emp.setSalary(salary);
+            emp.setDepartment(deptCombo.getValue());
+            employeeDao.update(emp);
+            // Refresh the employee section
+            if (employeeSectionTitle.getText().contains("in ")) {
+                String sectionTitle = employeeSectionTitle.getText();
+                int deptId = emp.getDepartment() != null ? emp.getDepartment().getId() : -1;
+                String dn  = emp.getDepartment() != null ? emp.getDepartment().getDepartmentName() : "";
+                if (deptId != -1) showEmployeesForDepartment(dn, deptId);
+            }
+            popup.close();
+        });
+        cancelBtn.setOnAction(e -> popup.close());
+
+        HBox buttonBar = new HBox(15);
+        buttonBar.setAlignment(Pos.CENTER_RIGHT);
+        buttonBar.getChildren().addAll(updateBtn, cancelBtn);
+
+        form.getChildren().addAll(formTitle, grid, buttonBar);
+        Scene scene = new Scene(form, 720, 490);
+        var css = getClass().getResource("/css/management.css");
+        if (css != null) scene.getStylesheets().add(css.toExternalForm());
+        popup.setScene(scene);
+        popup.showAndWait();
+    }
+
+    private void handleDeleteEmployee(Employee emp) {
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Delete Employee");
+        confirm.setHeaderText("Are you sure?");
+        confirm.setContentText("Delete employee: " + emp.getFullName() + "?");
+        java.util.Optional<ButtonType> result = confirm.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            employeeDao.delete(emp.getId());
+            // Refresh
+            if (emp.getDepartment() != null) {
+                showEmployeesForDepartment(emp.getDepartment().getDepartmentName(), emp.getDepartment().getId());
+            }
+            loadFromDatabase();
+        }
     }
 
     private void updateStats() {
