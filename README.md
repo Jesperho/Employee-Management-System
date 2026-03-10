@@ -41,22 +41,17 @@ The technology stack for the **Employee Management System** has been selected to
 ### DevOps & Tools
 To meet the course's strict **DevOps** and **Quality Assurance** requirements, the following tools are integrated into the stack:
 
-| Category | Tool | Rationale |
-| :--- | :--- | :--- |
-| **Version Control** | **Git & GitHub** | Essential for collaborative development and required for the weekly Sprint deliverables. |
-| **CI/CD** | **Jenkins** | Mandatory for Sprint 3. Automates the build and testing process to ensure the software remains in a releasable state. |
-| **Containerization** | **Docker** | Required for Sprint 4. Containerizes the application to ensure consistency across development and production environments. |
-| **Testing** | **JUnit** | The standard framework for Java unit testing required for Week 3 and Code Coverage reports in Week 4. |
-| **Modeling** | **StarUML (v5.0.1)** | The specific tool mandated by the course for creating Use Case and Class diagrams. |
+| Category | Tool | Rationale                                                                                           |
+| :--- | :--- |:----------------------------------------------------------------------------------------------------|
+| **Version Control** | **Git & GitHub** | Essential for collaborative development.                                                            |
+| **CI/CD** | **Jenkins** | Automates the build and testing process to ensure the software remains in a releasable state.       |
+| **Containerization** | **Docker** | Containerizes the application to ensure consistency across development and production environments. |
+| **Testing** | **JUnit** | The standard framework for Java unit testing.                                                       |
+| **Modeling** | **StarUML (v5.0.1)** | The specific tool for creating Use Case and Class diagrams.                                         |
 
 ---
 
 ## Architecture Design
-The relational schema represents the physical database structure in MariaDB.  
-It includes primary keys, foreign keys, and table relationships for all entities in the system.
-
-![Relational Schema](https://github.com/Jesperho/Employee-Management-System/blob/main/docs/Diagrams/Relational_Schema.jpeg)
-
 The system follows a modular architecture with clear separation of concerns:
 
 ### **1. Entity Layer**
@@ -82,6 +77,12 @@ Each entity has a dedicated DAO responsible for:
 
 ### **3. Database Layer**
 MariaDB stores all persistent data with foreign‑key relationships ensuring consistency.
+
+### **4. ## Relational Schema
+The relational schema represents the physical database structure in MariaDB.  
+It includes primary keys, foreign keys, and table relationships for all entities in the system.
+
+![Relational Schema](https://github.com/Jesperho/Employee-Management-System/blob/main/docs/Diagrams/Relational_Schema.jpeg)
 
 ---
 
