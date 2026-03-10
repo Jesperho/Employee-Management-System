@@ -16,7 +16,7 @@ pipeline {
 
         stage('Check') {
             steps {
-                git branch: 'main', url: 'https://github.com/Jesperho/Employee-Management-System.git'
+                git branch: 'dockerTest', url: 'https://github.com/Jesperho/Employee-Management-System.git'
             }
         }
 
