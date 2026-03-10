@@ -5,7 +5,7 @@ services:
     image: mariadb:11
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: mehdizaidane1
+      MYSQL_ROOT_PASSWORD: password
       MYSQL_DATABASE: employment_management
     ports:
       - "3307:3306"
@@ -20,7 +20,7 @@ services:
       DB_HOST: db
       DB_PORT: 3306
       DB_USER: root
-      DB_PASSWORD: mehdizaidane1
+      DB_PASSWORD: password
       DISPLAY: host.docker.internal:0
     volumes:
       - ./src:/app/src
