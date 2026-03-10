@@ -105,6 +105,12 @@ public class DepartmentController implements Initializable {
         setupFilters();
         if (searchField != null)
             searchField.textProperty().addListener((obs, o, n) -> applyFilters());
+
+        // If the dashboard sent us here via "Create Department", open the form immediately
+        String pending = app.UserSession.getInstance().consumePendingAction();
+        if ("ADD_DEPARTMENT".equals(pending)) {
+            javafx.application.Platform.runLater(this::handleAddDepartment);
+        }
     }
 
     private void updateUserProfile() {

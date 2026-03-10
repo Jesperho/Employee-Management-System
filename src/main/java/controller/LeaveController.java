@@ -84,6 +84,11 @@ public class LeaveController implements Initializable {
         if (searchField != null) {
             searchField.textProperty().addListener((obs, oldVal, newVal) -> applyFilters());
         }
+        // If the dashboard sent us here via "Process Leave Request", open the form immediately
+        String pending = app.UserSession.getInstance().consumePendingAction();
+        if ("ADD_LEAVE".equals(pending)) {
+            javafx.application.Platform.runLater(this::handleApplyLeave);
+        }
     }
 
     private void updateUserProfile() {

@@ -82,6 +82,12 @@ public class EmployeeController implements Initializable {
         loadFromDatabase();
         if (searchField != null)
             searchField.textProperty().addListener((obs, o, n) -> applyFilters());
+
+        // If the dashboard sent us here via "Add New Employee", open the form immediately
+        String pending = app.UserSession.getInstance().consumePendingAction();
+        if ("ADD_EMPLOYEE".equals(pending)) {
+            javafx.application.Platform.runLater(this::handleAddEmployee);
+        }
     }
 
     private void updateUserProfile() {

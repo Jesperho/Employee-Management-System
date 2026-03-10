@@ -105,7 +105,7 @@ public class DashboardController implements Initializable {
         if (departmentTable == null) return;
 
         deptNameColumn.setCellValueFactory(data -> data.getValue().nameProperty());
-        deptHeadColumn.setCellValueFactory(data -> data.getValue().headProperty());
+        deptHeadColumn.setCellValueFactory(data -> data.getValue().headProperty());      // now shows Capacity
         deptEmployeesColumn.setCellValueFactory(data -> data.getValue().employeeCountProperty());
         deptStatusColumn.setCellValueFactory(data -> data.getValue().statusProperty());
 
@@ -120,7 +120,9 @@ public class DashboardController implements Initializable {
                     count++;
                 }
             }
-            rows.add(new DepartmentRow(dept.getDepartmentName(), "N/A", String.valueOf(count), "Active"));
+            // Show capacity in the "head" column (capacity value from the entity)
+            String capacityStr = dept.getCapacity() > 0 ? String.valueOf(dept.getCapacity()) : "—";
+            rows.add(new DepartmentRow(dept.getDepartmentName(), capacityStr, String.valueOf(count), "Active"));
         }
         departmentTable.setItems(rows);
     }
@@ -564,11 +566,19 @@ public class DashboardController implements Initializable {
         }
     }
 
-    @FXML private void handleAddEmployee() { navigateTo("/fxml/employee.fxml", "/css/management.css"); }
-    @FXML private void handleCreateDepartment() { navigateTo("/fxml/department.fxml", "/css/management.css"); }
-    @FXML private void handleProcessLeave() { navigateTo("/fxml/leave.fxml", "/css/management.css"); }
+    @FXML private void handleAddEmployee() {
+        app.UserSession.getInstance().setPendingAction("ADD_EMPLOYEE");
+        navigateTo("/fxml/employee.fxml", "/css/management.css");
+    }
+    @FXML private void handleCreateDepartment() {
+        app.UserSession.getInstance().setPendingAction("ADD_DEPARTMENT");
+        navigateTo("/fxml/department.fxml", "/css/management.css");
+    }
+    @FXML private void handleProcessLeave() {
+        app.UserSession.getInstance().setPendingAction("ADD_LEAVE");
+        navigateTo("/fxml/leave.fxml", "/css/management.css");
+    }
     @FXML private void handleRunPayroll() { navigateTo("/fxml/salary.fxml", "/css/management.css"); }
-    @FXML private void handleGenerateReport() { System.out.println("Generating report..."); }
 
     private void showAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);

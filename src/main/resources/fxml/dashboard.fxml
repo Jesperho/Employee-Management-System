@@ -203,8 +203,6 @@
                                         maxWidth="Infinity" onAction="#handleProcessLeave"/>
                                 <Button text="💵  Run Payroll" styleClass="action-button"
                                         maxWidth="Infinity" onAction="#handleRunPayroll"/>
-                                <Button text="📊  Generate Report" styleClass="action-button"
-                                        maxWidth="Infinity" onAction="#handleGenerateReport"/>
                             </VBox>
                         </VBox>
                     </HBox>
@@ -225,9 +223,9 @@
                             <TableView fx:id="departmentTable" styleClass="department-table" prefHeight="200">
                                 <columns>
                                     <TableColumn fx:id="deptNameColumn" text="Department" prefWidth="150"/>
-                                    <TableColumn fx:id="deptHeadColumn" text="Head" prefWidth="120"/>
+                                    <TableColumn fx:id="deptHeadColumn" text="Capacity" prefWidth="90"/>
                                     <TableColumn fx:id="deptEmployeesColumn" text="Employees" prefWidth="80"/>
-                                    <TableColumn fx:id="deptStatusColumn" text="Status" prefWidth="100"/>
+                                    <TableColumn fx:id="deptStatusColumn" text="Status" prefWidth="80"/>
                                 </columns>
                             </TableView>
                         </VBox>
@@ -265,7 +263,7 @@
                                     </HBox>
                                 </VBox>
 
-                                <Button text="View Full Report" styleClass="secondary-button" maxWidth="Infinity"
+                                <Button text="Open Salary Management →" styleClass="secondary-button" maxWidth="Infinity"
                                         onAction="#handleSalary"/>
                             </VBox>
                         </VBox>

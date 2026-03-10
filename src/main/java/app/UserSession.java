@@ -12,6 +12,7 @@ public class UserSession {
     private String fullName  = "Admin";
     private String initials  = "AD";
     private String role      = "Administrator";
+    private String pendingAction = null;  // e.g. "ADD_EMPLOYEE", "ADD_DEPARTMENT", "ADD_LEAVE"
 
     private UserSession() {}
 
@@ -40,5 +41,18 @@ public class UserSession {
     public String getFullName()  { return fullName;  }
     public String getInitials()  { return initials;  }
     public String getRole()      { return role;      }
+
+    /** Set an action to be consumed by the next page controller on initialize. */
+    public void setPendingAction(String action) { this.pendingAction = action; }
+
+    /**
+     * Reads and clears the pending action (consume-once pattern).
+     * Returns null if no action is pending.
+     */
+    public String consumePendingAction() {
+        String a = pendingAction;
+        pendingAction = null;
+        return a;
+    }
 }
 
