@@ -35,8 +35,6 @@
                 <Button fx:id="btnLeave" text="📅  Leave Management" styleClass="nav-button, nav-button-active" onAction="#handleLeave" maxWidth="Infinity" alignment="CENTER_LEFT"/>
                 <Button fx:id="btnSalary" text="💰  Salary" styleClass="nav-button" onAction="#handleSalary" maxWidth="Infinity" alignment="CENTER_LEFT"/>
                 <Region VBox.vgrow="ALWAYS"/>
-                <Text text="SETTINGS" styleClass="menu-section-label"/>
-                <Button text="⚙️  Settings" styleClass="nav-button" maxWidth="Infinity" alignment="CENTER_LEFT"/>
                 <Button fx:id="btnLogout" text="🚪  Logout" styleClass="nav-button, logout-button" onAction="#handleLogout" maxWidth="Infinity" alignment="CENTER_LEFT"/>
             </VBox>
         </VBox>
@@ -52,7 +50,6 @@
                     <TextField fx:id="searchField" promptText="Search leave records..." styleClass="search-field" prefWidth="250" maxWidth="350" onAction="#handleSearch"/>
                     <Button text="🔍" styleClass="search-button" onAction="#handleSearch"/>
                 </HBox>
-                <Button text="🔔" styleClass="icon-button"/>
             </HBox>
             <ScrollPane styleClass="content-scroll" fitToWidth="true" fitToHeight="false" VBox.vgrow="ALWAYS">
                 <VBox styleClass="dashboard-content" spacing="20">

@@ -4,6 +4,7 @@ import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.*;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import org.junit.jupiter.api.*;
@@ -105,20 +106,12 @@ class DepartmentControllerTest {
 
     // ─── hideEmployeeSection ──────────────────────────────────────────────────
 
-   /* @Test
-    @DisplayName("hideEmployeeSection hides and unmanages the VBox")
+    @Test
+    @DisplayName("hideEmployeeSection is a no-op and does not throw")
     void hideEmployeeSection() throws Exception {
-        VBox section = new VBox();
-        section.setVisible(true);
-        section.setManaged(true);
-        setField("employeeSection", section);
-
-        invoke("hideEmployeeSection", new Class[]{});
-
-        assertFalse(section.isVisible());
-        assertFalse(section.isManaged());
+        assertDoesNotThrow(() -> invoke("hideEmployeeSection", new Class[]{}));
     }
-*/
+
     // ─── handleSearch ─────────────────────────────────────────────────────────
 
     @Test
@@ -228,16 +221,23 @@ class DepartmentControllerTest {
 
     // ─── handleShowAllDepartments ─────────────────────────────────────────────
 
-   /* @Test
-    @DisplayName("handleShowAllDepartments resets filter and hides employee section")
+    @Test
+    @DisplayName("handleShowAllDepartments resets filter and swaps back to dept view")
     void handleShowAllDepartments() throws Exception {
         setupSearchScenario(
                 deptRow("1", "IT", "50", "30", "2024-01-01", "Tech")
         );
-        VBox empSection = new VBox();
-        empSection.setVisible(true);
-        empSection.setManaged(true);
-        setField("employeeSection", empSection);
+
+        // Simulate being in employee detail view (visible) with dept scroll pane hidden
+        VBox empDetailView = new VBox();
+        empDetailView.setVisible(true);
+        empDetailView.setManaged(true);
+        setField("employeeDetailView", empDetailView);
+
+        ScrollPane deptScroll = new ScrollPane();
+        deptScroll.setVisible(false);
+        deptScroll.setManaged(false);
+        setField("deptScrollPane", deptScroll);
 
         ComboBox<String> deptFilter = getField("filterDepartment");
         deptFilter.setValue("IT");
@@ -245,8 +245,11 @@ class DepartmentControllerTest {
         invoke("handleShowAllDepartments", new Class[]{});
 
         assertEquals("All Departments", deptFilter.getValue());
-        assertFalse(empSection.isVisible());
-    }*/
+        assertFalse(empDetailView.isVisible());
+        assertFalse(empDetailView.isManaged());
+        assertTrue(deptScroll.isVisible());
+        assertTrue(deptScroll.isManaged());
+    }
 
     // ─── createFormField ──────────────────────────────────────────────────────
 

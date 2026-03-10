@@ -2,6 +2,7 @@ package entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -33,10 +34,9 @@ public class Employee {
     private Department department;
 
     @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Leave> leaves;
+    private List<Leave> leaves = new ArrayList<>();   // ⭐ FIXED: always initialized
 
-    public Employee() {
-    }
+    public Employee() {}
 
     public Employee(
             String fullName,
@@ -60,6 +60,7 @@ public class Employee {
         this.role = role;
         this.contractType = contractType;
         this.position = position;
+        this.leaves = new ArrayList<>();   // ⭐ FIXED: ensure non-null in constructor
     }
 
     public int getId() {
@@ -154,7 +155,8 @@ public class Employee {
         return leaves;
     }
 
+    // ⭐ FIXED: safe setter, no more NullPointerException
     public void setLeaves(List<Leave> leaves) {
-        this.leaves = leaves;
+        this.leaves = (leaves != null) ? leaves : new ArrayList<>();
     }
 }

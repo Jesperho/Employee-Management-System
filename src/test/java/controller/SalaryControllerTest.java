@@ -1,4 +1,3 @@
-/*
 package controller;
 
 import javafx.application.Platform;
@@ -13,11 +12,9 @@ import java.lang.reflect.Method;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-*/
 /**
  * Tests UI logic, filtering, statistics, and table setup
- *//*
-
+ */
 class SalaryControllerTest {
 
     private SalaryController controller;
@@ -25,9 +22,7 @@ class SalaryControllerTest {
     @BeforeAll
     static void initJavaFX() {
         try { Platform.startup(() -> {}); }
-        catch (IllegalStateException e) { */
-/* already started *//*
- }
+        catch (IllegalStateException e) { /* already started */ }
     }
 
     @BeforeEach
@@ -59,7 +54,7 @@ class SalaryControllerTest {
     // ─── Helper: salary row (id, name, dept, jobTitle, position, salary, gender)
 
     private ObservableList<String> salaryRow(String id, String name, String dept,
-                                              String job, String pos, String salary, String gender) {
+                                             String job, String pos, String salary, String gender) {
         return FXCollections.observableArrayList(id, name, dept, job, pos, salary, gender);
     }
 
@@ -70,13 +65,11 @@ class SalaryControllerTest {
     void updateStats_correct() throws Exception {
         Text totalPayroll = new Text(); Text avgSalary = new Text();
         Text highestSalary = new Text(); Text employeesPaid = new Text();
-        Text totalPayout = new Text();
 
         setField("totalPayroll",   totalPayroll);
         setField("avgSalary",      avgSalary);
         setField("highestSalary",  highestSalary);
         setField("employeesPaid",  employeesPaid);
-        setField("totalPayout",    totalPayout);
 
         ObservableList<ObservableList<String>> data = FXCollections.observableArrayList(
                 salaryRow("1", "Alice",   "IT", "Engineer", "Lead",     "5000", "F"),
@@ -91,7 +84,6 @@ class SalaryControllerTest {
         assertEquals("€5000",  avgSalary.getText());     // 15000/3
         assertEquals("€6000",  highestSalary.getText());
         assertEquals("3",      employeesPaid.getText());
-        assertEquals("Total Payout: €15000", totalPayout.getText());
     }
 
     @Test
@@ -99,13 +91,11 @@ class SalaryControllerTest {
     void updateStats_empty() throws Exception {
         Text totalPayroll = new Text(); Text avgSalary = new Text();
         Text highestSalary = new Text(); Text employeesPaid = new Text();
-        Text totalPayout = new Text();
 
         setField("totalPayroll",   totalPayroll);
         setField("avgSalary",      avgSalary);
         setField("highestSalary",  highestSalary);
         setField("employeesPaid",  employeesPaid);
-        setField("totalPayout",    totalPayout);
         setField("salaryData",     FXCollections.observableArrayList());
 
         invoke("updateStats", new Class[]{});
@@ -114,7 +104,6 @@ class SalaryControllerTest {
         assertEquals("€0", avgSalary.getText());
         assertEquals("€0", highestSalary.getText());
         assertEquals("0",  employeesPaid.getText());
-        assertEquals("Total Payout: €0", totalPayout.getText());
     }
 
     @Test
@@ -122,13 +111,11 @@ class SalaryControllerTest {
     void updateStats_invalidSalary() throws Exception {
         Text totalPayroll = new Text(); Text avgSalary = new Text();
         Text highestSalary = new Text(); Text employeesPaid = new Text();
-        Text totalPayout = new Text();
 
         setField("totalPayroll",   totalPayroll);
         setField("avgSalary",      avgSalary);
         setField("highestSalary",  highestSalary);
         setField("employeesPaid",  employeesPaid);
-        setField("totalPayout",    totalPayout);
 
         ObservableList<ObservableList<String>> data = FXCollections.observableArrayList(
                 salaryRow("1", "Alice", "IT", "Dev", "Lead", "N/A",  "F"),
@@ -147,13 +134,11 @@ class SalaryControllerTest {
     void updateStats_singleEmployee() throws Exception {
         Text totalPayroll = new Text(); Text avgSalary = new Text();
         Text highestSalary = new Text(); Text employeesPaid = new Text();
-        Text totalPayout = new Text();
 
         setField("totalPayroll",   totalPayroll);
         setField("avgSalary",      avgSalary);
         setField("highestSalary",  highestSalary);
         setField("employeesPaid",  employeesPaid);
-        setField("totalPayout",    totalPayout);
 
         ObservableList<ObservableList<String>> data = FXCollections.observableArrayList();
         data.add(salaryRow("1", "Alice", "IT", "Dev", "Lead", "7000", "F"));
@@ -315,6 +300,11 @@ class SalaryControllerTest {
         TableView<ObservableList<String>> table = new TableView<>();
         table.setItems(data);
         setField("salaryTable", table);
+
+        // applyFilters() always calls updateFilteredStats() — inject stat fields to avoid NPE
+        setField("totalPayroll",  new Text());
+        setField("avgSalary",     new Text());
+        setField("highestSalary", new Text());
+        setField("employeesPaid", new Text());
     }
 }
-*/

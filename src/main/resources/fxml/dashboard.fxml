@@ -57,8 +57,6 @@
 
                 <Region VBox.vgrow="ALWAYS"/>
 
-                <Text text="SETTINGS" styleClass="menu-section-label"/>
-                <Button text="⚙️  Settings" styleClass="nav-button" maxWidth="Infinity" alignment="CENTER_LEFT"/>
                 <Button fx:id="btnLogout" text="🚪  Logout" styleClass="nav-button, logout-button"
                         onAction="#handleLogout" maxWidth="Infinity" alignment="CENTER_LEFT"/>
             </VBox>
@@ -87,9 +85,6 @@
                                styleClass="search-field" prefWidth="300"/>
                     <Button text="🔍" styleClass="search-button" onAction="#handleSearch"/>
                 </HBox>
-
-                <!-- Notifications -->
-                <Button text="🔔" styleClass="icon-button"/>
             </HBox>
 
             <!-- Dashboard Content -->

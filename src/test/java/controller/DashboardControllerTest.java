@@ -77,7 +77,7 @@ class DashboardControllerTest {
         assertEquals("Welcome back, Admin!", welcomeText.getText());
     }
 
-    /*@Test
+    @Test
     @DisplayName("setupUserProfile should handle single-word name")
     void testSetupUserProfileSingleName() throws Exception {
         Text userName = new Text();
@@ -86,14 +86,13 @@ class DashboardControllerTest {
         setField("userName", userName);
         setField("avatarInitials", avatarInitials);
         setField("welcomeText", welcomeText);
-        setField("currentUserName", "Admin");
-
-        invokePrivate("setupUserProfile", new Class[]{});
+        // Use public API to set UserSession — no currentUserName field exists in controller
+        controller.setCurrentUser("Admin", "Administrator");
 
         assertEquals("Admin", userName.getText());
         assertEquals("AD", avatarInitials.getText());
         assertEquals("Welcome back, Admin!", welcomeText.getText());
-    }*/
+    }
 
     @Test
     @DisplayName("setupUserProfile should work with null FXML fields")

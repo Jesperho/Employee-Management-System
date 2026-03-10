@@ -1,75 +1,99 @@
-/*
 package dao;
 
 import datasource.MariaDbConnection;
 import entity.Admin;
 import entity.Company;
 import jakarta.persistence.EntityManager;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class AdminDaoTest {
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+class AdminDaoTest {
 
-    private AdminDao dao = new AdminDao();
+    private AdminDao adminDao;
+    private EntityManager em;
 
-    // Helper to create an Admin with a Company
-    private Admin createAdminWithCompany() {
-        EntityManager em = MariaDbConnection.getEntityManager();
+    @BeforeEach
+    void setUp() {
+        adminDao = new AdminDao();
+        em = MariaDbConnection.getEntityManager();
+    }
+
+    // Helper: create a unique email every time
+    private String uniqueEmail() {
+        return "admin+" + System.nanoTime() + "@test.com";
+    }
+
+    private Company createCompany() {
         em.getTransaction().begin();
-
-        // Create and persist a company
-        Company company = new Company("TestCo", "Street 1", "Finland");
-        em.persist(company);
-
+        Company c = new Company("TestCo", "Street 1", "Finland");
+        em.persist(c);
         em.getTransaction().commit();
-        em.close();
+        return c;
+    }
 
-        // Create Admin linked to the company
-        return new Admin(
-                "alice@test.com",
-                "pass123",
-                company
-        );
+    private Admin createAdmin() {
+        Company c = createCompany();
+        String email = uniqueEmail();
+
+        Admin a = new Admin(email, "pass123", c);
+        adminDao.create(a);
+        return a;
     }
 
     @Test
+    @Order(1)
     void testCreateAndFind() {
-        Admin m = createAdminWithCompany();
-        dao.create(m);
+        Admin admin = createAdmin();
 
-        // ID should be generated
-        assertTrue(m.getId() > 0);
+        assertTrue(admin.getId() > 0);
 
-        Admin found = dao.find(m.getId());
+        Admin found = adminDao.find(admin.getId());
         assertNotNull(found);
-        assertEquals("alice@test.com", found.getEmail());
-        assertNotNull(found.getCompany());
+        assertEquals(admin.getEmail(), found.getEmail());
         assertEquals("TestCo", found.getCompany().getName());
     }
 
     @Test
-    void testUpdate() {
-        Admin m = createAdminWithCompany();
-        dao.create(m);
+    @Order(2)
+    void testFindByEmail() {
+        Admin admin = createAdmin();
 
-        // Update email
-        m.setEmail("updated@test.com");
-        dao.update(m);
-
-        Admin updated = dao.find(m.getId());
-        assertEquals("updated@test.com", updated.getEmail());
+        Admin found = adminDao.findByEmail(admin.getEmail());
+        assertNotNull(found);
+        assertEquals(admin.getId(), found.getId());
     }
 
     @Test
+    @Order(3)
+    void testUpdate() {
+        Admin admin = createAdmin();
+
+        String newEmail = uniqueEmail();
+        admin.setEmail(newEmail);
+        adminDao.update(admin);
+
+        Admin updated = adminDao.find(admin.getId());
+        assertEquals(newEmail, updated.getEmail());
+    }
+
+    @Test
+    @Order(4)
     void testDelete() {
-        Admin m = createAdminWithCompany();
-        dao.create(m);
+        Admin admin = createAdmin();
+        int id = admin.getId();
 
-        int id = m.getId();
-        dao.delete(id);
+        adminDao.delete(id);
 
-        Admin deleted = dao.find(id);
+        Admin deleted = adminDao.find(id);
         assertNull(deleted);
     }
-}*/
+
+    @AfterEach
+    void tearDown() {
+        if (em.isOpen()) {
+            em.close();
+        }
+    }
+}
