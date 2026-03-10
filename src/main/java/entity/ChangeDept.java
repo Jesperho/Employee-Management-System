@@ -8,6 +8,9 @@ import java.time.LocalDateTime;
 public class ChangeDept {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
+
     @Column(name = "date")
     private LocalDateTime date;
 
@@ -32,7 +35,7 @@ public class ChangeDept {
         this.department = department;
     }
 
-
+    public int getId() { return id; }
 
     public LocalDateTime getDate() {
         return date;
