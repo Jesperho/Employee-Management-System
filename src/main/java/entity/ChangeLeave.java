@@ -8,6 +8,8 @@ import java.time.LocalDateTime;
 public class ChangeLeave {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
     @Column(name = "date")
     private LocalDateTime date;
 
@@ -31,6 +33,7 @@ public class ChangeLeave {
         this.leave = leave;
     }
 
+    public int getId() { return id; }
     // Getters & Setters
 
     public LocalDateTime getDate() {
