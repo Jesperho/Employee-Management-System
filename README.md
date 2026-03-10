@@ -55,7 +55,7 @@ To meet the course's strict **DevOps** and **Quality Assurance** requirements, t
 The relational schema represents the physical database structure in MariaDB.  
 It includes primary keys, foreign keys, and table relationships for all entities in the system.
 
-![Relational Schema](docs/Diagrams/Figma/Relational_Schema.jpeg)
+![Relational Schema](https://github.com/Jesperho/Employee-Management-System/blob/main/docs/Diagrams/Relational_Schema.jpeg)
 
 The system follows a modular architecture with clear separation of concerns:
 
@@ -89,7 +89,7 @@ MariaDB stores all persistent data with foreign‑key relationships ensuring con
 The ER diagram illustrates the core structure of the Employee Management System, showing how entities such as Company, Department, Employee, Leave, and Admin relate to each other.  
 It also includes associative entities (ChangeEmp, ChangeDept, ChangeLeave) used for audit logging.
 
-![ER Diagram](docs/Diagrams/Figma/ER_Diagram.jpeg)
+![ER Diagram](https://github.com/Jesperho/Employee-Management-System/blob/main/docs/Diagrams/ER_Diagram.jpeg)
 
 The ER diagram models the core structure of the system:
 
@@ -108,7 +108,7 @@ This structure ensures both operational data and administrative actions are trac
 The use case diagram shows the main interactions between the Admin and the system.  
 The Admin can manage employees, departments, salaries, leave records, and view dashboards and change logs.
 
-![Use Case Diagram](docs/Diagrams/Figma/UseCase_Diagram.jpeg)
+![Use Case Diagram](https://github.com/Jesperho/Employee-Management-System/blob/main/docs/Diagrams/UseCase_Diagram.jpeg)
 
 The use‑case diagram shows the **Admin** as the main actor.
 
