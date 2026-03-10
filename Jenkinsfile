@@ -14,12 +14,6 @@ pipeline {
 
     stages {
 
-        stage('Check') {
-            steps {
-                git branch: 'main', url: 'https://github.com/Jesperho/Employee-Management-System.git'
-            }
-        }
-
         stage('Build Job') {
             steps {
                 bat 'mvn clean install'
