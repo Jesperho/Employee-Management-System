@@ -3,80 +3,131 @@ package dao;
 import datasource.MariaDbConnection;
 import entity.Company;
 import entity.Department;
-import entity.Admin;
+import entity.Employee;
 import jakarta.persistence.EntityManager;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class DepartmentDaoTest {
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+class DepartmentDaoTest {
 
-    private DepartmentDao dao = new DepartmentDao();
+    private DepartmentDao departmentDao;
+    private EntityManager em;
 
-    private Department createDepartmentWithDependencies() {
+    @BeforeEach
+    void setUp() {
+        departmentDao = new DepartmentDao();
+        em = MariaDbConnection.getEntityManager();
+    }
 
-        EntityManager em = MariaDbConnection.getEntityManager();
+    private String uniqueDeptName() {
+        return "Dept_" + System.nanoTime();
+    }
+
+    private Company createCompany() {
         em.getTransaction().begin();
+        Company c = new Company("DeptTestCo_" + System.nanoTime(), "Street 1", "Finland");
+        em.persist(c);
+        em.getTransaction().commit();
+        return c;
+    }
 
-        Company company = new Company("TestCo", "Street 1", "Finland");
-        em.persist(company);
-
-        Admin manager = new Admin(
-                "alice@test.com",
-                "pass123",
-                company
-        );
-        em.persist(manager);
-
-        Department department = new Department(
+    private Department createDepartment(Company company) {
+        Department d = new Department(
                 10,
-                "IT",
-                "Tech department",
+                uniqueDeptName(),
+                "Test department",
                 LocalDate.now(),
                 company
         );
+        departmentDao.create(d);
+        return d;
+    }
 
+    private Employee createEmployee(Department dept) {
+        em.getTransaction().begin();
+
+        Employee e = new Employee(
+                "John Doe",
+                "Male",
+                "Test employee",
+                LocalDate.now(),
+                3000.0,
+                dept.getCompany(),
+                dept,
+                "Developer",
+                "Full-time",
+                "Junior Developer"
+        );
+
+        em.persist(e);
         em.getTransaction().commit();
-        em.close();
-
-        return department;
+        return e;
     }
 
     @Test
-    void testCreateAndFind() {
-        Department d = createDepartmentWithDependencies();
-        dao.create(d);
+    @Order(1)
+    void testFindByCompany() {
+        Company company = createCompany();
+        Department d1 = createDepartment(company);
+        Department d2 = createDepartment(company);
 
-        assertTrue(d.getId() > 0);
+        List<Department> list = departmentDao.findByCompany(company.getId());
 
-        Department found = dao.find(d.getId());
+        assertTrue(list.size() >= 2);
+        assertTrue(list.stream().anyMatch(d -> d.getId() == d1.getId()));
+        assertTrue(list.stream().anyMatch(d -> d.getId() == d2.getId()));
+    }
+
+    @Test
+    @Order(2)
+    void testCountEmployees() {
+        Company company = createCompany();
+        Department dept = createDepartment(company);
+
+        createEmployee(dept);
+        createEmployee(dept);
+
+        long count = departmentDao.countEmployees(dept.getId());
+        assertEquals(2, count);
+    }
+
+    @Test
+    @Order(3)
+    void testSafeDeleteFailsWhenEmployeesExist() {
+        Company company = createCompany();
+        Department dept = createDepartment(company);
+
+        createEmployee(dept);
+
+        boolean deleted = departmentDao.safeDelete(dept.getId());
+        assertFalse(deleted);
+
+        Department found = departmentDao.find(dept.getId());
         assertNotNull(found);
-        assertEquals("IT", found.getDepartmentName());
     }
 
     @Test
-    void testUpdate() {
-        Department d = createDepartmentWithDependencies();
-        dao.create(d);
+    @Order(4)
+    void testSafeDeleteSucceedsWhenNoEmployees() {
+        Company company = createCompany();
+        Department dept = createDepartment(company);
 
-        d.setDepartmentName("Updated Dept");
-        dao.update(d);
+        boolean deleted = departmentDao.safeDelete(dept.getId());
+        assertTrue(deleted);
 
-        Department updated = dao.find(d.getId());
-        assertEquals("Updated Dept", updated.getDepartmentName());
+        Department found = departmentDao.find(dept.getId());
+        assertNull(found);
     }
 
-    @Test
-    void testDelete() {
-        Department d = createDepartmentWithDependencies();
-        dao.create(d);
-
-        int id = d.getId();
-        dao.delete(id);
-
-        Department deleted = dao.find(id);
-        assertNull(deleted);
+    @AfterEach
+    void tearDown() {
+        if (em.isOpen()) {
+            em.close();
+        }
     }
 }

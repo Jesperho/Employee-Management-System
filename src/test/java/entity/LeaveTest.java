@@ -15,7 +15,6 @@ class LeaveTest {
 
     @BeforeEach
     void setUp() {
-        // Optional: create a dummy Employee for testing
         employee = new Employee();
 
         leave = new Leave(
@@ -36,6 +35,9 @@ class LeaveTest {
         assertEquals("Vacation", leave.getType());
         assertEquals("Family trip to Spain", leave.getReason());
         assertEquals(employee, leave.getEmployee());
+
+        // NEW: duration should be 6 days (inclusive)
+        assertEquals(6, leave.getDuration());
     }
 
     @Test
@@ -48,22 +50,27 @@ class LeaveTest {
         assertNull(emptyLeave.getType());
         assertNull(emptyLeave.getReason());
         assertNull(emptyLeave.getEmployee());
+        assertNull(emptyLeave.getDuration());
     }
 
     @Test
-    @DisplayName("setStartDate should update leave start date")
+    @DisplayName("setStartDate should update leave start date and duration")
     void testSetStartDate() {
-        LocalDate newDate = LocalDate.of(2024, 4, 1);
-        leave.setStartDate(newDate);
-        assertEquals(newDate, leave.getStartDate());
+        leave.setStartDate(LocalDate.of(2024, 3, 2));
+        assertEquals(LocalDate.of(2024, 3, 2), leave.getStartDate());
+
+        // NEW: duration should update
+        assertEquals(5, leave.getDuration());
     }
 
     @Test
-    @DisplayName("setEndDate should update leave end date")
+    @DisplayName("setEndDate should update leave end date and duration")
     void testSetEndDate() {
-        LocalDate newDate = LocalDate.of(2024, 4, 15);
-        leave.setEndDate(newDate);
-        assertEquals(newDate, leave.getEndDate());
+        leave.setEndDate(LocalDate.of(2024, 3, 10));
+        assertEquals(LocalDate.of(2024, 3, 10), leave.getEndDate());
+
+        // NEW: duration should update
+        assertEquals(10, leave.getDuration());
     }
 
     @Test
@@ -94,5 +101,4 @@ class LeaveTest {
         leave.setId(100);
         assertEquals(100, leave.getId());
     }
-
 }

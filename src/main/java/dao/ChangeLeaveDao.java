@@ -12,7 +12,7 @@ public class ChangeLeaveDao extends BaseDao<ChangeLeave> {
         super(ChangeLeave.class);
     }
 
-    // READ: Find all change logs for a specific leave record
+    // READ: Find all change logs for a specific leave
     public List<ChangeLeave> findByLeave(int leaveId) {
         EntityManager em = MariaDbConnection.getEntityManager();
         try {
@@ -42,7 +42,7 @@ public class ChangeLeaveDao extends BaseDao<ChangeLeave> {
         }
     }
 
-    // READ: Get the most recent change for a leave record
+    // READ: Get the most recent change for a leave
     public ChangeLeave findLatestForLeave(int leaveId) {
         EntityManager em = MariaDbConnection.getEntityManager();
         try {
@@ -60,7 +60,7 @@ public class ChangeLeaveDao extends BaseDao<ChangeLeave> {
         }
     }
 
-    // READ: Sort all leave changes by date
+    // READ: Sort all change logs by date
     public List<ChangeLeave> sortByDate(boolean ascending) {
         EntityManager em = MariaDbConnection.getEntityManager();
         try {

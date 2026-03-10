@@ -8,6 +8,9 @@ import java.time.LocalDateTime;
 public class ChangeEmp {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
+
     @Column(name = "date")
     private LocalDateTime date;
 
@@ -33,6 +36,7 @@ public class ChangeEmp {
     }
 
     // Getters & Setters
+    public int getId() { return id; }
 
     public LocalDateTime getDate() {
         return date;

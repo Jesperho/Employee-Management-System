@@ -2,6 +2,7 @@ package entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 
 @Entity
 @Table(name = "employee_leave")
@@ -16,6 +17,7 @@ public class Leave {
     private LocalDate endDate;
     private String type;
     private String reason;
+    private Integer duration;
 
     @ManyToOne
     @JoinColumn(name = "employee_id")
@@ -30,6 +32,11 @@ public class Leave {
         this.type = type;
         this.reason = reason;
         this.employee = employee;
+
+        // Auto-calculate duration
+        if (startDate != null && endDate != null) {
+            this.duration = (int) ChronoUnit.DAYS.between(startDate, endDate) + 1;
+        }
     }
 
     public int getId() {
@@ -46,6 +53,7 @@ public class Leave {
 
     public void setStartDate(LocalDate startDate) {
         this.startDate = startDate;
+        updateDuration();
     }
 
     public LocalDate getEndDate() {
@@ -54,6 +62,7 @@ public class Leave {
 
     public void setEndDate(LocalDate endDate) {
         this.endDate = endDate;
+        updateDuration();
     }
 
     public String getType() {
@@ -78,5 +87,15 @@ public class Leave {
 
     public void setEmployee(Employee employee) {
         this.employee = employee;
+    }
+
+    public Integer getDuration() {
+        return duration;
+    }
+
+    private void updateDuration() {
+        if (startDate != null && endDate != null) {
+            this.duration = (int) ChronoUnit.DAYS.between(startDate, endDate) + 1;
+        }
     }
 }
