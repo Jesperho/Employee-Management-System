@@ -1,4 +1,27 @@
-# Technology Selection
+# Employee Management System
+
+Managing employee information using spreadsheets often leads to problems such as data loss, duplication, difficulty locating specific employees, and inefficiency when handling large amounts of information. As companies grow, spreadsheet-based management becomes increasingly complex and time-consuming
+
+The **Employee Management System** is a full‑stack application designed to help companies manage employees, departments, salaries, leave records, and administrative change logs in a structured and efficient way. It centralizes HR operations, improves data accuracy, and provides clear visibility into workforce activities through dashboards and analytics.
+
+---
+
+## Project Description
+
+This system allows administrators to:
+
+- Register a company and create an admin account
+- Log in securely
+- Manage employees, departments, salaries, and leave records
+- Track all administrative changes (audit logs)
+- View dashboards with real‑time statistics
+- Generate structured data for reporting and decision‑making
+
+The goal is to reduce manual work, improve organization, and streamline HR workflows.
+
+---
+
+## Technology Selection
 
 The technology stack for the **Employee Management System** has been selected to ensure full compliance with the course curriculum, which mandates a Java-based environment. The selection prioritizes technologies that support the required **DevOps practices** (CI/CD, Containerization) and **Software Engineering methodologies** (Agile/Scrum).
 
@@ -13,7 +36,7 @@ The technology stack for the **Employee Management System** has been selected to
 
 ### Database
 *   **Technology:** MariaDB (Relational Database)
-*   **Rationale:** The data managed by this system (Employees, Departments, Salaries) is highly structured and formalized. According to data modeling principles, a **Relational Database** is the correct choice for structured data where integrity and consistency are critical. A relational model allows us to implement the ER diagrams and cardinality constraints (e.g., 1:M relationships) designed in the logical design phase.
+*   **Rationale:** The data managed by this system (Employees, Departments, Leave...) is highly structured and formalized. According to data modeling principles, a **Relational Database** is the correct choice for structured data where integrity and consistency are critical. A relational model allows us to implement the ER diagrams and cardinality constraints (e.g., 1:M relationships) designed in the logical design phase.
 
 ### DevOps & Tools
 To meet the course's strict **DevOps** and **Quality Assurance** requirements, the following tools are integrated into the stack:
@@ -25,3 +48,134 @@ To meet the course's strict **DevOps** and **Quality Assurance** requirements, t
 | **Containerization** | **Docker** | Required for Sprint 4. Containerizes the application to ensure consistency across development and production environments. |
 | **Testing** | **JUnit** | The standard framework for Java unit testing required for Week 3 and Code Coverage reports in Week 4. |
 | **Modeling** | **StarUML (v5.0.1)** | The specific tool mandated by the course for creating Use Case and Class diagrams. |
+
+---
+
+## Architecture Design
+The relational schema represents the physical database structure in MariaDB.  
+It includes primary keys, foreign keys, and table relationships for all entities in the system.
+
+![Relational Schema](docs/Diagrams/Figma/Relational_Schema.jpeg)
+
+The system follows a modular architecture with clear separation of concerns:
+
+### **1. Entity Layer**
+Represents the database tables using JPA annotations.  
+Entities include:
+
+- Company
+- Admin
+- Department
+- Employee
+- Leave
+- ChangeDept
+- ChangeEmp
+- ChangeLeave
+
+### **2. DAO Layer**
+Each entity has a dedicated DAO responsible for:
+
+- CRUD operations
+- Relationship queries
+- Sorting and filtering
+- Audit log retrieval
+
+### **3. Database Layer**
+MariaDB stores all persistent data with foreign‑key relationships ensuring consistency.
+
+---
+
+## ER Diagram
+The ER diagram illustrates the core structure of the Employee Management System, showing how entities such as Company, Department, Employee, Leave, and Admin relate to each other.  
+It also includes associative entities (ChangeEmp, ChangeDept, ChangeLeave) used for audit logging.
+
+![ER Diagram](docs/Diagrams/Figma/ER_Diagram.jpeg)
+
+The ER diagram models the core structure of the system:
+
+- **Company** has many **Departments**, **Employees**, and **Admins**
+- **Department** has many **Employees**
+- **Employee** takes many **Leaves**
+- **Admin** performs changes on Employees, Departments, and Leaves
+- **ChangeEmp**, **ChangeDept**, and **ChangeLeave** act as **audit logs**
+- **Supervisor** is a recursive relationship where an employee may supervise others
+
+This structure ensures both operational data and administrative actions are tracked.
+
+---
+
+## Use Case Diagram
+The use case diagram shows the main interactions between the Admin and the system.  
+The Admin can manage employees, departments, salaries, leave records, and view dashboards and change logs.
+
+![Use Case Diagram](docs/Diagrams/Figma/UseCase_Diagram.jpeg)
+
+The use‑case diagram shows the **Admin** as the main actor.
+
+The Admin can:
+
+- Register / Sign In
+- Manage Employees
+- Manage Departments
+- Manage Salaries
+- Manage Leave Records
+- View Dashboards
+- Track Change Logs
+
+This reflects the system’s focus on centralized HR management.
+
+---
+
+## Key Features
+
+### **1. Admin Registration & Login**
+- Create a company and admin account
+- Secure authentication
+- Clean UI for onboarding
+
+### **2. Dashboard Overview**
+- Total employees
+- Active employees
+- Employees on leave
+- Department statistics
+- Recent activities
+- Salary summaries
+
+### **3. Employee Management**
+- Add, edit, delete employees
+- Filter by department, gender, contract type
+- View detailed employee profiles
+
+### **4. Department Management**
+- Create and manage departments
+- Track capacity and employee count
+- View department‑level analytics
+
+### **5. Leave Management**
+- Add leave records
+- View leave history
+- Track leave types and durations
+- Manage approvals
+
+### **6. Salary Management**
+- View total monthly payroll
+- Average salary
+- Highest salary
+- Salary breakdown per employee
+
+### **7. Audit Logging (Change Tracking)**
+Every update to:
+
+- Employees
+- Departments
+- Leaves
+
+…creates a **ChangeEmp**, **ChangeDept**, or **ChangeLeave** record with:
+
+- Timestamp
+- Admin who made the change
+- Message describing the update
+
+This ensures full transparency and traceability.
+
+---
