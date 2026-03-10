@@ -50,7 +50,6 @@ To meet the course's strict **DevOps** and **Quality Assurance** requirements, t
 | **Modeling** | **StarUML (v5.0.1)** | The specific tool for creating Use Case and Class diagrams.                                         |
 
 ---
-
 ## Architecture Design
 The system follows a modular architecture with clear separation of concerns:
 
@@ -78,33 +77,7 @@ Each entity has a dedicated DAO responsible for:
 ### **3. Database Layer**
 MariaDB stores all persistent data with foreign‑key relationships ensuring consistency.
 
-### **4. ## Relational Schema
-The relational schema represents the physical database structure in MariaDB.  
-It includes primary keys, foreign keys, and table relationships for all entities in the system.
-
-![Relational Schema](https://github.com/Jesperho/Employee-Management-System/blob/main/docs/Diagrams/Relational_Schema.jpeg)
-
 ---
-
-## ER Diagram
-The ER diagram illustrates the core structure of the Employee Management System, showing how entities such as Company, Department, Employee, Leave, and Admin relate to each other.  
-It also includes associative entities (ChangeEmp, ChangeDept, ChangeLeave) used for audit logging.
-
-![ER Diagram](https://github.com/Jesperho/Employee-Management-System/blob/main/docs/Diagrams/ER_Diagram.jpeg)
-
-The ER diagram models the core structure of the system:
-
-- **Company** has many **Departments**, **Employees**, and **Admins**
-- **Department** has many **Employees**
-- **Employee** takes many **Leaves**
-- **Admin** performs changes on Employees, Departments, and Leaves
-- **ChangeEmp**, **ChangeDept**, and **ChangeLeave** act as **audit logs**
-- **Supervisor** is a recursive relationship where an employee may supervise others
-
-This structure ensures both operational data and administrative actions are tracked.
-
----
-
 ## Use Case Diagram
 The use case diagram shows the main interactions between the Admin and the system.  
 The Admin can manage employees, departments, salaries, leave records, and view dashboards and change logs.
@@ -125,8 +98,32 @@ The Admin can:
 
 This reflects the system’s focus on centralized HR management.
 
----
+--- 
+## ER Diagram
+The ER diagram illustrates the core structure of the Employee Management System, showing how entities such as Company, Department, Employee, Leave, and Admin relate to each other.  
+It also includes associative entities (ChangeEmp, ChangeDept, ChangeLeave) used for audit logging.
 
+![ER Diagram](https://github.com/Jesperho/Employee-Management-System/blob/main/docs/Diagrams/ER_Diagram.jpeg)
+
+The ER diagram models the core structure of the system:
+
+- **Company** has many **Departments**, **Employees**, and **Admins**
+- **Department** has many **Employees**
+- **Employee** takes many **Leaves**
+- **Admin** performs changes on Employees, Departments, and Leaves
+- **ChangeEmp**, **ChangeDept**, and **ChangeLeave** act as **audit logs**
+- **Supervisor** is a recursive relationship where an employee may supervise others
+
+This structure ensures both operational data and administrative actions are tracked.
+
+---
+## Relational Schema
+The relational schema represents the physical database structure in MariaDB.  
+It includes primary keys, foreign keys, and table relationships for all entities in the system.
+
+![Relational Schema](https://github.com/Jesperho/Employee-Management-System/blob/main/docs/Diagrams/Relational_Schema.jpeg)
+
+---
 ## Key Features
 
 ### **1. Admin Registration & Login**
