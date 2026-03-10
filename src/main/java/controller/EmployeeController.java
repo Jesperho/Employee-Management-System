@@ -106,7 +106,7 @@ public class EmployeeController implements Initializable {
         deptNames.add(0, "All Departments");
         filterDepartment.setItems(FXCollections.observableArrayList(deptNames));
         filterGender.setItems(FXCollections.observableArrayList("All Genders", "Male", "Female", "Other"));
-        filterContract.setItems(FXCollections.observableArrayList("All Contracts", "Full Time", "Part Time", "Remote", "Intern"));
+        filterContract.setItems(FXCollections.observableArrayList("All Contracts", "Full-time", "Part-time", "Remote", "Intern"));
 
         filterDepartment.setOnAction(e -> applyFilters());
         filterGender.setOnAction(e -> applyFilters());
@@ -192,18 +192,19 @@ public class EmployeeController implements Initializable {
     // Updates the stat counters at the top of the page
     private void updateStats() {
         totalCount.setText(String.valueOf(employeeData.size()));
-        long ft = 0, rm = 0, in = 0;
+        long ft = 0, pt = 0, intern = 0;
         for (Employee emp : employeeData) {
             String ct = emp.getContractType();
-            if (ct == null) continue;
-            String ctLower = ct.toLowerCase().replace("-", " ").trim();
-            if (ctLower.equals("full time")) ft++;
-            else if (ctLower.equals("remote")) rm++;
-            else if (ctLower.equals("intern")) in++;
+            if (ct != null) {
+                String ctLower = ct.toLowerCase().trim();
+                if (ctLower.contains("full")) ft++;
+                else if (ctLower.contains("part")) pt++;
+                else if (ctLower.contains("intern")) intern++;
+            }
         }
         fullTimeCount.setText(String.valueOf(ft));
-        remoteCount.setText(String.valueOf(rm));
-        internCount.setText(String.valueOf(in));
+        remoteCount.setText(String.valueOf(pt));   // remoteCount now shows Part-time
+        internCount.setText(String.valueOf(intern));
     }
 
     @FXML

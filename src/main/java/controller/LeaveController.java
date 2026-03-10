@@ -192,21 +192,25 @@ public class LeaveController implements Initializable {
 
         totalLeaves.setText(String.valueOf(leaveData.size()));
 
-        // Currently on leave: today is between start and end date
+        // Currently on leave: today is between start and end date (inclusive)
         long active = leaveData.stream().filter(r -> {
             try {
                 String startStr = r.get(3);
-                String endStr = r.get(4);
-                if (startStr.equals("N/A") || endStr.equals("N/A")) return false;
-                LocalDate start = LocalDate.parse(startStr);
-                LocalDate end = LocalDate.parse(endStr);
-                return !today.isBefore(start) && !today.isAfter(end);
-            } catch (Exception e) { return false; }
+                String endStr   = r.get(4);
+                if ("N/A".equals(startStr) || "N/A".equals(endStr)) return false;
+                LocalDate start = LocalDate.parse(startStr.trim());
+                LocalDate end   = LocalDate.parse(endStr.trim());
+                return (today.isEqual(start) || today.isAfter(start))
+                    && (today.isEqual(end)   || today.isBefore(end));
+            } catch (Exception ex) { return false; }
         }).count();
         activeLeaves.setText(String.valueOf(active));
 
-        // Sick leaves: type == "Sick"
-        long sick = leaveData.stream().filter(r -> r.get(5).equalsIgnoreCase("Sick")).count();
+        // Sick leaves: type contains "sick" (handles "Sick", "Sick Leave", "sick leave", etc.)
+        long sick = leaveData.stream().filter(r -> {
+            String type = r.get(5);
+            return type != null && type.toLowerCase().contains("sick");
+        }).count();
         sickLeaves.setText(String.valueOf(sick));
 
         // Avg duration in days

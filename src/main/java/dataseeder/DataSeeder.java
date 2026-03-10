@@ -71,12 +71,21 @@ public class DataSeeder {
         em.getTransaction().commit();
 
         // ── Leave records (separate transaction after employees exist) ─
+        // Delete all existing leaves first so we always get fresh data
         em.getTransaction().begin();
+        em.createQuery("DELETE FROM Leave l").executeUpdate();
+        em.getTransaction().commit();
+
+        em.getTransaction().begin();
+        // Historical leaves
         addLeave(em, "Alice Johnson", LocalDate.of(2024, 6,  1), LocalDate.of(2024, 6, 10), "Vacation",   "Summer holiday");
-        addLeave(em, "Bob Smith",     LocalDate.of(2024, 9,  5), LocalDate.of(2024, 9,  8), "Sick Leave", "Flu");
         addLeave(em, "Henry Adams",   LocalDate.of(2025, 1, 10), LocalDate.of(2025, 1, 17), "Vacation",   "New Year break");
         addLeave(em, "Olivia Hall",   LocalDate.of(2025, 3,  1), LocalDate.of(2025, 3,  3), "Personal",   "Personal matters");
-        addLeave(em, "Sam Turner",    LocalDate.of(2025, 7, 14), LocalDate.of(2025, 7, 21), "Vacation",   "Family trip");
+        // Active leaves spanning today (March 10, 2026)
+        addLeave(em, "Bob Smith",     LocalDate.of(2026, 3,  8), LocalDate.of(2026, 3, 14), "Sick",       "Flu");
+        addLeave(em, "Carol White",   LocalDate.of(2026, 3,  5), LocalDate.of(2026, 3, 12), "Sick",       "Medical appointment");
+        addLeave(em, "Sam Turner",    LocalDate.of(2026, 3,  9), LocalDate.of(2026, 3, 15), "Vacation",   "Spring break");
+        addLeave(em, "Grace Kim",     LocalDate.of(2026, 3,  1), LocalDate.of(2026, 3, 20), "Maternity",  "Maternity leave");
         em.getTransaction().commit();
 
         em.close();
