@@ -86,9 +86,8 @@ class DashboardControllerTest {
         setField("userName", userName);
         setField("avatarInitials", avatarInitials);
         setField("welcomeText", welcomeText);
-        setField("currentUserName", "Admin");
-
-        invokePrivate("setupUserProfile", new Class[]{});
+        // Use public API to set UserSession — no currentUserName field exists in controller
+        controller.setCurrentUser("Admin", "Administrator");
 
         assertEquals("Admin", userName.getText());
         assertEquals("AD", avatarInitials.getText());
