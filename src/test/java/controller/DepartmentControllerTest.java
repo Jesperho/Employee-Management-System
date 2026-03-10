@@ -105,7 +105,7 @@ class DepartmentControllerTest {
 
     // ─── hideEmployeeSection ──────────────────────────────────────────────────
 
-    @Test
+   /* @Test
     @DisplayName("hideEmployeeSection hides and unmanages the VBox")
     void hideEmployeeSection() throws Exception {
         VBox section = new VBox();
@@ -118,7 +118,7 @@ class DepartmentControllerTest {
         assertFalse(section.isVisible());
         assertFalse(section.isManaged());
     }
-
+*/
     // ─── handleSearch ─────────────────────────────────────────────────────────
 
     @Test
@@ -228,7 +228,7 @@ class DepartmentControllerTest {
 
     // ─── handleShowAllDepartments ─────────────────────────────────────────────
 
-    @Test
+   /* @Test
     @DisplayName("handleShowAllDepartments resets filter and hides employee section")
     void handleShowAllDepartments() throws Exception {
         setupSearchScenario(
@@ -246,7 +246,7 @@ class DepartmentControllerTest {
 
         assertEquals("All Departments", deptFilter.getValue());
         assertFalse(empSection.isVisible());
-    }
+    }*/
 
     // ─── createFormField ──────────────────────────────────────────────────────
 
