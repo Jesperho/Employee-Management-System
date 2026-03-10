@@ -8,64 +8,37 @@ pipeline {
     environment {
         PATH = "C:\\Program Files\\Docker\\Docker\\resources\\bin;${env.PATH}"
         DOCKERHUB_CREDENTIALS_ID = 'docker-hub-cred'
-        DOCKER_IMAGE = 'osamaaa1/employee-management'
-        DOCKER_TAG = 'latest'
+        DOCKERHUB_REPO = 'osamaaa1/employee-management-system'
+        DOCKER_IMAGE_TAG = 'latest'
     }
 
     stages {
 
-        stage('Setup Maven') {
-            steps {
-                script {
-                    def mvnHome = tool name: 'Maven3', type: 'maven'
-                    env.PATH = "${mvnHome}/bin:${env.PATH}"
-                }
-            }
-        }
-
-        stage('Checkout') {
+        stage('Check') {
             steps {
                 git branch: 'main', url: 'https://github.com/Jesperho/Employee-Management-System.git'
             }
         }
 
-        stage('Build') {
+        stage('Build Job') {
             steps {
-                script {
-                    if (isUnix()) {
-                        sh 'mvn clean package -DskipTests'
-                    } else {
-                        bat 'mvn clean package -DskipTests'
-                    }
-                }
+                bat 'mvn clean install'
             }
         }
 
         stage('Test') {
             steps {
-                script {
-                    if (isUnix()) {
-                        sh 'mvn test'
-                    } else {
-                        bat 'mvn test'
-                    }
-                }
+                bat 'mvn test'
             }
         }
 
-        stage('Code Coverage') {
+        stage('Generate Report') {
             steps {
-                script {
-                    if (isUnix()) {
-                        sh 'mvn jacoco:report'
-                    } else {
-                        bat 'mvn jacoco:report'
-                    }
-                }
+                bat 'mvn jacoco:report'
             }
         }
 
-        stage('Publish Test Results') {
+        stage('Publish Test Result') {
             steps {
                 junit '**/target/surefire-reports/*.xml'
             }
@@ -73,39 +46,26 @@ pipeline {
 
         stage('Publish Coverage Report') {
             steps {
-                recordCoverage(tools: [[parser: 'JACOCO', pattern: '**/target/site/jacoco/jacoco.xml']])
+                jacoco()
             }
         }
 
         stage('Build Docker Image') {
             steps {
                 script {
-                    if (isUnix()) {
-                        sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
-                    } else {
-                        bat "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
-                    }
+                    docker.build("${DOCKERHUB_REPO}:${DOCKER_IMAGE_TAG}")
                 }
             }
         }
 
         stage('Push Docker Image to Docker Hub') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'docker-hub-cred', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    bat "docker login -u %DOCKER_USER% -p %DOCKER_PASS%"
-                    bat "docker push osamaaa1/employee-management:latest"
+                script {
+                    docker.withRegistry('https://index.docker.io/v1/', DOCKERHUB_CREDENTIALS_ID) {
+                        docker.image("${DOCKERHUB_REPO}:${DOCKER_IMAGE_TAG}").push()
+                    }
                 }
             }
         }
     }
-
-    post {
-        always {
-            junit '**/target/surefire-reports/*.xml'
-            recordCoverage(tools: [[parser: 'JACOCO', pattern: '**/target/site/jacoco/jacoco.xml']])
-        }
-    }
 }
-
-
-
