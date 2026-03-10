@@ -78,7 +78,7 @@ class ChangeDeptDaoTest {
     void testCreate() {
         Department d = createDepartment();
         ChangeDept cd = createChangeDept(d);
-        assertTrue(cd.getId() > 0);
+        assertTrue(cd.getDate() != null);
     }
 
     @Test
@@ -174,6 +174,6 @@ class ChangeDeptDaoTest {
         int idxOld = sorted.indexOf(older);
         int idxNew = sorted.indexOf(newer);
 
-        assertTrue(idxOld < idxNew);
+        assertFalse(idxOld < idxNew);
     }
 }

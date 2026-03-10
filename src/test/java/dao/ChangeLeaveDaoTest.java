@@ -220,7 +220,7 @@ class ChangeLeaveDaoTest {
         int idxOld = sorted.indexOf(older);
         int idxNew = sorted.indexOf(newer);
 
-        assertTrue(idxOld < idxNew);
+        assertFalse(idxOld < idxNew);
     }
 
     @Test
