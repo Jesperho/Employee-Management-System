@@ -5,17 +5,17 @@ import app.UserSession;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 import service.AuthService;
+import utils.BaseController;
 
-import java.net.URL;
-import java.util.ResourceBundle;
+// Make sure to import your BaseController if it's in a different package!
+// import util.BaseController;
 
-public class LoginController implements Initializable {
+public class LoginController extends BaseController {
 
     private final AuthService authService = new AuthService();
 
@@ -40,9 +40,19 @@ public class LoginController implements Initializable {
 
     @FXML private TabPane tabPane;
 
+    // 1. Replaced initialize() with setupController()
     @Override
-    public void initialize(URL location, ResourceBundle resources) {
+    protected void setupController() {
         setupComboBoxes();
+
+    }
+
+
+    @Override
+    protected void updateUIText(String newLanguage) {
+        System.out.println("Login View updating to: " + newLanguage);
+
+
     }
 
     private void setupComboBoxes() {
@@ -78,10 +88,8 @@ public class LoginController implements Initializable {
         // Authenticate against database
         Admin admin = authService.login(email, password);
         if (admin != null) {
-            // Derive a display name from the email prefix (e.g. "john.doe@..." → "John Doe")
             String emailPrefix = admin.getEmail() != null
                     ? admin.getEmail().split("@")[0] : "Admin";
-            // Capitalise and replace dots/underscores with spaces
             String displayName = capitaliseEmailPrefix(emailPrefix);
             UserSession.getInstance().setUser(displayName, "Administrator");
             showSuccess(loginMessage, "Login successful!");
@@ -91,9 +99,6 @@ public class LoginController implements Initializable {
         }
     }
 
-    /**
-     * Navigates to the main dashboard view after successful login.
-     */
     private void navigateToDashboard() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/dashboard.fxml"));
@@ -230,7 +235,6 @@ public class LoginController implements Initializable {
         registerConfirmPassword.clear();
     }
 
-    /** Converts "john.doe" or "john_doe" into "John Doe" */
     private String capitaliseEmailPrefix(String prefix) {
         String[] parts = prefix.split("[._\\-]");
         StringBuilder sb = new StringBuilder();

@@ -10,7 +10,6 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
@@ -26,13 +25,17 @@ import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.util.Duration;
-import java.net.URL;
+import utils.BaseController;
+
 import java.util.List;
-import java.util.ResourceBundle;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-public class SalaryController implements Initializable {
+// Make sure to import BaseController if it's in a different package!
+// import util.BaseController;
+
+// 1. Extend BaseController instead of implementing Initializable
+public class SalaryController extends BaseController {
 
     @FXML private TextField searchField;
     @FXML private ComboBox<String> filterDepartment;
@@ -75,14 +78,28 @@ public class SalaryController implements Initializable {
     // Tracks the rows currently visible after filtering — used for stats & payroll
     private List<ObservableList<String>> currentFilteredData = new java.util.ArrayList<>();
 
+    // 2. Replace initialize() with setupController()
     @Override
-    public void initialize(URL location, ResourceBundle resources) {
+    protected void setupController() {
         updateUserProfile();
         setupTable();
         loadFromDatabase();
         setupFilters();
         if (searchField != null)
             searchField.textProperty().addListener((obs, o, n) -> applyFilters());
+    }
+
+    // 3. Add the required updateUIText method
+    @Override
+    protected void updateUIText(String newLanguage) {
+        System.out.println("Salary View updating to: " + newLanguage);
+
+        // Example:
+        // if (newLanguage.equals("Spanish")) {
+        //     btnDashboard.setText("Tablero");
+        //     searchField.setPromptText("Buscar...");
+        //     // Update table column headers, stats titles, etc.
+        // }
     }
 
     private void updateUserProfile() {
@@ -284,7 +301,7 @@ public class SalaryController implements Initializable {
     }
 
     private void addSalaryInfoCard(GridPane grid, int row,
-                                    String l1, String v1, String l2, String v2) {
+                                   String l1, String v1, String l2, String v2) {
         Label lbl1 = new Label(l1);
         lbl1.setStyle("-fx-text-fill: #7f8c8d; -fx-font-size: 11px; -fx-font-weight: bold;");
         Label val1 = new Label(v1);
@@ -432,7 +449,7 @@ public class SalaryController implements Initializable {
         // Scope badge
         Label scopeBadge = new Label((isDeptFilter ? "🏢 " : "🌐 ") + scopeLabel);
         scopeBadge.setStyle("-fx-background-color: rgba(255,255,255,0.15); -fx-text-fill: rgba(255,255,255,0.85);" +
-                            "-fx-font-size: 12px; -fx-font-weight: bold; -fx-padding: 4 14; -fx-background-radius: 20;");
+                "-fx-font-size: 12px; -fx-font-weight: bold; -fx-padding: 4 14; -fx-background-radius: 20;");
 
         javafx.scene.text.Text subTxt = new javafx.scene.text.Text(
                 "Processing salaries for " + empCount + " employee" + (empCount == 1 ? "" : "s") + "...");
@@ -467,10 +484,10 @@ public class SalaryController implements Initializable {
         summaryRow.setVisible(false);
 
         summaryRow.getChildren().addAll(
-            makeSummaryCard("👥 Employees", String.valueOf(empCount), "#dbeafe", "#1d4ed8"),
-            makeSummaryCard("💰 Total Payout", "€ " + String.format("%,d", total), "#d1fae5", "#065f46"),
-            makeSummaryCard("📊 Avg Salary", "€ " + String.format("%,d", empCount > 0 ? total / empCount : 0), "#fef3c7", "#92400e"),
-            makeSummaryCard("🏢 Scope", isDeptFilter ? deptVal : "All", "#f3e5f5", "#6a1b9a")
+                makeSummaryCard("👥 Employees", String.valueOf(empCount), "#dbeafe", "#1d4ed8"),
+                makeSummaryCard("💰 Total Payout", "€ " + String.format("%,d", total), "#d1fae5", "#065f46"),
+                makeSummaryCard("📊 Avg Salary", "€ " + String.format("%,d", empCount > 0 ? total / empCount : 0), "#fef3c7", "#92400e"),
+                makeSummaryCard("🏢 Scope", isDeptFilter ? deptVal : "All", "#f3e5f5", "#6a1b9a")
         );
 
         Button doneBtn = new Button("✓  Done");
@@ -501,12 +518,12 @@ public class SalaryController implements Initializable {
 
         // ── Animated counting sequence ────────────────────────────
         String[] steps = {
-            "Validating employee records...",
-            "Calculating base salaries...",
-            "Applying deductions & bonuses...",
-            "Generating payslips...",
-            "Finalising transactions...",
-            "✅ Payroll complete!"
+                "Validating employee records...",
+                "Calculating base salaries...",
+                "Applying deductions & bonuses...",
+                "Generating payslips...",
+                "Finalising transactions...",
+                "✅ Payroll complete!"
         };
         AtomicInteger stepIdx = new AtomicInteger(0);
         AtomicInteger displayed = new AtomicInteger(0);

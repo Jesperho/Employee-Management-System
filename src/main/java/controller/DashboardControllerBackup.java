@@ -5,20 +5,19 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import utils.BaseController;
 
-import java.net.URL;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ResourceBundle;
 
-public class DashboardControllerBackup implements Initializable {
+// 1. Extend BaseController instead of implementing Initializable
+public class DashboardControllerBackup extends BaseController {
 
     // User Profile Elements
     @FXML private Text avatarInitials;
@@ -63,12 +62,25 @@ public class DashboardControllerBackup implements Initializable {
     private String currentUserName = "Osama Admin";
     private String currentUserRole = "Administrator";
 
+    // 2. Replace initialize() with setupController()
     @Override
-    public void initialize(URL location, ResourceBundle resources) {
+    protected void setupController() {
         setupUserProfile();
         setupDateDisplay();
         setupDepartmentTable();
         loadDashboardData();
+    }
+
+    // 3. Add the required updateUIText method
+    @Override
+    protected void updateUIText(String newLanguage) {
+        System.out.println("Dashboard Backup View updating to: " + newLanguage);
+
+        // Example:
+        // if (newLanguage.equals("Spanish")) {
+        //     btnDashboard.setText("Tablero");
+        //     // Update other UI elements here...
+        // }
     }
 
     private void setupUserProfile() {

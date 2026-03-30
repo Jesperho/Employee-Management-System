@@ -6,7 +6,6 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
@@ -17,14 +16,16 @@ import javafx.scene.text.Text;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import utils.BaseController;
 
-import java.net.URL;
-import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
-import java.util.ResourceBundle;
 
-public class LeaveControllerBackup implements Initializable {
+// Make sure to import BaseController if it's in a different package!
+// import util.BaseController;
+
+// 1. Extend BaseController instead of implementing Initializable
+public class LeaveControllerBackup extends BaseController {
 
     @FXML private TextField searchField;
     @FXML private ComboBox<String> filterType;
@@ -56,11 +57,25 @@ public class LeaveControllerBackup implements Initializable {
 
     private ObservableList<ObservableList<String>> leaveData = FXCollections.observableArrayList();
 
+    // 2. Replace initialize() with setupController()
     @Override
-    public void initialize(URL location, ResourceBundle resources) {
+    protected void setupController() {
         setupFilters();
         setupTable();
         loadSampleData();
+    }
+
+    // 3. Add the required updateUIText method
+    @Override
+    protected void updateUIText(String newLanguage) {
+        System.out.println("Leave Backup View updating to: " + newLanguage);
+
+        // Example:
+        // if (newLanguage.equals("Spanish")) {
+        //     btnDashboard.setText("Tablero");
+        //     searchField.setPromptText("Buscar ausencia...");
+        //     // Update table column headers, stats titles, etc.
+        // }
     }
 
     private void setupFilters() {
@@ -116,14 +131,14 @@ public class LeaveControllerBackup implements Initializable {
 
     private void loadSampleData() {
         leaveData.addAll(
-            FXCollections.observableArrayList("1", "Abebe Gemechu", "5", "22/04/2022", "28/04/2022", "Sick", "Personal"),
-            FXCollections.observableArrayList("2", "Aman Bey", "7", "22/04/2022", "30/04/2022", "Exam", "Examination"),
-            FXCollections.observableArrayList("3", "Feven Tesfaye", "120", "22/04/2022", "28/06/2022", "Maternity", "Child Care"),
-            FXCollections.observableArrayList("4", "Gelila Moges", "5", "22/04/2022", "28/04/2022", "Sick", "Personal"),
-            FXCollections.observableArrayList("5", "Yanet Tesfaye", "5", "22/04/2022", "28/04/2022", "Sick", "Personal"),
-            FXCollections.observableArrayList("6", "Beti Woloe", "5", "22/04/2022", "28/04/2022", "Sick", "Personal"),
-            FXCollections.observableArrayList("7", "Dawit Int", "5", "22/04/2022", "28/04/2022", "Sick", "Personal"),
-            FXCollections.observableArrayList("8", "Sara Johnson", "10", "01/06/2023", "11/06/2023", "Vacation", "Annual holiday")
+                FXCollections.observableArrayList("1", "Abebe Gemechu", "5", "22/04/2022", "28/04/2022", "Sick", "Personal"),
+                FXCollections.observableArrayList("2", "Aman Bey", "7", "22/04/2022", "30/04/2022", "Exam", "Examination"),
+                FXCollections.observableArrayList("3", "Feven Tesfaye", "120", "22/04/2022", "28/06/2022", "Maternity", "Child Care"),
+                FXCollections.observableArrayList("4", "Gelila Moges", "5", "22/04/2022", "28/04/2022", "Sick", "Personal"),
+                FXCollections.observableArrayList("5", "Yanet Tesfaye", "5", "22/04/2022", "28/04/2022", "Sick", "Personal"),
+                FXCollections.observableArrayList("6", "Beti Woloe", "5", "22/04/2022", "28/04/2022", "Sick", "Personal"),
+                FXCollections.observableArrayList("7", "Dawit Int", "5", "22/04/2022", "28/04/2022", "Sick", "Personal"),
+                FXCollections.observableArrayList("8", "Sara Johnson", "10", "01/06/2023", "11/06/2023", "Vacation", "Annual holiday")
         );
         leaveTable.setItems(leaveData);
         updateStats();
@@ -175,12 +190,12 @@ public class LeaveControllerBackup implements Initializable {
         alert.setHeaderText("Leave for: " + row.get(1));
         alert.setContentText(
                 "ID: " + row.get(0) + "\n" +
-                "Employee: " + row.get(1) + "\n" +
-                "Duration: " + row.get(2) + " days\n" +
-                "Start Date: " + row.get(3) + "\n" +
-                "End Date: " + row.get(4) + "\n" +
-                "Type: " + row.get(5) + "\n" +
-                "Reason: " + row.get(6)
+                        "Employee: " + row.get(1) + "\n" +
+                        "Duration: " + row.get(2) + " days\n" +
+                        "Start Date: " + row.get(3) + "\n" +
+                        "End Date: " + row.get(4) + "\n" +
+                        "Type: " + row.get(5) + "\n" +
+                        "Reason: " + row.get(6)
         );
         alert.showAndWait();
     }
@@ -350,7 +365,9 @@ public class LeaveControllerBackup implements Initializable {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
             Parent root = loader.load();
             Stage stage = (Stage) btnLogout.getScene().getWindow();
-            Scene scene = new Scene(root, 1280, 800);
+            double w = stage.getWidth();
+            double h = stage.getHeight();
+            Scene scene = new Scene(root, w, h);
             var css = getClass().getResource(cssPath);
             if (css != null) scene.getStylesheets().add(css.toExternalForm());
             stage.setScene(scene);

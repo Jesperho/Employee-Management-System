@@ -5,12 +5,15 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Text?>
 
+<?import javafx.collections.FXCollections?>
+<?import java.lang.String?>
 <HBox xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="controller.LoginController"
       styleClass="root-container">
 
     <!-- Left Panel - Branding -->
     <VBox styleClass="brand-panel" HBox.hgrow="ALWAYS" alignment="CENTER" spacing="40">
+
         <VBox alignment="CENTER" spacing="5">
             <Text text="Employee" styleClass="brand-title"/>
             <Text text="Management" styleClass="brand-title"/>
@@ -34,11 +37,30 @@
                 <Text text="+" styleClass="feature-bullet"/>
                 <Text text="Salary management" styleClass="feature-text"/>
             </HBox>
+
+
         </VBox>
+
+
     </VBox>
+
 
     <!-- Right Panel - Forms -->
     <VBox styleClass="form-panel" HBox.hgrow="ALWAYS" alignment="CENTER">
+        <VBox alignment="CENTER_LEFT">
+            <ComboBox fx:id="languageComboBox" promptText="Select Language" styleClass="input-field" >
+                <items >
+                    <FXCollections fx:factory="observableArrayList">
+                        <String fx:value="English" />
+                        <String fx:value="Spanish"/>
+                        <String fx:value="Persia"/>
+                        <String fx:value="Arabic"/>
+                    </FXCollections>
+                </items>
+            </ComboBox>
+        </VBox>
+
+        <Region minHeight="10"/>
 
         <TabPane fx:id="tabPane" tabClosingPolicy="UNAVAILABLE" styleClass="auth-tabs" maxWidth="550">
 
@@ -67,6 +89,7 @@
                     <Button text="Sign In" onAction="#handleLogin" styleClass="primary-button" maxWidth="Infinity"/>
 
                     <Label fx:id="loginMessage" styleClass="message-label" wrapText="true"/>
+
                 </VBox>
             </Tab>
 

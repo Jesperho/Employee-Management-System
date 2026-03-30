@@ -6,7 +6,6 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
@@ -17,12 +16,13 @@ import javafx.scene.text.Text;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import utils.BaseController;
 
-import java.net.URL;
-import java.util.Optional;
-import java.util.ResourceBundle;
+// Make sure to import BaseController if it's in a different package!
+// import util.BaseController;
 
-public class SalaryControllerBackup implements Initializable {
+// 1. Extend BaseController instead of implementing Initializable
+public class SalaryControllerBackup extends BaseController {
 
     @FXML private TextField searchField;
     @FXML private ComboBox<String> filterDepartment;
@@ -55,11 +55,25 @@ public class SalaryControllerBackup implements Initializable {
 
     private ObservableList<ObservableList<String>> salaryData = FXCollections.observableArrayList();
 
+    // 2. Replace initialize() with setupController()
     @Override
-    public void initialize(URL location, ResourceBundle resources) {
+    protected void setupController() {
         setupFilters();
         setupTable();
         loadSampleData();
+    }
+
+    // 3. Add the required updateUIText method
+    @Override
+    protected void updateUIText(String newLanguage) {
+        System.out.println("Salary Backup View updating to: " + newLanguage);
+
+        // Example:
+        // if (newLanguage.equals("Spanish")) {
+        //     btnDashboard.setText("Tablero");
+        //     searchField.setPromptText("Buscar...");
+        //     // Update table column headers, stats titles, etc.
+        // }
     }
 
     private void setupFilters() {
@@ -136,16 +150,16 @@ public class SalaryControllerBackup implements Initializable {
 
     private void loadSampleData() {
         salaryData.addAll(
-            FXCollections.observableArrayList("911", "Yeabsire Abebe", "IT", "Frontend Engineer", "Manager", "7200", "Female"),
-            FXCollections.observableArrayList("20", "Feven Tesfaye", "IT", "Backend Engineer", "Employee", "3200", "Female"),
-            FXCollections.observableArrayList("5", "Amanuel Beyene", "IT", "Frontend Engineer", "Employee", "2900", "Male"),
-            FXCollections.observableArrayList("588", "Tedla Atalay", "IT", "Backend Engineer", "Employee", "3400", "Male"),
-            FXCollections.observableArrayList("112", "Redwan Husein", "IT", "Backend Engineer", "Intern", "2200", "Male"),
-            FXCollections.observableArrayList("17", "Abel Beyene", "R&D", "Backend Engineer", "Specialist", "4200", "Male"),
-            FXCollections.observableArrayList("404", "Temesgen Melak", "IT", "Project Manager", "Analyst", "5200", "Male"),
-            FXCollections.observableArrayList("23", "Sara Johnson", "Design", "UI UX Designer", "Employee", "3800", "Female"),
-            FXCollections.observableArrayList("67", "Mike Peters", "HR", "HR Manager", "Manager", "6500", "Male"),
-            FXCollections.observableArrayList("89", "Lisa Chen", "Marketing", "Content Strategist", "Employee", "3600", "Female")
+                FXCollections.observableArrayList("911", "Yeabsire Abebe", "IT", "Frontend Engineer", "Manager", "7200", "Female"),
+                FXCollections.observableArrayList("20", "Feven Tesfaye", "IT", "Backend Engineer", "Employee", "3200", "Female"),
+                FXCollections.observableArrayList("5", "Amanuel Beyene", "IT", "Frontend Engineer", "Employee", "2900", "Male"),
+                FXCollections.observableArrayList("588", "Tedla Atalay", "IT", "Backend Engineer", "Employee", "3400", "Male"),
+                FXCollections.observableArrayList("112", "Redwan Husein", "IT", "Backend Engineer", "Intern", "2200", "Male"),
+                FXCollections.observableArrayList("17", "Abel Beyene", "R&D", "Backend Engineer", "Specialist", "4200", "Male"),
+                FXCollections.observableArrayList("404", "Temesgen Melak", "IT", "Project Manager", "Analyst", "5200", "Male"),
+                FXCollections.observableArrayList("23", "Sara Johnson", "Design", "UI UX Designer", "Employee", "3800", "Female"),
+                FXCollections.observableArrayList("67", "Mike Peters", "HR", "HR Manager", "Manager", "6500", "Male"),
+                FXCollections.observableArrayList("89", "Lisa Chen", "Marketing", "Content Strategist", "Employee", "3600", "Female")
         );
         salaryTable.setItems(salaryData);
         updateStats();
@@ -168,12 +182,12 @@ public class SalaryControllerBackup implements Initializable {
         alert.setHeaderText("Employee: " + row.get(1));
         alert.setContentText(
                 "ID: " + row.get(0) + "\n" +
-                "Name: " + row.get(1) + "\n" +
-                "Department: " + row.get(2) + "\n" +
-                "Job Title: " + row.get(3) + "\n" +
-                "Position: " + row.get(4) + "\n" +
-                "Salary: €" + row.get(5) + "\n" +
-                "Gender: " + row.get(6)
+                        "Name: " + row.get(1) + "\n" +
+                        "Department: " + row.get(2) + "\n" +
+                        "Job Title: " + row.get(3) + "\n" +
+                        "Position: " + row.get(4) + "\n" +
+                        "Salary: €" + row.get(5) + "\n" +
+                        "Gender: " + row.get(6)
         );
         alert.showAndWait();
     }

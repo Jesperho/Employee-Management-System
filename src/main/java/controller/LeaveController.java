@@ -12,27 +12,28 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import utils.BaseController;
 
-import java.net.URL;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
-import java.util.ResourceBundle;
 
-public class LeaveController implements Initializable {
+// Make sure to import BaseController if it's in a different package!
+// import util.BaseController;
+
+// 1. Extend BaseController instead of implementing Initializable
+public class LeaveController extends BaseController {
 
     @FXML private TextField searchField;
     @FXML private ComboBox<String> filterType;
@@ -74,8 +75,9 @@ public class LeaveController implements Initializable {
 
     private ObservableList<ObservableList<String>> leaveData = FXCollections.observableArrayList();
 
+    // 2. Replace initialize() with setupController()
     @Override
-    public void initialize(URL location, ResourceBundle resources) {
+    protected void setupController() {
         updateUserProfile();
         setupFilters();
         setupTable();
@@ -84,6 +86,19 @@ public class LeaveController implements Initializable {
         if (searchField != null) {
             searchField.textProperty().addListener((obs, oldVal, newVal) -> applyFilters());
         }
+    }
+
+    // 3. Add the required updateUIText method
+    @Override
+    protected void updateUIText(String newLanguage) {
+        System.out.println("Leave View updating to: " + newLanguage);
+
+        // Example:
+        // if (newLanguage.equals("Spanish")) {
+        //     btnDashboard.setText("Tablero");
+        //     searchField.setPromptText("Buscar ausencia...");
+        //     // Update table column headers, stats titles, etc.
+        // }
     }
 
     private void updateUserProfile() {
@@ -201,7 +216,7 @@ public class LeaveController implements Initializable {
                 LocalDate start = LocalDate.parse(startStr.trim());
                 LocalDate end   = LocalDate.parse(endStr.trim());
                 return (today.isEqual(start) || today.isAfter(start))
-                    && (today.isEqual(end)   || today.isBefore(end));
+                        && (today.isEqual(end)   || today.isBefore(end));
             } catch (Exception ex) { return false; }
         }).count();
         activeLeaves.setText(String.valueOf(active));
@@ -245,7 +260,7 @@ public class LeaveController implements Initializable {
         header.setAlignment(Pos.CENTER_LEFT);
         header.setPadding(new Insets(22, 25, 20, 25));
         header.setStyle("-fx-background-color: linear-gradient(to bottom right,#1a1f36,#2d3561);" +
-                        "-fx-background-radius: 15 15 0 0;");
+                "-fx-background-radius: 15 15 0 0;");
 
         StackPane iconWrap = new StackPane();
         javafx.scene.shape.Circle ic = new javafx.scene.shape.Circle(22);
@@ -269,12 +284,12 @@ public class LeaveController implements Initializable {
         searchBox.setPromptText("🔍  Search employee or type...");
         searchBox.setPrefWidth(220);
         searchBox.setStyle("-fx-background-color:rgba(255,255,255,0.12);-fx-text-fill:white;" +
-                           "-fx-prompt-text-fill:rgba(255,255,255,0.45);-fx-background-radius:8;" +
-                           "-fx-border-color:rgba(255,255,255,0.2);-fx-border-radius:8;-fx-padding:7 12;");
+                "-fx-prompt-text-fill:rgba(255,255,255,0.45);-fx-background-radius:8;" +
+                "-fx-border-color:rgba(255,255,255,0.2);-fx-border-radius:8;-fx-padding:7 12;");
 
         Button closeBtn = new Button("✕");
         closeBtn.setStyle("-fx-background-color:rgba(255,255,255,0.1);-fx-text-fill:white;" +
-                          "-fx-background-radius:6;-fx-font-size:14px;-fx-cursor:hand;-fx-padding:4 10;");
+                "-fx-background-radius:6;-fx-font-size:14px;-fx-cursor:hand;-fx-padding:4 10;");
         closeBtn.setOnAction(e -> popup.close());
         header.getChildren().addAll(iconWrap, titleBox, hSpacer, searchBox, closeBtn);
 
@@ -292,11 +307,11 @@ public class LeaveController implements Initializable {
         statsRow.setPadding(new Insets(16, 22, 8, 22));
         statsRow.setStyle("-fx-background-color:#f8f9ff;");
         statsRow.getChildren().addAll(
-            makeSummaryStatCard("📋  Total Leaves",  String.valueOf(allLeaves.size()), "#dbeafe","#1d4ed8"),
-            makeSummaryStatCard("🤒  Sick",          String.valueOf(sickCount),        "#fde8e8","#c0392b"),
-            makeSummaryStatCard("🏖  Vacation",      String.valueOf(vacCount),         "#d1fae5","#065f46"),
-            makeSummaryStatCard("⏱  Avg Days",       String.valueOf(avgDays),          "#fef9c3","#92400e"),
-            makeSummaryStatCard("📆  Total Days",    String.valueOf(totalDaysAll),     "#f3e5f5","#6a1b9a")
+                makeSummaryStatCard("📋  Total Leaves",  String.valueOf(allLeaves.size()), "#dbeafe","#1d4ed8"),
+                makeSummaryStatCard("🤒  Sick",          String.valueOf(sickCount),        "#fde8e8","#c0392b"),
+                makeSummaryStatCard("🏖  Vacation",      String.valueOf(vacCount),         "#d1fae5","#065f46"),
+                makeSummaryStatCard("⏱  Avg Days",       String.valueOf(avgDays),          "#fef9c3","#92400e"),
+                makeSummaryStatCard("📆  Total Days",    String.valueOf(totalDaysAll),     "#f3e5f5","#6a1b9a")
         );
 
         // ── TYPE FILTER CHIPS ────────────────────────────────────────────────
@@ -313,9 +328,9 @@ public class LeaveController implements Initializable {
             chip.setUserData(t);
             String[] clr = t.equals("All") ? new String[]{"#6c63ff","white"} : getLeaveChipColor(t);
             chip.setStyle("-fx-background-color:" + (t.equals("All") ? clr[0] : "#e8eaf0") +
-                          ";-fx-text-fill:" + (t.equals("All") ? "white" : "#555") +
-                          ";-fx-font-size:11px;-fx-font-weight:bold;-fx-padding:5 14;" +
-                          "-fx-background-radius:20;-fx-cursor:hand;");
+                    ";-fx-text-fill:" + (t.equals("All") ? "white" : "#555") +
+                    ";-fx-font-size:11px;-fx-font-weight:bold;-fx-padding:5 14;" +
+                    "-fx-background-radius:20;-fx-cursor:hand;");
             if (t.equals("All")) chip.setSelected(true);
             chips.getChildren().add(chip);
         }
@@ -359,7 +374,7 @@ public class LeaveController implements Initializable {
                 row.setAlignment(Pos.CENTER_LEFT);
                 row.setPadding(new Insets(13, 22, 13, 22));
                 row.setStyle("-fx-background-color:" + (even ? "white" : "#fafbff") +
-                             ";-fx-border-color:#f0f2f8;-fx-border-width:0 0 1 0;");
+                        ";-fx-border-color:#f0f2f8;-fx-border-width:0 0 1 0;");
 
                 // Left: colored type bubble
                 StackPane bubble = new StackPane();
@@ -382,12 +397,12 @@ public class LeaveController implements Initializable {
 
                 Label typePill = new Label(getLeaveEmoji(lType) + " " + lType);
                 typePill.setStyle("-fx-background-color:" + lc[2] + ";-fx-text-fill:" + lc[0] +
-                                  ";-fx-font-size:10px;-fx-font-weight:bold;-fx-padding:3 10;" +
-                                  "-fx-background-radius:12;");
+                        ";-fx-font-size:10px;-fx-font-weight:bold;-fx-padding:3 10;" +
+                        "-fx-background-radius:12;");
 
                 Label deptPill = new Label("🏢 " + dept);
                 deptPill.setStyle("-fx-background-color:#e8eaf6;-fx-text-fill:#3949ab;" +
-                                  "-fx-font-size:10px;-fx-padding:3 10;-fx-background-radius:12;");
+                        "-fx-font-size:10px;-fx-padding:3 10;-fx-background-radius:12;");
                 topLine.getChildren().addAll(empLbl, typePill, deptPill);
 
                 HBox dateLine = new HBox(16);
@@ -441,9 +456,9 @@ public class LeaveController implements Initializable {
                     String[] clr = tb.getText().equals("All")
                             ? new String[]{"#6c63ff","white"} : getLeaveChipColor(tb.getText());
                     tb.setStyle("-fx-background-color:" + (sel ? (tb.getText().equals("All") ? "#6c63ff" : clr[0]) : "#e8eaf0") +
-                                ";-fx-text-fill:" + (sel ? "white" : "#555") +
-                                ";-fx-font-size:11px;-fx-font-weight:bold;-fx-padding:5 14;" +
-                                "-fx-background-radius:20;-fx-cursor:hand;");
+                            ";-fx-text-fill:" + (sel ? "white" : "#555") +
+                            ";-fx-font-size:11px;-fx-font-weight:bold;-fx-padding:5 14;" +
+                            "-fx-background-radius:20;-fx-cursor:hand;");
                 }
             });
             refreshList[0].run();
@@ -464,21 +479,21 @@ public class LeaveController implements Initializable {
         footer.setAlignment(Pos.CENTER_RIGHT);
         footer.setPadding(new Insets(13, 22, 15, 22));
         footer.setStyle("-fx-background-color:#f8f9ff;-fx-background-radius:0 0 15 15;" +
-                        "-fx-border-color:#e8eaf0;-fx-border-width:1 0 0 0;");
+                "-fx-border-color:#e8eaf0;-fx-border-width:1 0 0 0;");
         Label footerNote = new Label("Total: " + allLeaves.size() + " leave records  •  " + totalDaysAll + " total days off");
         footerNote.setStyle("-fx-text-fill:#9ba8b7;-fx-font-size:11px;");
         HBox.setHgrow(footerNote, Priority.ALWAYS);
         Button closeBtn2 = new Button("Close");
         closeBtn2.setStyle("-fx-background-color:linear-gradient(to right,#6c63ff,#5a52d4);" +
-                           "-fx-text-fill:white;-fx-font-weight:bold;-fx-font-size:13px;" +
-                           "-fx-padding:9 28;-fx-background-radius:8;-fx-cursor:hand;");
+                "-fx-text-fill:white;-fx-font-weight:bold;-fx-font-size:13px;" +
+                "-fx-padding:9 28;-fx-background-radius:8;-fx-cursor:hand;");
         closeBtn2.setOnAction(e -> popup.close());
         footer.getChildren().addAll(footerNote, closeBtn2);
 
         // ── ASSEMBLE ─────────────────────────────────────────────────────────
         VBox card = new VBox();
         card.setStyle("-fx-background-color:white;-fx-background-radius:15;" +
-                      "-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.28),24,0,0,6);");
+                "-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.28),24,0,0,6);");
         card.getChildren().addAll(header, statsRow, chips, scroll, footer);
         card.setMaxWidth(720);
         card.setMinWidth(680);
@@ -648,8 +663,8 @@ public class LeaveController implements Initializable {
     }
 
     private void addLeaveInfoCard(GridPane grid, int row,
-                                   String l1, String v1, String l2, String v2,
-                                   String bg, String accent) {
+                                  String l1, String v1, String l2, String v2,
+                                  String bg, String accent) {
         Label lbl1 = new Label(l1);
         lbl1.setStyle("-fx-text-fill: #7f8c8d; -fx-font-size: 11px; -fx-font-weight: bold;");
         Label val1 = new Label(v1);
