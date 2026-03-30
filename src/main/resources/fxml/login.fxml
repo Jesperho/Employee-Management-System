@@ -47,21 +47,6 @@
 
     <!-- Right Panel - Forms -->
     <VBox styleClass="form-panel" HBox.hgrow="ALWAYS" alignment="CENTER">
-        <VBox alignment="CENTER_LEFT">
-            <ComboBox fx:id="languageComboBox" promptText="Select Language" styleClass="input-field" >
-                <items >
-                    <FXCollections fx:factory="observableArrayList">
-                        <String fx:value="English" />
-                        <String fx:value="Spanish"/>
-                        <String fx:value="Persia"/>
-                        <String fx:value="Arabic"/>
-                    </FXCollections>
-                </items>
-            </ComboBox>
-        </VBox>
-
-        <Region minHeight="10"/>
-
         <TabPane fx:id="tabPane" tabClosingPolicy="UNAVAILABLE" styleClass="auth-tabs" maxWidth="550">
 
             <!-- Login Tab -->
