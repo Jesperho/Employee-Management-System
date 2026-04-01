@@ -28,6 +28,7 @@ import javafx.animation.Timeline;
 import javafx.util.Duration;
 import utils.BaseController;
 
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -494,7 +495,7 @@ public class SalaryController extends BaseController {
                 "-fx-font-size: 12px; -fx-font-weight: bold; -fx-padding: 4 14; -fx-background-radius: 20;");
 
         javafx.scene.text.Text subTxt = new javafx.scene.text.Text(
-                lang.getTranslatedText("salary.employeesPaid") + ": " + empCount);
+                MessageFormat.format(lang.getTranslatedText("salary.payroll.subtitle"), empCount));
         subTxt.setStyle("-fx-fill: rgba(255,255,255,0.65); -fx-font-size: 12px;");
         header.getChildren().addAll(titleTxt, scopeBadge, subTxt);
 
@@ -510,7 +511,7 @@ public class SalaryController extends BaseController {
         progressBar.setPrefHeight(12);
         progressBar.setStyle("-fx-accent: #27ae60; -fx-background-color: #e8f5e9; -fx-background-radius: 6; -fx-effect: null;");
 
-        Label statusLabel = new Label(lang.getTranslatedText("salary.runPayroll") + "...");
+        Label statusLabel = new Label(lang.getTranslatedText("salary.payroll.initializing"));
         statusLabel.setStyle("-fx-text-fill: #7f8c8d; -fx-font-size: 12px;");
         statusLabel.setAlignment(Pos.CENTER);
         statusLabel.setMaxWidth(Double.MAX_VALUE);
@@ -588,8 +589,7 @@ public class SalaryController extends BaseController {
 
         countUp.setOnFinished(e -> {
             counterLabel.setText("€ " + String.format("%,d", total));
-            String completeMsg = "✅  " + lang.getTranslatedText("salary.runPayroll") + "  " + empCount + " " + lang.getTranslatedText("salary.employeesPaid") + ".";
-            statusLabel.setText(completeMsg);
+            statusLabel.setText(MessageFormat.format(lang.getTranslatedText("salary.payroll.complete"), empCount));
             statusLabel.setStyle("-fx-text-fill: #27ae60; -fx-font-size: 13px; -fx-font-weight: bold;");
             summaryRow.setVisible(true);
             doneBtn.setVisible(true);
