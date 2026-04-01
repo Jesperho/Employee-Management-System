@@ -3,6 +3,7 @@ package controller;
 import dao.DepartmentDao;
 import dao.EmployeeDao;
 import dao.LeaveDao;
+import entity.LanguageManager;
 import entity.Department;
 import entity.Employee;
 import entity.Leave;
@@ -47,6 +48,7 @@ public class DashboardController extends BaseController {
     @FXML private TextField searchField;
 
     @FXML private Text logoSubtitle;
+    @FXML private Text languageLabelText;
     @FXML private Text totalEmpChangeLabel;
     @FXML private Text activeEmpChangeLabel;
     @FXML private Text onLeaveLabel;
@@ -138,6 +140,7 @@ public class DashboardController extends BaseController {
         activeEmployees.setText(langManager.getTranslatedText("activeEmployees"));
 
         if (logoSubtitle != null) logoSubtitle.setText(langManager.getTranslatedText("app.subtitle"));
+        if (languageLabelText != null) languageLabelText.setText(langManager.getTranslatedText("lang.label"));
         if (totalEmpChangeLabel != null) totalEmpChangeLabel.setText(langManager.getTranslatedText("dashboard.vsLastMonth"));
         if (activeEmpChangeLabel != null) activeEmpChangeLabel.setText(langManager.getTranslatedText("dashboard.attendanceRate"));
         if (onLeaveLabel != null) onLeaveLabel.setText(langManager.getTranslatedText("dashboard.onLeave"));
@@ -606,6 +609,7 @@ public class DashboardController extends BaseController {
     private void handleLogout() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/login.fxml"));
+            loader.setResources(LanguageManager.getInstance().getCurrentBundle());
             Parent root = loader.load();
             Stage stage = (Stage) btnLogout.getScene().getWindow();
             Scene scene = new Scene(root, 1050, 700);
@@ -621,6 +625,7 @@ public class DashboardController extends BaseController {
     private void navigateTo(String fxmlPath, String cssPath) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+            loader.setResources(LanguageManager.getInstance().getCurrentBundle());
             Parent root = loader.load();
             Stage stage = (Stage) btnLogout.getScene().getWindow();
             double w = stage.getWidth();

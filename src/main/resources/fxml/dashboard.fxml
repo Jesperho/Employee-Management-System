@@ -36,18 +36,23 @@
                 </StackPane>
                 <Text fx:id="userName" text="Osama Admin" styleClass="user-name"/>
                 <Text fx:id="userRole" text="Administrator" styleClass="user-role"/>
-                <VBox alignment="CENTER">
-                    <ComboBox fx:id="languageComboBox" promptText="English" styleClass="input-field" >
-                        <items >
-                            <FXCollections fx:factory="observableArrayList">
-                                <String fx:value="English" />
-                                <String fx:value="Spanish"/>
-                                <String fx:value="Persia"/>
-                                <String fx:value="Arabic"/>
-                            </FXCollections>
-                        </items>
-                    </ComboBox>
-                </VBox>
+            </VBox>
+
+            <VBox styleClass="language-switcher" alignment="CENTER_LEFT" spacing="8">
+                <padding>
+                    <Insets top="12" bottom="12" left="18" right="18"/>
+                </padding>
+                <Text fx:id="languageLabelText" text="Language" styleClass="language-switcher-label"/>
+                <ComboBox fx:id="languageComboBox" promptText="English" styleClass="language-switcher-combo" maxWidth="Infinity">
+                    <items>
+                        <FXCollections fx:factory="observableArrayList">
+                            <String fx:value="English" />
+                            <String fx:value="Spanish"/>
+                            <String fx:value="Persia"/>
+                            <String fx:value="Arabic"/>
+                        </FXCollections>
+                    </items>
+                </ComboBox>
             </VBox>
 
             <!-- Navigation Menu -->

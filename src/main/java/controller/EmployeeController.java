@@ -3,6 +3,7 @@ package controller;
 import dao.CompanyDao;
 import dao.DepartmentDao;
 import dao.EmployeeDao;
+import entity.LanguageManager;
 import entity.Company;
 import entity.Department;
 import entity.Employee;
@@ -39,10 +40,19 @@ public class EmployeeController extends BaseController {
     @FXML private ComboBox<String> filterGender;
     @FXML private ComboBox<String> filterContract;
 
+    @FXML private Text breadcrumbText;
+    @FXML private Text pageTitleText;
+    @FXML private Button btnAddEmployee;
+
     @FXML private Text totalCount;
     @FXML private Text fullTimeCount;
     @FXML private Text remoteCount;
     @FXML private Text internCount;
+
+    @FXML private Text totalLabelText;
+    @FXML private Text fullTimeLabelText;
+    @FXML private Text partTimeLabelText;
+    @FXML private Text internLabelText;
 
     @FXML private TableView<Employee> employeeTable;
     @FXML private TableColumn<Employee, String> colId;
@@ -91,13 +101,41 @@ public class EmployeeController extends BaseController {
     @Override
     protected void updateUIText(String newLanguage) {
         System.out.println("Employee View updating to: " + newLanguage);
+        entity.LanguageManager lang = entity.LanguageManager.getInstance();
 
-        // Example:
-        // if (newLanguage.equals("Spanish")) {
-        //     btnDashboard.setText("Tablero");
-        //     searchField.setPromptText("Buscar empleado...");
-        //     // Update table column headers, stats titles, etc.
-        // }
+        if (btnDashboard != null) btnDashboard.setText("📊  " + lang.getTranslatedText("nav.dashboard"));
+        if (btnEmployees != null) btnEmployees.setText("👥  " + lang.getTranslatedText("nav.employees"));
+        if (btnDepartments != null) btnDepartments.setText("🏢  " + lang.getTranslatedText("nav.departments"));
+        if (btnLeave != null) btnLeave.setText("📅  " + lang.getTranslatedText("nav.leave"));
+        if (btnSalary != null) btnSalary.setText("💰  " + lang.getTranslatedText("nav.salary"));
+        if (btnLogout != null) btnLogout.setText("🚪  " + lang.getTranslatedText("nav.logout"));
+
+        if (breadcrumbText != null) breadcrumbText.setText(lang.getTranslatedText("emp.breadcrumb"));
+        if (pageTitleText != null) pageTitleText.setText(lang.getTranslatedText("emp.pageTitle"));
+        if (btnAddEmployee != null) btnAddEmployee.setText(lang.getTranslatedText("emp.addBtn"));
+
+        if (searchField != null) searchField.setPromptText(lang.getTranslatedText("search.employees"));
+        if (filterDepartment != null) filterDepartment.setPromptText(lang.getTranslatedText("emp.filterAllDepts"));
+        if (filterGender != null) filterGender.setPromptText(lang.getTranslatedText("emp.filterAllGenders"));
+        if (filterContract != null) filterContract.setPromptText(lang.getTranslatedText("emp.filterAllContracts"));
+
+        if (totalLabelText != null) totalLabelText.setText(lang.getTranslatedText("emp.totalCount"));
+        if (fullTimeLabelText != null) fullTimeLabelText.setText(lang.getTranslatedText("emp.fullTime"));
+        if (partTimeLabelText != null) partTimeLabelText.setText(lang.getTranslatedText("emp.partTime"));
+        if (internLabelText != null) internLabelText.setText(lang.getTranslatedText("emp.interns"));
+
+        if (colId != null) colId.setText(lang.getTranslatedText("emp.col.id"));
+        if (colName != null) colName.setText(lang.getTranslatedText("emp.col.name"));
+        if (colDepartment != null) colDepartment.setText(lang.getTranslatedText("emp.col.department"));
+        if (colJobTitle != null) colJobTitle.setText(lang.getTranslatedText("emp.col.jobTitle"));
+        if (colStartDate != null) colStartDate.setText(lang.getTranslatedText("emp.col.startDate"));
+        if (colContract != null) colContract.setText(lang.getTranslatedText("emp.col.contract"));
+        if (colGender != null) colGender.setText(lang.getTranslatedText("emp.col.gender"));
+        if (colActions != null) colActions.setText(lang.getTranslatedText("emp.col.actions"));
+
+        if (pageInfo != null) pageInfo.setText(lang.getTranslatedText("btn.pageInfo"));
+
+        setupFilters();
     }
 
     private void updateUserProfile() {
@@ -116,13 +154,18 @@ public class EmployeeController extends BaseController {
 
     // Populates the filter dropdowns; department names come from the DB
     private void setupFilters() {
+        entity.LanguageManager lang = entity.LanguageManager.getInstance();
         List<String> deptNames = departmentDao.findAll().stream()
                 .map(Department::getDepartmentName)
                 .collect(Collectors.toList());
-        deptNames.add(0, "All Departments");
+        deptNames.add(0, lang.getTranslatedText("emp.filterAllDepts"));
         filterDepartment.setItems(FXCollections.observableArrayList(deptNames));
-        filterGender.setItems(FXCollections.observableArrayList("All Genders", "Male", "Female", "Other"));
-        filterContract.setItems(FXCollections.observableArrayList("All Contracts", "Full-time", "Part-time", "Remote", "Intern"));
+        filterGender.setItems(FXCollections.observableArrayList(
+                lang.getTranslatedText("emp.filterAllGenders"),
+                "Male", "Female", "Other"));
+        filterContract.setItems(FXCollections.observableArrayList(
+                lang.getTranslatedText("emp.filterAllContracts"),
+                "Full-time", "Part-time", "Remote", "Intern"));
 
         filterDepartment.setOnAction(e -> applyFilters());
         filterGender.setOnAction(e -> applyFilters());
@@ -131,20 +174,21 @@ public class EmployeeController extends BaseController {
 
     // Filters the table based on the selected dropdown values and search text
     private void applyFilters() {
+        entity.LanguageManager lang = entity.LanguageManager.getInstance();
         String dept = filterDepartment.getValue();
         String gender = filterGender.getValue();
         String contract = filterContract.getValue();
         String search = searchField.getText().trim().toLowerCase();
 
         FilteredList<Employee> filtered = new FilteredList<>(employeeData, emp -> {
-            if (dept != null && !dept.equals("All Departments")) {
+            if (dept != null && !dept.equals(lang.getTranslatedText("emp.filterAllDepts"))) {
                 String empDept = getDepartmentName(emp);
                 if (!empDept.equalsIgnoreCase(dept)) return false;
             }
-            if (gender != null && !gender.equals("All Genders")) {
+            if (gender != null && !gender.equals(lang.getTranslatedText("emp.filterAllGenders"))) {
                 if (!gender.equalsIgnoreCase(emp.getGender())) return false;
             }
-            if (contract != null && !contract.equals("All Contracts")) {
+            if (contract != null && !contract.equals(lang.getTranslatedText("emp.filterAllContracts"))) {
                 if (!contract.equalsIgnoreCase(emp.getContractType())) return false;
             }
             if (!search.isEmpty()) {
@@ -530,6 +574,7 @@ public class EmployeeController extends BaseController {
     private void navigateTo(String fxmlPath, String cssPath) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+            loader.setResources(LanguageManager.getInstance().getCurrentBundle());
             Parent root = loader.load();
             Stage stage = (Stage) btnLogout.getScene().getWindow();
             double w = stage.getWidth();

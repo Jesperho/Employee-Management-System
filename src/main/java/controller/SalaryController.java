@@ -2,6 +2,7 @@ package controller;
 
 import dao.DepartmentDao;
 import dao.EmployeeDao;
+import entity.LanguageManager;
 import entity.Department;
 import entity.Employee;
 import javafx.beans.property.SimpleStringProperty;
@@ -40,10 +41,19 @@ public class SalaryController extends BaseController {
     @FXML private TextField searchField;
     @FXML private ComboBox<String> filterDepartment;
 
+    @FXML private Text breadcrumbText;
+    @FXML private Text pageTitleText;
+    @FXML private Button btnRunPayroll;
+
     @FXML private Text totalPayroll;
     @FXML private Text avgSalary;
     @FXML private Text highestSalary;
     @FXML private Text employeesPaid;
+
+    @FXML private Text totalPayrollLabelText;
+    @FXML private Text avgSalaryLabelText;
+    @FXML private Text highestSalaryLabelText;
+    @FXML private Text employeesPaidLabelText;
 
     @FXML private TableView<ObservableList<String>> salaryTable;
     @FXML private TableColumn<ObservableList<String>, String> colId;
@@ -93,13 +103,37 @@ public class SalaryController extends BaseController {
     @Override
     protected void updateUIText(String newLanguage) {
         System.out.println("Salary View updating to: " + newLanguage);
+        entity.LanguageManager lang = entity.LanguageManager.getInstance();
 
-        // Example:
-        // if (newLanguage.equals("Spanish")) {
-        //     btnDashboard.setText("Tablero");
-        //     searchField.setPromptText("Buscar...");
-        //     // Update table column headers, stats titles, etc.
-        // }
+        if (btnDashboard != null) btnDashboard.setText("📊  " + lang.getTranslatedText("nav.dashboard"));
+        if (btnEmployees != null) btnEmployees.setText("👥  " + lang.getTranslatedText("nav.employees"));
+        if (btnDepartments != null) btnDepartments.setText("🏢  " + lang.getTranslatedText("nav.departments"));
+        if (btnLeave != null) btnLeave.setText("📅  " + lang.getTranslatedText("nav.leave"));
+        if (btnSalary != null) btnSalary.setText("💰  " + lang.getTranslatedText("nav.salary"));
+        if (btnLogout != null) btnLogout.setText("🚪  " + lang.getTranslatedText("nav.logout"));
+
+        if (breadcrumbText != null) breadcrumbText.setText(lang.getTranslatedText("salary.breadcrumb"));
+        if (pageTitleText != null) pageTitleText.setText(lang.getTranslatedText("salary.pageTitle"));
+        if (btnRunPayroll != null) btnRunPayroll.setText(lang.getTranslatedText("salary.runPayroll"));
+        if (searchField != null) searchField.setPromptText(lang.getTranslatedText("search.salary"));
+        if (filterDepartment != null) filterDepartment.setPromptText(lang.getTranslatedText("salary.filterAllDepts"));
+
+        if (totalPayrollLabelText != null) totalPayrollLabelText.setText(lang.getTranslatedText("salary.totalPayroll"));
+        if (avgSalaryLabelText != null) avgSalaryLabelText.setText(lang.getTranslatedText("salary.avgSalary"));
+        if (highestSalaryLabelText != null) highestSalaryLabelText.setText(lang.getTranslatedText("salary.highestSalary"));
+        if (employeesPaidLabelText != null) employeesPaidLabelText.setText(lang.getTranslatedText("salary.employeesPaid"));
+
+        if (colId != null) colId.setText(lang.getTranslatedText("salary.col.id"));
+        if (colName != null) colName.setText(lang.getTranslatedText("salary.col.name"));
+        if (colDepartment != null) colDepartment.setText(lang.getTranslatedText("salary.col.department"));
+        if (colJobTitle != null) colJobTitle.setText(lang.getTranslatedText("salary.col.jobTitle"));
+        if (colPosition != null) colPosition.setText(lang.getTranslatedText("salary.col.position"));
+        if (colSalary != null) colSalary.setText(lang.getTranslatedText("salary.col.salary"));
+        if (colGender != null) colGender.setText(lang.getTranslatedText("salary.col.gender"));
+        if (colActions != null) colActions.setText(lang.getTranslatedText("salary.col.actions"));
+
+        if (pageInfo != null) pageInfo.setText(lang.getTranslatedText("btn.pageInfo"));
+        setupFilters();
     }
 
     private void updateUserProfile() {
@@ -133,20 +167,22 @@ public class SalaryController extends BaseController {
 
     // Populates the department filter from DB
     private void setupFilters() {
+        entity.LanguageManager lang = entity.LanguageManager.getInstance();
         List<String> deptNames = departmentDao.findAll().stream()
                 .map(Department::getDepartmentName)
                 .collect(Collectors.toList());
-        deptNames.add(0, "All Departments");
+        deptNames.add(0, lang.getTranslatedText("salary.filterAllDepts"));
         filterDepartment.setItems(FXCollections.observableArrayList(deptNames));
         filterDepartment.setOnAction(e -> applyFilters());
     }
 
     private void applyFilters() {
+        entity.LanguageManager lang = entity.LanguageManager.getInstance();
         String dept = filterDepartment.getValue();
         String search = searchField.getText().trim().toLowerCase();
 
         FilteredList<ObservableList<String>> filtered = new FilteredList<>(salaryData, row -> {
-            if (dept != null && !dept.equals("All Departments") && !row.get(2).equalsIgnoreCase(dept)) return false;
+            if (dept != null && !dept.equals(lang.getTranslatedText("salary.filterAllDepts")) && !row.get(2).equalsIgnoreCase(dept)) return false;
             if (!search.isEmpty()) {
                 if (!row.get(1).toLowerCase().contains(search) && !row.get(2).toLowerCase().contains(search)) return false;
             }
@@ -588,6 +624,7 @@ public class SalaryController extends BaseController {
     private void navigateTo(String fxmlPath, String cssPath) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+            loader.setResources(LanguageManager.getInstance().getCurrentBundle());
             Parent root = loader.load();
             Stage stage = (Stage) btnLogout.getScene().getWindow();
             double w = stage.getWidth();

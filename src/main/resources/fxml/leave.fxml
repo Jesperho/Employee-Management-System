@@ -29,7 +29,7 @@
                 <Text fx:id="userName" text="Admin" styleClass="user-name"/>
                 <Text fx:id="userRole" text="Administrator" styleClass="user-role"/>
                 <VBox alignment="CENTER">
-                    <ComboBox fx:id="languageComboBox" promptText="English" styleClass="input-field" >
+                    <ComboBox fx:id="languageComboBox" promptText="English" styleClass="language-switcher-combo" >
                         <items >
                             <FXCollections fx:factory="observableArrayList">
                                 <String fx:value="English" />
@@ -59,7 +59,7 @@
         <VBox styleClass="main-content" minWidth="0">
             <HBox styleClass="header-bar" alignment="CENTER_LEFT" spacing="20">
                 <padding><Insets top="15" bottom="15" left="25" right="25"/></padding>
-                <VBox spacing="2"><Text text="Dashboard / Leave Management" styleClass="page-breadcrumb"/></VBox>
+                <VBox spacing="2"><Text fx:id="breadcrumbText" text="Dashboard / Leave Management" styleClass="page-breadcrumb"/></VBox>
                 <Region HBox.hgrow="ALWAYS"/>
                 <HBox styleClass="search-container" alignment="CENTER_LEFT" spacing="10">
                     <TextField fx:id="searchField" promptText="Search leave records..." styleClass="search-field" prefWidth="250" maxWidth="350" onAction="#handleSearch"/>
@@ -71,19 +71,19 @@
                     <padding><Insets top="25" bottom="25" left="25" right="25"/></padding>
 
                     <!-- Title -->
-                    <Text text="📋 Leave Management" styleClass="page-title"/>
+                    <Text fx:id="pageTitleText" text="📋 Leave Management" styleClass="page-title"/>
 
                     <!-- Banner -->
                     <VBox styleClass="leave-banner" spacing="8" alignment="CENTER_LEFT">
                         <padding><Insets top="30" bottom="30" left="30" right="30"/></padding>
-                        <Text text="Manage ALL Leave Applications" styleClass="banner-title"/>
-                        <Text text="A relaxed employee is a performing employee. Track, approve, and manage all leave requests efficiently." styleClass="banner-subtitle"/>
+                        <Text fx:id="bannerTitleText" text="Manage ALL Leave Applications" styleClass="banner-title"/>
+                        <Text fx:id="bannerSubtitleText" text="A relaxed employee is a performing employee. Track, approve, and manage all leave requests efficiently." styleClass="banner-subtitle"/>
                     </VBox>
 
                     <!-- Quick Action Buttons -->
                     <HBox spacing="15">
-                        <Button text="📝 Add Leave" styleClass="leave-action-btn, leave-action-primary" onAction="#handleApplyLeave"/>
-                        <Button text="📊 Leave History" styleClass="leave-action-btn, leave-action-secondary" onAction="#handleLeaveHistory"/>
+                        <Button fx:id="btnAddLeave" text="📝 Add Leave" styleClass="leave-action-btn, leave-action-primary" onAction="#handleApplyLeave"/>
+                        <Button fx:id="btnLeaveHistory" text="📊 Leave History" styleClass="leave-action-btn, leave-action-secondary" onAction="#handleLeaveHistory"/>
                     </HBox>
 
                     <!-- Stats Row -->
@@ -91,32 +91,32 @@
                         <VBox styleClass="stat-card, stat-card-blue" HBox.hgrow="ALWAYS" spacing="5" alignment="CENTER">
                             <padding><Insets top="15" bottom="15" left="15" right="15"/></padding>
                             <Text fx:id="totalLeaves" text="45" styleClass="stat-number-sm"/>
-                            <Text text="Total Leaves" styleClass="stat-label"/>
+                            <Text fx:id="totalLeavesLabelText" text="Total Leaves" styleClass="stat-label"/>
                         </VBox>
                         <VBox styleClass="stat-card, stat-card-green" HBox.hgrow="ALWAYS" spacing="5" alignment="CENTER">
                             <padding><Insets top="15" bottom="15" left="15" right="15"/></padding>
                             <Text fx:id="activeLeaves" text="3" styleClass="stat-number-sm"/>
-                            <Text text="Currently On Leave" styleClass="stat-label"/>
+                            <Text fx:id="activeLeavesLabelText" text="Currently On Leave" styleClass="stat-label"/>
                         </VBox>
                         <VBox styleClass="stat-card, stat-card-orange" HBox.hgrow="ALWAYS" spacing="5" alignment="CENTER">
                             <padding><Insets top="15" bottom="15" left="15" right="15"/></padding>
                             <Text fx:id="sickLeaves" text="5" styleClass="stat-number-sm"/>
-                            <Text text="Sick Leaves" styleClass="stat-label"/>
+                            <Text fx:id="sickLeavesLabelText" text="Sick Leaves" styleClass="stat-label"/>
                         </VBox>
                         <VBox styleClass="stat-card, stat-card-purple" HBox.hgrow="ALWAYS" spacing="5" alignment="CENTER">
                             <padding><Insets top="15" bottom="15" left="15" right="15"/></padding>
                             <Text fx:id="avgDuration" text="12" styleClass="stat-number-sm"/>
-                            <Text text="Avg Duration (days)" styleClass="stat-label"/>
+                            <Text fx:id="avgDurationLabelText" text="Avg Duration (days)" styleClass="stat-label"/>
                         </VBox>
                     </HBox>
 
                     <!-- Leave History Table -->
                     <HBox alignment="CENTER_LEFT" spacing="15">
-                        <Text text="Leave History" styleClass="card-title"/>
+                        <Text fx:id="historyTitleText" text="Leave History" styleClass="card-title"/>
                         <Region HBox.hgrow="ALWAYS"/>
                         <ComboBox fx:id="filterDepartment" promptText="All Departments" styleClass="filter-combo" prefWidth="160"/>
                         <ComboBox fx:id="filterType" promptText="All Types" styleClass="filter-combo" prefWidth="140"/>
-                        <Button text="➕ Add Leave" styleClass="action-primary" onAction="#handleApplyLeave"/>
+                        <Button fx:id="btnAddLeaveBottom" text="➕ Add Leave" styleClass="action-primary" onAction="#handleApplyLeave"/>
                     </HBox>
 
                     <VBox styleClass="content-card" spacing="0" VBox.vgrow="ALWAYS">
