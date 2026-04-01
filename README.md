@@ -124,6 +124,19 @@ It includes primary keys, foreign keys, and table relationships for all entities
 ![Relational Schema](https://github.com/Jesperho/Employee-Management-System/blob/main/docs/Diagrams/Relational_Schema.jpeg)
 
 ---
+## Class Diagram
+The class diagram models the core domain classes and their relationships within the Employee Management System.
+
+![Class Diagram](https://github.com/Jesperho/Employee-Management-System/blob/main/docs/Diagrams/Class_Diagram.png)
+
+- **Company** is the central class, linked to Department, Employee, and Admin (one-to-many)
+- **Admin** manages the system and generates change log records on every modification
+- **Department** belongs to a Company and contains many Employees
+- **Employee** belongs to one Department and one Company; supports a recursive supervisor relationship
+- **Leave** is linked to one Employee; an Employee can have many Leave records
+- **ChangeEmp**, **ChangeDept**, and **ChangeLeave** are audit log classes created whenever an Admin modifies an Employee, Department, or Leave — storing the date, message, and the actor who made the change
+
+---
 ## Key Features
 
 ### **1. Admin Registration & Login**
@@ -196,5 +209,3 @@ The application is available in **4 languages**: English, Spanish, Persian, and 
 | :--- | :--- |
 | **Translation Review** | Native speakers — dialect validation for Arabic and Persian |
 | **Key Management** | IntelliJ IDEA Resource Bundle Editor — edit all language files side-by-side |
-
----
