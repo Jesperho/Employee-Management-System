@@ -119,8 +119,8 @@ public class LeaveController extends BaseController {
 
         if (breadcrumbText != null) breadcrumbText.setText(lang.getTranslatedText("leave.breadcrumb"));
         if (pageTitleText != null) pageTitleText.setText(lang.getTranslatedText("leave.pageTitle"));
-        if (bannerTitleText != null) bannerTitleText.setText("Manage ALL Leave Applications");
-        if (bannerSubtitleText != null) bannerSubtitleText.setText("A relaxed employee is a performing employee. Track, approve, and manage all leave requests efficiently.");
+        if (bannerTitleText != null) bannerTitleText.setText(lang.getTranslatedText("leave.bannerTitle"));
+        if (bannerSubtitleText != null) bannerSubtitleText.setText(lang.getTranslatedText("leave.bannerSubtitle"));
         if (btnAddLeave != null) btnAddLeave.setText(lang.getTranslatedText("leave.addBtn"));
         if (btnLeaveHistory != null) btnLeaveHistory.setText(lang.getTranslatedText("leave.historyBtn"));
         if (btnAddLeaveBottom != null) btnAddLeaveBottom.setText(lang.getTranslatedText("leave.addBtn"));

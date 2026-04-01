@@ -382,7 +382,7 @@ public class DepartmentController extends BaseController {
 
                 editBtn.setOnAction(e -> {
                     ObservableList<String> row = getTableView().getItems().get(getIndex());
-                    showDeptFormPopup("Edit Department", row);
+                    showDeptFormPopup(entity.LanguageManager.getInstance().getTranslatedText("dept.col.actions"), row);
                 });
                 deleteBtn.setOnAction(e -> {
                     ObservableList<String> row = getTableView().getItems().get(getIndex());
@@ -697,7 +697,8 @@ public class DepartmentController extends BaseController {
 
     @FXML
     private void handleAddDepartment() {
-        showDeptFormPopup("Add New Department", null);
+        entity.LanguageManager lang = entity.LanguageManager.getInstance();
+        showDeptFormPopup(lang.getTranslatedText("dept.addBtn"), null);
     }
 
     // Opens a form popup for adding a new department (existingData = null) or editing one
@@ -739,7 +740,10 @@ public class DepartmentController extends BaseController {
         form.setPadding(new Insets(25));
         form.setStyle("-fx-background-color: white;");
 
-        String formTitleText = existingData == null ? "Add New Department" : "Edit Department";
+        entity.LanguageManager lang = entity.LanguageManager.getInstance();
+        String formTitleText = existingData == null
+                ? lang.getTranslatedText("dept.addBtn")
+                : lang.getTranslatedText("dept.col.name") + " - " + existingData.get(1);
         Text formTitle = new Text(formTitleText);
         formTitle.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-fill: #1a1f36;");
 
@@ -747,21 +751,21 @@ public class DepartmentController extends BaseController {
         grid.setHgap(15);
         grid.setVgap(12);
 
-        TextField nameField = createFormField("Department Name");
-        TextField capacityField = createFormField("Capacity");
+        TextField nameField = createFormField(lang.getTranslatedText("dept.col.name"));
+        TextField capacityField = createFormField(lang.getTranslatedText("dept.col.capacity"));
         DatePicker creationDate = new DatePicker();
-        creationDate.setPromptText("Creation Date");
+        creationDate.setPromptText(lang.getTranslatedText("dept.col.created"));
         creationDate.setPrefWidth(250);
 
         TextArea descriptionField = new TextArea();
-        descriptionField.setPromptText("Description");
+        descriptionField.setPromptText(lang.getTranslatedText("dept.col.description"));
         descriptionField.setPrefRowCount(3);
         descriptionField.setStyle("-fx-background-color: #f8f9fa; -fx-border-color: #e0e3e8; -fx-border-radius: 8;");
 
-        grid.add(createLabel("Department Name"), 0, 0); grid.add(nameField, 1, 0);
-        grid.add(createLabel("Capacity"), 2, 0);        grid.add(capacityField, 3, 0);
-        grid.add(createLabel("Creation Date"), 0, 1);   grid.add(creationDate, 1, 1);
-        grid.add(createLabel("Description"), 0, 2);
+        grid.add(createLabel(lang.getTranslatedText("dept.col.name")), 0, 0); grid.add(nameField, 1, 0);
+        grid.add(createLabel(lang.getTranslatedText("dept.col.capacity")), 2, 0); grid.add(capacityField, 3, 0);
+        grid.add(createLabel(lang.getTranslatedText("dept.col.created")), 0, 1);  grid.add(creationDate, 1, 1);
+        grid.add(createLabel(lang.getTranslatedText("dept.col.description")), 0, 2);
         GridPane.setColumnSpan(descriptionField, 3);
         grid.add(descriptionField, 1, 2);
 
@@ -779,15 +783,15 @@ public class DepartmentController extends BaseController {
         HBox buttonBar = new HBox(15);
         buttonBar.setAlignment(Pos.CENTER_RIGHT);
 
-        Button submitBtn = new Button(existingData == null ? "Submit" : "Update");
+        Button submitBtn = new Button(existingData == null ? lang.getTranslatedText("btn.submit") : lang.getTranslatedText("btn.update"));
         submitBtn.setStyle("-fx-background-color: linear-gradient(to right, #6c63ff, #5a52d4); -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 12 30; -fx-background-radius: 8; -fx-cursor: hand;");
 
-        Button cancelBtn = new Button("Cancel");
+        Button cancelBtn = new Button(lang.getTranslatedText("btn.cancel"));
         cancelBtn.setStyle("-fx-background-color: white; -fx-text-fill: #e74c3c; -fx-border-color: #e74c3c; -fx-border-radius: 8; -fx-background-radius: 8; -fx-font-size: 14px; -fx-padding: 12 30; -fx-cursor: hand; -fx-font-weight: bold;");
 
         submitBtn.setOnAction(e -> {
             if (nameField.getText().isEmpty()) {
-                showAlert("Validation Error", "Department name is required.");
+                showAlert(lang.getTranslatedText("alert.validationError"), lang.getTranslatedText("alert.deptNameRequired"));
                 return;
             }
             int capacity = 0;
@@ -795,7 +799,7 @@ public class DepartmentController extends BaseController {
                 try {
                     capacity = Integer.parseInt(capacityField.getText());
                 } catch (NumberFormatException ex) {
-                    showAlert("Validation Error", "Capacity must be a valid number.");
+                    showAlert(lang.getTranslatedText("alert.validationError"), lang.getTranslatedText("alert.capacityMustBeNumber"));
                     return;
                 }
             }
