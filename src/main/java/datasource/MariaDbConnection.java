@@ -20,7 +20,7 @@ public class MariaDbConnection {
         if (host == null || host.isEmpty()) {
             // Local machine fallback
             host = "localhost";
-            port = "3306"; // default MariaDB port locally
+            port = "3307"; // default MariaDB port locally
         }
 
         String url = "jdbc:mariadb://" + host + ":" + port + "/employment_management";
