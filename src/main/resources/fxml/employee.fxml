@@ -30,7 +30,7 @@
                 <Text fx:id="userName" text="Admin" styleClass="user-name"/>
                 <Text fx:id="userRole" text="Administrator" styleClass="user-role"/>
                 <VBox alignment="CENTER">
-                    <ComboBox fx:id="languageComboBox" promptText="English" styleClass="input-field" >
+                    <ComboBox fx:id="languageComboBox" promptText="English" styleClass="language-switcher-combo" >
                         <items >
                             <FXCollections fx:factory="observableArrayList">
                                 <String fx:value="English" />
@@ -70,7 +70,7 @@
             <HBox styleClass="header-bar" alignment="CENTER_LEFT" spacing="20">
                 <padding><Insets top="15" bottom="15" left="25" right="25"/></padding>
                 <VBox spacing="2">
-                    <Text text="Dashboard / Employee Management" styleClass="page-breadcrumb"/>
+                    <Text fx:id="breadcrumbText" text="Dashboard / Employee Management" styleClass="page-breadcrumb"/>
                 </VBox>
                 <Region HBox.hgrow="ALWAYS"/>
                 <HBox styleClass="search-container" alignment="CENTER_LEFT" spacing="10">
@@ -88,9 +88,9 @@
                     <!-- Page Title + Actions -->
                     <VBox spacing="10">
                         <HBox alignment="CENTER_LEFT" spacing="15">
-                            <Text text="Employee Management" styleClass="page-title"/>
+                            <Text fx:id="pageTitleText" text="Employee Management" styleClass="page-title"/>
                             <Region HBox.hgrow="ALWAYS"/>
-                            <Button text="➕ Add Employee" styleClass="action-primary" onAction="#handleAddEmployee"/>
+                            <Button fx:id="btnAddEmployee" text="➕ Add Employee" styleClass="action-primary" onAction="#handleAddEmployee"/>
                         </HBox>
                         <HBox spacing="10" alignment="CENTER_LEFT">
                             <ComboBox fx:id="filterDepartment" promptText="All Departments" styleClass="filter-combo" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
@@ -104,22 +104,22 @@
                         <VBox styleClass="stat-card, stat-card-blue" HBox.hgrow="ALWAYS" spacing="5" alignment="CENTER">
                             <padding><Insets top="15" bottom="15" left="15" right="15"/></padding>
                             <Text fx:id="totalCount" text="540" styleClass="stat-number-sm"/>
-                            <Text text="Total Employees" styleClass="stat-label"/>
+                            <Text fx:id="totalLabelText" text="Total Employees" styleClass="stat-label"/>
                         </VBox>
                         <VBox styleClass="stat-card, stat-card-green" HBox.hgrow="ALWAYS" spacing="5" alignment="CENTER">
                             <padding><Insets top="15" bottom="15" left="15" right="15"/></padding>
                             <Text fx:id="fullTimeCount" text="420" styleClass="stat-number-sm"/>
-                            <Text text="Full Time" styleClass="stat-label"/>
+                            <Text fx:id="fullTimeLabelText" text="Full Time" styleClass="stat-label"/>
                         </VBox>
                         <VBox styleClass="stat-card, stat-card-orange" HBox.hgrow="ALWAYS" spacing="5" alignment="CENTER">
                             <padding><Insets top="15" bottom="15" left="15" right="15"/></padding>
                             <Text fx:id="remoteCount" text="0" styleClass="stat-number-sm"/>
-                            <Text text="Part-time" styleClass="stat-label"/>
+                            <Text fx:id="partTimeLabelText" text="Part-time" styleClass="stat-label"/>
                         </VBox>
                         <VBox styleClass="stat-card, stat-card-purple" HBox.hgrow="ALWAYS" spacing="5" alignment="CENTER">
                             <padding><Insets top="15" bottom="15" left="15" right="15"/></padding>
                             <Text fx:id="internCount" text="0" styleClass="stat-number-sm"/>
-                            <Text text="Interns" styleClass="stat-label"/>
+                            <Text fx:id="internLabelText" text="Interns" styleClass="stat-label"/>
                         </VBox>
                     </HBox>
 

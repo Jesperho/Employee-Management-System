@@ -3,6 +3,7 @@ package controller;
 import dao.DepartmentDao;
 import dao.EmployeeDao;
 import dao.LeaveDao;
+import entity.LanguageManager;
 import entity.Department;
 import entity.Employee;
 import entity.Leave;
@@ -39,10 +40,25 @@ public class LeaveController extends BaseController {
     @FXML private ComboBox<String> filterType;
     @FXML private ComboBox<String> filterDepartment;
 
+    @FXML private Text breadcrumbText;
+    @FXML private Text pageTitleText;
+    @FXML private Text bannerTitleText;
+    @FXML private Text bannerSubtitleText;
+    @FXML private Button btnAddLeave;
+    @FXML private Button btnLeaveHistory;
+    @FXML private Button btnAddLeaveBottom;
+
     @FXML private Text totalLeaves;
     @FXML private Text activeLeaves;
     @FXML private Text sickLeaves;
     @FXML private Text avgDuration;
+
+    @FXML private Text totalLeavesLabelText;
+    @FXML private Text activeLeavesLabelText;
+    @FXML private Text sickLeavesLabelText;
+    @FXML private Text avgDurationLabelText;
+
+    @FXML private Text historyTitleText;
 
     @FXML private TableView<ObservableList<String>> leaveTable;
     @FXML private TableColumn<ObservableList<String>, String> colId;
@@ -73,7 +89,7 @@ public class LeaveController extends BaseController {
     private final EmployeeDao employeeDao = new EmployeeDao();
     private final DepartmentDao departmentDao = new DepartmentDao();
 
-    private ObservableList<ObservableList<String>> leaveData = FXCollections.observableArrayList();
+    private final ObservableList<ObservableList<String>> leaveData = FXCollections.observableArrayList();
 
     // 2. Replace initialize() with setupController()
     @Override
@@ -92,13 +108,45 @@ public class LeaveController extends BaseController {
     @Override
     protected void updateUIText(String newLanguage) {
         System.out.println("Leave View updating to: " + newLanguage);
+        entity.LanguageManager lang = entity.LanguageManager.getInstance();
 
-        // Example:
-        // if (newLanguage.equals("Spanish")) {
-        //     btnDashboard.setText("Tablero");
-        //     searchField.setPromptText("Buscar ausencia...");
-        //     // Update table column headers, stats titles, etc.
-        // }
+        if (btnDashboard != null) btnDashboard.setText("📊  " + lang.getTranslatedText("nav.dashboard"));
+        if (btnEmployees != null) btnEmployees.setText("👥  " + lang.getTranslatedText("nav.employees"));
+        if (btnDepartments != null) btnDepartments.setText("🏢  " + lang.getTranslatedText("nav.departments"));
+        if (btnLeave != null) btnLeave.setText("📅  " + lang.getTranslatedText("nav.leave"));
+        if (btnSalary != null) btnSalary.setText("💰  " + lang.getTranslatedText("nav.salary"));
+        if (btnLogout != null) btnLogout.setText("🚪  " + lang.getTranslatedText("nav.logout"));
+
+        if (breadcrumbText != null) breadcrumbText.setText(lang.getTranslatedText("leave.breadcrumb"));
+        if (pageTitleText != null) pageTitleText.setText(lang.getTranslatedText("leave.pageTitle"));
+        if (bannerTitleText != null) bannerTitleText.setText("Manage ALL Leave Applications");
+        if (bannerSubtitleText != null) bannerSubtitleText.setText("A relaxed employee is a performing employee. Track, approve, and manage all leave requests efficiently.");
+        if (btnAddLeave != null) btnAddLeave.setText(lang.getTranslatedText("leave.addBtn"));
+        if (btnLeaveHistory != null) btnLeaveHistory.setText(lang.getTranslatedText("leave.historyBtn"));
+        if (btnAddLeaveBottom != null) btnAddLeaveBottom.setText(lang.getTranslatedText("leave.addBtn"));
+
+        if (searchField != null) searchField.setPromptText(lang.getTranslatedText("search.leave"));
+        if (filterType != null) filterType.setPromptText(lang.getTranslatedText("leave.filterAllTypes"));
+        if (filterDepartment != null) filterDepartment.setPromptText(lang.getTranslatedText("leave.filterAllDepts"));
+
+        if (totalLeavesLabelText != null) totalLeavesLabelText.setText(lang.getTranslatedText("leave.total"));
+        if (activeLeavesLabelText != null) activeLeavesLabelText.setText(lang.getTranslatedText("leave.active"));
+        if (sickLeavesLabelText != null) sickLeavesLabelText.setText(lang.getTranslatedText("leave.sick"));
+        if (avgDurationLabelText != null) avgDurationLabelText.setText(lang.getTranslatedText("leave.avgDuration"));
+        if (historyTitleText != null) historyTitleText.setText(lang.getTranslatedText("leave.historyBtn"));
+
+        if (colId != null) colId.setText(lang.getTranslatedText("leave.col.id"));
+        if (colEmployee != null) colEmployee.setText(lang.getTranslatedText("leave.col.employee"));
+        if (colDuration != null) colDuration.setText(lang.getTranslatedText("leave.col.duration"));
+        if (colStartDate != null) colStartDate.setText(lang.getTranslatedText("leave.col.startDate"));
+        if (colEndDate != null) colEndDate.setText(lang.getTranslatedText("leave.col.endDate"));
+        if (colType != null) colType.setText(lang.getTranslatedText("leave.col.type"));
+        if (colReason != null) colReason.setText(lang.getTranslatedText("leave.col.reason"));
+        if (colActions != null) colActions.setText(lang.getTranslatedText("leave.col.actions"));
+
+        if (pageInfo != null) pageInfo.setText(lang.getTranslatedText("btn.pageInfo"));
+        setupFilters();
+        applyFilters();
     }
 
     private void updateUserProfile() {
@@ -110,50 +158,62 @@ public class LeaveController extends BaseController {
 
     // Fetches all leave records from the DB and refreshes the table and stats
     private void loadFromDatabase() {
-        leaveData.clear();
-        List<Leave> leaves = leaveDao.findAll();
-        for (Leave leave : leaves) {
-            String empName = leave.getEmployee() != null ? leave.getEmployee().getFullName() : "N/A";
-            String deptName = (leave.getEmployee() != null && leave.getEmployee().getDepartment() != null)
-                    ? leave.getEmployee().getDepartment().getDepartmentName() : "N/A";
-            long duration = 0;
-            if (leave.getStartDate() != null && leave.getEndDate() != null) {
-                duration = ChronoUnit.DAYS.between(leave.getStartDate(), leave.getEndDate());
+        try {
+            leaveData.clear();
+            List<Leave> leaves = leaveDao.findAll();
+            for (Leave leave : leaves) {
+                String empName = leave.getEmployee() != null ? leave.getEmployee().getFullName() : "N/A";
+                String deptName = (leave.getEmployee() != null && leave.getEmployee().getDepartment() != null)
+                        ? leave.getEmployee().getDepartment().getDepartmentName() : "N/A";
+                long duration = resolveLeaveDuration(leave);
+                leaveData.add(FXCollections.observableArrayList(
+                        String.valueOf(leave.getId()),  // 0
+                        empName,                        // 1
+                        String.valueOf(duration),        // 2
+                        leave.getStartDate() != null ? leave.getStartDate().toString() : "N/A", // 3
+                        leave.getEndDate()   != null ? leave.getEndDate().toString()   : "N/A", // 4
+                        leave.getType()   != null ? leave.getType()   : "N/A",  // 5
+                        leave.getReason() != null ? leave.getReason() : "",     // 6
+                        deptName                        // 7  ← department (used for filtering, not shown in table)
+                ));
             }
-            leaveData.add(FXCollections.observableArrayList(
-                    String.valueOf(leave.getId()),  // 0
-                    empName,                        // 1
-                    String.valueOf(duration),        // 2
-                    leave.getStartDate() != null ? leave.getStartDate().toString() : "N/A", // 3
-                    leave.getEndDate()   != null ? leave.getEndDate().toString()   : "N/A", // 4
-                    leave.getType()   != null ? leave.getType()   : "N/A",  // 5
-                    leave.getReason() != null ? leave.getReason() : "",     // 6
-                    deptName                        // 7  ← department (used for filtering, not shown in table)
-            ));
+            leaveTable.setItems(leaveData);
+            updateStats();
+        } catch (Exception e) {
+            System.err.println("Failed to load leave data: " + e.getMessage());
+            leaveTable.setItems(leaveData);
+            updateStats();
         }
-        leaveTable.setItems(leaveData);
-        updateStats();
     }
 
     private void setupFilters() {
-        if (filterType != null) {
-            filterType.setItems(FXCollections.observableArrayList(
-                    "All Types", "Sick", "Vacation", "Maternity", "Personal", "Exam", "Paternity", "Unpaid"));
-            filterType.setOnAction(e -> applyFilters());
-        }
-        if (filterDepartment != null) {
-            List<String> deptNames = departmentDao.findAll().stream()
-                    .map(Department::getDepartmentName)
-                    .collect(java.util.stream.Collectors.toList());
-            deptNames.add(0, "All Departments");
-            filterDepartment.setItems(FXCollections.observableArrayList(deptNames));
-            filterDepartment.setOnAction(e -> applyFilters());
+        try {
+            entity.LanguageManager lang = entity.LanguageManager.getInstance();
+            if (filterType != null) {
+                filterType.setItems(FXCollections.observableArrayList(
+                        lang.getTranslatedText("leave.filterAllTypes"), "Sick", "Vacation", "Maternity", "Personal", "Exam", "Paternity", "Unpaid"));
+                filterType.setOnAction(e -> applyFilters());
+            }
+            if (filterDepartment != null) {
+                List<String> deptNames = new java.util.ArrayList<>();
+                deptNames.add(lang.getTranslatedText("leave.filterAllDepts"));
+                deptNames.addAll(departmentDao.findAll().stream()
+                        .map(Department::getDepartmentName)
+                        .toList());
+                filterDepartment.setItems(FXCollections.observableArrayList(deptNames));
+                filterDepartment.setOnAction(e -> applyFilters());
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to load leave filters: " + e.getMessage());
+            if (filterDepartment != null) {
+                filterDepartment.setItems(FXCollections.observableArrayList(LanguageManager.getInstance().getTranslatedText("leave.filterAllDepts")));
+            }
         }
     }
 
     private void setupTable() {
-        leaveTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-        colId.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().get(0)));
+        leaveTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
+        colId.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getFirst()));
         colEmployee.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().get(1)));
         colDuration.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().get(2)));
         colStartDate.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().get(3)));
@@ -181,16 +241,19 @@ public class LeaveController extends BaseController {
                 box.setAlignment(Pos.CENTER);
 
                 viewBtn.setOnAction(e -> {
-                    ObservableList<String> row = getTableView().getItems().get(getIndex());
-                    showViewPopup(row);
+                    int index = getIndex();
+                    if (index < 0 || index >= getTableView().getItems().size()) return;
+                    showViewPopup(getTableView().getItems().get(index));
                 });
                 editBtn.setOnAction(e -> {
-                    ObservableList<String> row = getTableView().getItems().get(getIndex());
-                    showLeaveFormPopup("Edit Leave", row);
+                    int index = getIndex();
+                    if (index < 0 || index >= getTableView().getItems().size()) return;
+                    showLeaveFormPopup(LanguageManager.getInstance().getTranslatedText("leave.form.editTitle"), getTableView().getItems().get(index));
                 });
                 deleteBtn.setOnAction(e -> {
-                    ObservableList<String> row = getTableView().getItems().get(getIndex());
-                    handleDeleteLeave(row);
+                    int index = getIndex();
+                    if (index < 0 || index >= getTableView().getItems().size()) return;
+                    handleDeleteLeave(getTableView().getItems().get(index));
                 });
             }
 
@@ -239,7 +302,7 @@ public class LeaveController extends BaseController {
     // ===== LEAVE FORM POPUP =====
     @FXML
     private void handleApplyLeave() {
-        showLeaveFormPopup("Add Leave", null);
+        showLeaveFormPopup(LanguageManager.getInstance().getTranslatedText("leave.form.addTitle"), null);
     }
 
     @FXML
@@ -270,7 +333,7 @@ public class LeaveController extends BaseController {
         iconWrap.getChildren().addAll(ic, iconLbl);
 
         VBox titleBox = new VBox(3);
-        Label titleLbl = new Label("Leave History");
+        Label titleLbl = new Label(LanguageManager.getInstance().getTranslatedText("leave.historyBtn"));
         titleLbl.setStyle("-fx-text-fill:white;-fx-font-size:20px;-fx-font-weight:bold;");
         Label subLbl = new Label("Complete leave record for all employees");
         subLbl.setStyle("-fx-text-fill:rgba(255,255,255,0.6);-fx-font-size:11px;");
@@ -281,7 +344,7 @@ public class LeaveController extends BaseController {
 
         // Search bar in header
         TextField searchBox = new TextField();
-        searchBox.setPromptText("🔍  Search employee or type...");
+        searchBox.setPromptText("🔍  " + LanguageManager.getInstance().getTranslatedText("search.leave"));
         searchBox.setPrefWidth(220);
         searchBox.setStyle("-fx-background-color:rgba(255,255,255,0.12);-fx-text-fill:white;" +
                 "-fx-prompt-text-fill:rgba(255,255,255,0.45);-fx-background-radius:8;" +
@@ -294,11 +357,7 @@ public class LeaveController extends BaseController {
         header.getChildren().addAll(iconWrap, titleBox, hSpacer, searchBox, closeBtn);
 
         // ── SUMMARY STAT CARDS ───────────────────────────────────────────────
-        long totalDaysAll = allLeaves.stream().mapToLong(l -> {
-            if (l.getStartDate() != null && l.getEndDate() != null)
-                return java.time.temporal.ChronoUnit.DAYS.between(l.getStartDate(), l.getEndDate());
-            return 0;
-        }).sum();
+        long totalDaysAll = allLeaves.stream().mapToLong(this::resolveLeaveDuration).sum();
         long sickCount    = allLeaves.stream().filter(l -> "Sick".equalsIgnoreCase(l.getType())).count();
         long vacCount     = allLeaves.stream().filter(l -> "Vacation".equalsIgnoreCase(l.getType())).count();
         long avgDays      = allLeaves.isEmpty() ? 0 : totalDaysAll / allLeaves.size();
@@ -307,10 +366,10 @@ public class LeaveController extends BaseController {
         statsRow.setPadding(new Insets(16, 22, 8, 22));
         statsRow.setStyle("-fx-background-color:#f8f9ff;");
         statsRow.getChildren().addAll(
-                makeSummaryStatCard("📋  Total Leaves",  String.valueOf(allLeaves.size()), "#dbeafe","#1d4ed8"),
+                makeSummaryStatCard("📋  " + LanguageManager.getInstance().getTranslatedText("leave.total"),  String.valueOf(allLeaves.size()), "#dbeafe","#1d4ed8"),
                 makeSummaryStatCard("🤒  Sick",          String.valueOf(sickCount),        "#fde8e8","#c0392b"),
                 makeSummaryStatCard("🏖  Vacation",      String.valueOf(vacCount),         "#d1fae5","#065f46"),
-                makeSummaryStatCard("⏱  Avg Days",       String.valueOf(avgDays),          "#fef9c3","#92400e"),
+                makeSummaryStatCard("⏱  " + LanguageManager.getInstance().getTranslatedText("leave.avgDuration"),       String.valueOf(avgDays),          "#fef9c3","#92400e"),
                 makeSummaryStatCard("📆  Total Days",    String.valueOf(totalDaysAll),     "#f3e5f5","#6a1b9a")
         );
 
@@ -323,15 +382,24 @@ public class LeaveController extends BaseController {
         String[] types = {"All", "Sick", "Vacation", "Maternity", "Personal", "Exam", "Paternity", "Unpaid"};
         ToggleGroup chipGroup = new ToggleGroup();
         for (String t : types) {
-            ToggleButton chip = new ToggleButton(t);
+            String display = "All".equals(t) ? LanguageManager.getInstance().getTranslatedText("leave.filterAllTypes") : t;
+            ToggleButton chip = new ToggleButton(display);
             chip.setToggleGroup(chipGroup);
             chip.setUserData(t);
-            String[] clr = t.equals("All") ? new String[]{"#6c63ff","white"} : getLeaveChipColor(t);
-            chip.setStyle("-fx-background-color:" + (t.equals("All") ? clr[0] : "#e8eaf0") +
-                    ";-fx-text-fill:" + (t.equals("All") ? "white" : "#555") +
+            String bg;
+            String fg;
+            if (t.equals("All")) {
+                bg = "#6c63ff";
+                fg = "white";
+            } else {
+                bg = "#e8eaf0";
+                fg = "#555";
+            }
+            chip.setStyle("-fx-background-color:" + bg +
+                    ";-fx-text-fill:" + fg +
                     ";-fx-font-size:11px;-fx-font-weight:bold;-fx-padding:5 14;" +
                     "-fx-background-radius:20;-fx-cursor:hand;");
-            if (t.equals("All")) chip.setSelected(true);
+            if ("All".equals(t)) chip.setSelected(true);
             chips.getChildren().add(chip);
         }
 
@@ -355,9 +423,7 @@ public class LeaveController extends BaseController {
                 String lType   = leave.getType() != null ? leave.getType() : "N/A";
                 String reason  = leave.getReason() != null && !leave.getReason().isEmpty()
                         ? leave.getReason() : "—";
-                long dur = 0;
-                if (leave.getStartDate() != null && leave.getEndDate() != null)
-                    dur = java.time.temporal.ChronoUnit.DAYS.between(leave.getStartDate(), leave.getEndDate());
+                long dur = resolveLeaveDuration(leave);
 
                 // Apply filters
                 if (!selectedType.equals("All") && !lType.equalsIgnoreCase(selectedType)) continue;
@@ -453,10 +519,12 @@ public class LeaveController extends BaseController {
             chips.getChildren().forEach(node -> {
                 if (node instanceof ToggleButton tb) {
                     boolean sel = tb.isSelected();
-                    String[] clr = tb.getText().equals("All")
-                            ? new String[]{"#6c63ff","white"} : getLeaveChipColor(tb.getText());
-                    tb.setStyle("-fx-background-color:" + (sel ? (tb.getText().equals("All") ? "#6c63ff" : clr[0]) : "#e8eaf0") +
-                            ";-fx-text-fill:" + (sel ? "white" : "#555") +
+                    String[] clr = getLeaveChipColor(tb.getText());
+                    boolean isAll = "All".equals(tb.getUserData());
+                    String bg = sel ? (isAll ? "#6c63ff" : clr[0]) : "#e8eaf0";
+                    String fg = sel ? "white" : "#555";
+                    tb.setStyle("-fx-background-color:" + bg +
+                            ";-fx-text-fill:" + fg +
                             ";-fx-font-size:11px;-fx-font-weight:bold;-fx-padding:5 14;" +
                             "-fx-background-radius:20;-fx-cursor:hand;");
                 }
@@ -536,24 +604,24 @@ public class LeaveController extends BaseController {
     }
 
     private void applyFilters() {
+        entity.LanguageManager lang = entity.LanguageManager.getInstance();
         String type   = filterType != null ? filterType.getValue() : null;
         String dept   = filterDepartment != null ? filterDepartment.getValue() : null;
         String search = searchField != null ? searchField.getText().trim().toLowerCase() : "";
 
         FilteredList<ObservableList<String>> filtered = new FilteredList<>(leaveData, row -> {
             // Filter by leave type
-            if (type != null && !type.equals("All Types") && !row.get(5).equalsIgnoreCase(type))
+            if (type != null && !type.equals(lang.getTranslatedText("leave.filterAllTypes")) && !row.get(5).equalsIgnoreCase(type))
                 return false;
             // Filter by department (stored at index 7)
-            if (dept != null && !dept.equals("All Departments") && !row.get(7).equalsIgnoreCase(dept))
+            if (dept != null && !dept.equals(lang.getTranslatedText("leave.filterAllDepts")) && !row.get(7).equalsIgnoreCase(dept))
                 return false;
             // Search: match employee name, leave type, department, or reason
             if (!search.isEmpty()) {
-                boolean matches = row.get(1).toLowerCase().contains(search)  // employee name
+                return row.get(1).toLowerCase().contains(search)  // employee name
                         || row.get(5).toLowerCase().contains(search)          // type
                         || row.get(7).toLowerCase().contains(search)          // department
                         || row.get(6).toLowerCase().contains(search);         // reason
-                if (!matches) return false;
             }
             return true;
         });
@@ -610,9 +678,9 @@ public class LeaveController extends BaseController {
         grid.setHgap(20); grid.setVgap(14);
         grid.setPadding(new Insets(24, 30, 10, 30));
 
-        addLeaveInfoCard(grid, 0, "🪪  Leave ID",    row.get(0),  "📋  Type",       type,       lightBg, accent);
-        addLeaveInfoCard(grid, 1, "📅  Start Date",  row.get(3),  "📅  End Date",   row.get(4), lightBg, accent);
-        addLeaveInfoCard(grid, 2, "⏱  Duration",     row.get(2) + " days", "📝  Reason", row.get(6).isEmpty() ? "—" : row.get(6), lightBg, accent);
+        addLeaveInfoCard(grid, 0, "🪪  " + LanguageManager.getInstance().getTranslatedText("leave.col.id"),    row.get(0),  "📋  " + LanguageManager.getInstance().getTranslatedText("leave.col.type"),       type,       lightBg, accent);
+        addLeaveInfoCard(grid, 1, "📅  " + LanguageManager.getInstance().getTranslatedText("leave.col.startDate"),  row.get(3),  "📅  " + LanguageManager.getInstance().getTranslatedText("leave.col.endDate"),   row.get(4), lightBg, accent);
+        addLeaveInfoCard(grid, 2, "⏱  " + LanguageManager.getInstance().getTranslatedText("leave.col.duration"),     row.get(2) + " days", "📝  " + LanguageManager.getInstance().getTranslatedText("leave.col.reason"), row.get(6).isEmpty() ? "—" : row.get(6), lightBg, accent);
 
         Button closeBtn = new Button("✕  Close");
         closeBtn.setStyle("-fx-background-color: linear-gradient(to right, " + gradFrom + ", " + gradTo + "); " +
@@ -670,7 +738,7 @@ public class LeaveController extends BaseController {
         Label val1 = new Label(v1);
         val1.setStyle("-fx-text-fill: #1a1f36; -fx-font-size: 13px; -fx-font-weight: bold;");
         VBox c1 = new VBox(3, lbl1, val1);
-        c1.setStyle("-fx-background-color: " + bg + "; -fx-background-radius: 8; -fx-padding: 10 14;");
+        c1.setStyle("-fx-background-color: " + bg + "; -fx-background-radius: 8; -fx-padding: 10 14; -fx-border-color: " + accent + "; -fx-border-width: 0 0 0 3;");
         c1.setMinWidth(160);
         grid.add(c1, 0, row);
 
@@ -681,23 +749,28 @@ public class LeaveController extends BaseController {
         val2.setMaxWidth(160);
         val2.setStyle("-fx-text-fill: #1a1f36; -fx-font-size: 13px; -fx-font-weight: bold;");
         VBox c2 = new VBox(3, lbl2, val2);
-        c2.setStyle("-fx-background-color: " + bg + "; -fx-background-radius: 8; -fx-padding: 10 14;");
+        c2.setStyle("-fx-background-color: " + bg + "; -fx-background-radius: 8; -fx-padding: 10 14; -fx-border-color: " + accent + "; -fx-border-width: 0 0 0 3;");
         c2.setMinWidth(160);
         grid.add(c2, 1, row);
     }
 
     // Opens a form popup for adding (existingData = null) or editing a leave record
     private void showLeaveFormPopup(String title, ObservableList<String> existingData) {
+        LanguageManager lang = LanguageManager.getInstance();
+        boolean editing = existingData != null;
+        String popupTitle = (title != null && !title.isBlank())
+                ? title
+                : (editing ? lang.getTranslatedText("leave.form.editTitle") : lang.getTranslatedText("leave.form.addTitle"));
         Stage popup = new Stage();
         popup.initModality(Modality.APPLICATION_MODAL);
         popup.initStyle(StageStyle.DECORATED);
-        popup.setTitle(title);
+        popup.setTitle(popupTitle);
 
         VBox form = new VBox(15);
         form.setPadding(new Insets(25));
         form.setStyle("-fx-background-color: white;");
 
-        Text formTitle = new Text(title);
+        Text formTitle = new Text(popupTitle);
         formTitle.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-fill: #1a1f36;");
 
         Text subtitle = new Text("Fill the required fields below to add an employee leave record.");
@@ -710,17 +783,17 @@ public class LeaveController extends BaseController {
         // Employee selector from DB
         List<Employee> employees = employeeDao.findAll();
         ComboBox<Employee> empCombo = new ComboBox<>(FXCollections.observableArrayList(employees));
-        empCombo.setPromptText("Select Employee");
+        empCombo.setPromptText(lang.getTranslatedText("leave.form.employee"));
         empCombo.setPrefWidth(250);
         empCombo.setStyle("-fx-background-color: #f8f9fa; -fx-border-color: #e0e3e8; -fx-border-radius: 8; -fx-background-radius: 8;");
-        empCombo.setCellFactory(lv -> new ListCell<Employee>() {
+        empCombo.setCellFactory(lv -> new ListCell<>() {
             @Override
             protected void updateItem(Employee e, boolean empty) {
                 super.updateItem(e, empty);
                 setText(empty || e == null ? null : e.getFullName() + " (ID: " + e.getId() + ")");
             }
         });
-        empCombo.setButtonCell(new ListCell<Employee>() {
+        empCombo.setButtonCell(new ListCell<>() {
             @Override
             protected void updateItem(Employee e, boolean empty) {
                 super.updateItem(e, empty);
@@ -730,19 +803,19 @@ public class LeaveController extends BaseController {
 
         ComboBox<String> typeCombo = new ComboBox<>(FXCollections.observableArrayList(
                 "Sick", "Vacation", "Maternity", "Personal", "Exam", "Paternity", "Unpaid"));
-        typeCombo.setPromptText("Leave Type");
+        typeCombo.setPromptText(lang.getTranslatedText("leave.form.type"));
         typeCombo.setPrefWidth(250);
         typeCombo.setStyle("-fx-background-color: #f8f9fa; -fx-border-color: #e0e3e8; -fx-border-radius: 8; -fx-background-radius: 8;");
 
         DatePicker startDatePicker = new DatePicker();
-        startDatePicker.setPromptText("Start Date");
+        startDatePicker.setPromptText(lang.getTranslatedText("leave.form.startDate"));
         startDatePicker.setPrefWidth(250);
 
         DatePicker endDatePicker = new DatePicker();
-        endDatePicker.setPromptText("End Date");
+        endDatePicker.setPromptText(lang.getTranslatedText("leave.form.endDate"));
         endDatePicker.setPrefWidth(250);
 
-        TextField durationField = createFormField("Duration (days)");
+        TextField durationField = createFormField(lang.getTranslatedText("leave.form.duration"));
         durationField.setEditable(false);
 
         // Auto-calculate duration
@@ -750,22 +823,22 @@ public class LeaveController extends BaseController {
         endDatePicker.valueProperty().addListener((obs, o, n) -> calcDuration(startDatePicker, endDatePicker, durationField));
 
         TextArea reasonField = new TextArea();
-        reasonField.setPromptText("Reason for leave");
+        reasonField.setPromptText(lang.getTranslatedText("leave.form.reason"));
         reasonField.setPrefRowCount(3);
         reasonField.setStyle("-fx-background-color: #f8f9fa; -fx-border-color: #e0e3e8; -fx-border-radius: 8;");
 
-        grid.add(createLabel("Employee"), 0, 0);    grid.add(empCombo, 1, 0);
-        grid.add(createLabel("Leave Type"), 2, 0);  grid.add(typeCombo, 3, 0);
-        grid.add(createLabel("Start Date"), 0, 1);  grid.add(startDatePicker, 1, 1);
-        grid.add(createLabel("End Date"), 2, 1);    grid.add(endDatePicker, 3, 1);
-        grid.add(createLabel("Duration"), 0, 2);    grid.add(durationField, 1, 2);
-        grid.add(createLabel("Reason"), 0, 3);
+        grid.add(createLabel(lang.getTranslatedText("leave.form.employee")), 0, 0);    grid.add(empCombo, 1, 0);
+        grid.add(createLabel(lang.getTranslatedText("leave.form.type")), 2, 0);  grid.add(typeCombo, 3, 0);
+        grid.add(createLabel(lang.getTranslatedText("leave.form.startDate")), 0, 1);  grid.add(startDatePicker, 1, 1);
+        grid.add(createLabel(lang.getTranslatedText("leave.form.endDate")), 2, 1);    grid.add(endDatePicker, 3, 1);
+        grid.add(createLabel(lang.getTranslatedText("leave.form.duration")), 0, 2);    grid.add(durationField, 1, 2);
+        grid.add(createLabel(lang.getTranslatedText("leave.form.reason")), 0, 3);
         GridPane.setColumnSpan(reasonField, 3);
         grid.add(reasonField, 1, 3);
 
         // Pre-fill for edit — find the Leave entity by ID and pre-select its employee
         if (existingData != null) {
-            int leaveId = Integer.parseInt(existingData.get(0));
+            int leaveId = Integer.parseInt(existingData.getFirst());
             Leave existing = leaveDao.find(leaveId);
             if (existing != null) {
                 if (existing.getEmployee() != null) {
@@ -788,22 +861,30 @@ public class LeaveController extends BaseController {
         HBox buttonBar = new HBox(15);
         buttonBar.setAlignment(Pos.CENTER_RIGHT);
 
-        Button submitBtn = new Button(existingData == null ? "Submit" : "Update");
+        Button submitBtn = new Button(editing ? lang.getTranslatedText("leave.form.update") : lang.getTranslatedText("leave.form.submit"));
         submitBtn.setStyle("-fx-background-color: linear-gradient(to right, #6c63ff, #5a52d4); -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 12 30; -fx-background-radius: 8; -fx-cursor: hand;");
 
-        Button resetBtn = new Button("Reset");
+        Button resetBtn = new Button(lang.getTranslatedText("leave.form.reset"));
         resetBtn.setStyle("-fx-background-color: white; -fx-text-fill: #7f8c8d; -fx-border-color: #e0e3e8; -fx-border-radius: 8; -fx-background-radius: 8; -fx-font-size: 13px; -fx-padding: 12 25; -fx-cursor: hand;");
 
-        Button cancelBtn = new Button("Cancel");
+        Button cancelBtn = new Button(lang.getTranslatedText("leave.form.cancel"));
         cancelBtn.setStyle("-fx-background-color: white; -fx-text-fill: #e74c3c; -fx-border-color: #e74c3c; -fx-border-radius: 8; -fx-background-radius: 8; -fx-font-size: 14px; -fx-padding: 12 30; -fx-cursor: hand; -fx-font-weight: bold;");
 
         submitBtn.setOnAction(e -> {
             if (existingData == null && empCombo.getValue() == null) {
-                showAlert("Validation Error", "Please select an employee.");
+                showAlert(lang.getTranslatedText("alert.validationError"), "Please select an employee.");
                 return;
             }
             if (typeCombo.getValue() == null) {
-                showAlert("Validation Error", "Please select a leave type.");
+                showAlert(lang.getTranslatedText("alert.validationError"), "Please select a leave type.");
+                return;
+            }
+            if (startDatePicker.getValue() == null || endDatePicker.getValue() == null) {
+                showAlert(lang.getTranslatedText("alert.validationError"), "Please select both start and end dates.");
+                return;
+            }
+            if (endDatePicker.getValue().isBefore(startDatePicker.getValue())) {
+                showAlert(lang.getTranslatedText("alert.validationError"), "End date cannot be before start date.");
                 return;
             }
 
@@ -819,7 +900,7 @@ public class LeaveController extends BaseController {
                 leaveDao.create(newLeave);
             } else {
                 // Update existing leave record by ID
-                int id = Integer.parseInt(existingData.get(0));
+                int id = Integer.parseInt(existingData.getFirst());
                 Leave leave = leaveDao.find(id);
                 if (leave != null) {
                     leave.setType(typeCombo.getValue());
@@ -865,12 +946,12 @@ public class LeaveController extends BaseController {
     // Asks for confirmation then deletes the leave from the DB
     private void handleDeleteLeave(ObservableList<String> row) {
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-        confirm.setTitle("Delete Leave Record");
-        confirm.setHeaderText("Are you sure?");
+        confirm.setTitle(LanguageManager.getInstance().getTranslatedText("alert.deleteConfirm"));
+        confirm.setHeaderText(LanguageManager.getInstance().getTranslatedText("alert.deleteConfirm"));
         confirm.setContentText("Delete leave record for: " + row.get(1) + "?");
         Optional<ButtonType> result = confirm.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
-            int id = Integer.parseInt(row.get(0));
+            int id = Integer.parseInt(row.getFirst());
             leaveDao.delete(id);
             loadFromDatabase();
         }
@@ -897,6 +978,7 @@ public class LeaveController extends BaseController {
     private void navigateTo(String fxmlPath, String cssPath) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+            loader.setResources(LanguageManager.getInstance().getCurrentBundle());
             Parent root = loader.load();
             Stage stage = (Stage) btnLogout.getScene().getWindow();
             double w = stage.getWidth();
@@ -906,8 +988,25 @@ public class LeaveController extends BaseController {
             if (css != null) scene.getStylesheets().add(css.toExternalForm());
             stage.setScene(scene);
         } catch (Exception e) {
-            e.printStackTrace();
+            System.err.println("Navigation failed for " + fxmlPath + ": " + e.getMessage());
+            showAlert(LanguageManager.getInstance().getTranslatedText("alert.validationError"), "Unable to open the selected page.");
         }
+    }
+
+    private long resolveLeaveDuration(Leave leave) {
+        if (leave == null) return 0;
+        Integer storedDuration = leave.getDuration();
+        if (storedDuration != null && storedDuration > 0) {
+            return storedDuration;
+        }
+        return calculateInclusiveDuration(leave.getStartDate(), leave.getEndDate());
+    }
+
+    private long calculateInclusiveDuration(LocalDate start, LocalDate end) {
+        if (start == null || end == null || end.isBefore(start)) {
+            return 0;
+        }
+        return ChronoUnit.DAYS.between(start, end) + 1;
     }
 
     private TextField createFormField(String prompt) {

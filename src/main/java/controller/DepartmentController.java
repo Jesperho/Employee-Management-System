@@ -3,6 +3,7 @@ package controller;
 import dao.CompanyDao;
 import dao.DepartmentDao;
 import dao.EmployeeDao;
+import entity.LanguageManager;
 import entity.Company;
 import entity.Department;
 import entity.Employee;
@@ -38,10 +39,19 @@ public class DepartmentController extends BaseController {
     @FXML private ComboBox<String> filterDepartment;
     @FXML private ComboBox<String> filterCapacity;
 
+    @FXML private Text breadcrumbText;
+    @FXML private Text pageTitleText;
+    @FXML private Button btnAddDepartment;
+
     @FXML private Text totalDeptCount;
     @FXML private Text activeDeptCount;
     @FXML private Text totalEmpInDepts;
     @FXML private Text avgCapacity;
+
+    @FXML private Text totalDeptLabelText;
+    @FXML private Text activeDeptLabelText;
+    @FXML private Text totalEmpLabelText;
+    @FXML private Text avgCapacityLabelText;
 
     @FXML private TableView<ObservableList<String>> departmentTable;
     @FXML private TableColumn<ObservableList<String>, String> colId;
@@ -63,6 +73,11 @@ public class DepartmentController extends BaseController {
     @FXML private Text empStatFullTime;
     @FXML private Text empStatPartTime;
     @FXML private Text empStatAvgSalary;
+
+    @FXML private Text empStatTotalLabelText;
+    @FXML private Text empStatFullTimeLabelText;
+    @FXML private Text empStatPartTimeLabelText;
+    @FXML private Text empStatAvgSalaryLabelText;
 
     // Employee detail section
     @FXML private VBox employeeSection;
@@ -114,13 +129,55 @@ public class DepartmentController extends BaseController {
     @Override
     protected void updateUIText(String newLanguage) {
         System.out.println("Department View updating to: " + newLanguage);
+        entity.LanguageManager lang = entity.LanguageManager.getInstance();
 
-        // Example:
-        // if (newLanguage.equals("Spanish")) {
-        //     btnDashboard.setText("Tablero");
-        //     searchField.setPromptText("Buscar departamento...");
-        //     // Update table column headers, buttons, etc...
-        // }
+        if (btnDashboard != null) btnDashboard.setText("📊  " + lang.getTranslatedText("nav.dashboard"));
+        if (btnEmployees != null) btnEmployees.setText("👥  " + lang.getTranslatedText("nav.employees"));
+        if (btnDepartments != null) btnDepartments.setText("🏢  " + lang.getTranslatedText("nav.departments"));
+        if (btnLeave != null) btnLeave.setText("📅  " + lang.getTranslatedText("nav.leave"));
+        if (btnSalary != null) btnSalary.setText("💰  " + lang.getTranslatedText("nav.salary"));
+        if (btnLogout != null) btnLogout.setText("🚪  " + lang.getTranslatedText("nav.logout"));
+
+        if (breadcrumbText != null) breadcrumbText.setText(lang.getTranslatedText("dept.breadcrumb"));
+        if (pageTitleText != null) pageTitleText.setText(lang.getTranslatedText("dept.pageTitle"));
+        if (btnAddDepartment != null) btnAddDepartment.setText(lang.getTranslatedText("dept.addBtn"));
+        if (btnBackToDepts != null) btnBackToDepts.setText(lang.getTranslatedText("dept.backToDepts"));
+
+        if (searchField != null) searchField.setPromptText(lang.getTranslatedText("search.departments"));
+        if (empSearchField != null) empSearchField.setPromptText(lang.getTranslatedText("dept.searchEmployees"));
+        if (filterDepartment != null) filterDepartment.setPromptText(lang.getTranslatedText("dept.filterAllDepts"));
+        if (filterCapacity != null) filterCapacity.setPromptText(lang.getTranslatedText("dept.filterAllCaps"));
+
+        if (totalDeptLabelText != null) totalDeptLabelText.setText(lang.getTranslatedText("dept.totalDepts"));
+        if (activeDeptLabelText != null) activeDeptLabelText.setText(lang.getTranslatedText("dept.active"));
+        if (totalEmpLabelText != null) totalEmpLabelText.setText(lang.getTranslatedText("dept.totalEmployees"));
+        if (avgCapacityLabelText != null) avgCapacityLabelText.setText(lang.getTranslatedText("dept.avgCapacity"));
+
+        if (empStatTotalLabelText != null) empStatTotalLabelText.setText(lang.getTranslatedText("dept.emp.total"));
+        if (empStatFullTimeLabelText != null) empStatFullTimeLabelText.setText(lang.getTranslatedText("dept.emp.fullTime"));
+        if (empStatPartTimeLabelText != null) empStatPartTimeLabelText.setText(lang.getTranslatedText("dept.emp.partTime"));
+        if (empStatAvgSalaryLabelText != null) empStatAvgSalaryLabelText.setText(lang.getTranslatedText("dept.emp.avgSalary"));
+
+        if (colId != null) colId.setText(lang.getTranslatedText("dept.col.id"));
+        if (colName != null) colName.setText(lang.getTranslatedText("dept.col.name"));
+        if (colCapacity != null) colCapacity.setText(lang.getTranslatedText("dept.col.capacity"));
+        if (colEmployees != null) colEmployees.setText(lang.getTranslatedText("dept.col.employees"));
+        if (colCreationDate != null) colCreationDate.setText(lang.getTranslatedText("dept.col.created"));
+        if (colDescription != null) colDescription.setText(lang.getTranslatedText("dept.col.description"));
+        if (colActions != null) colActions.setText(lang.getTranslatedText("dept.col.actions"));
+
+        if (empColId != null) empColId.setText(lang.getTranslatedText("emp.col.id"));
+        if (empColName != null) empColName.setText(lang.getTranslatedText("emp.col.name"));
+        if (empColDept != null) empColDept.setText(lang.getTranslatedText("emp.col.department"));
+        if (empColJobTitle != null) empColJobTitle.setText(lang.getTranslatedText("emp.col.jobTitle"));
+        if (empColStartDate != null) empColStartDate.setText(lang.getTranslatedText("emp.col.startDate"));
+        if (empColContract != null) empColContract.setText(lang.getTranslatedText("emp.col.contract"));
+        if (empColGender != null) empColGender.setText(lang.getTranslatedText("emp.col.gender"));
+        if (empColActions != null) empColActions.setText(lang.getTranslatedText("emp.col.actions"));
+
+        if (employeeSectionTitle != null) employeeSectionTitle.setText(lang.getTranslatedText("nav.employees") + " - " + lang.getTranslatedText("dept.pageTitle"));
+
+        setupFilters();
     }
 
     private void updateUserProfile() {
@@ -151,26 +208,28 @@ public class DepartmentController extends BaseController {
 
     // Populates the filter dropdowns; department names come from the DB
     private void setupFilters() {
+        entity.LanguageManager lang = entity.LanguageManager.getInstance();
         List<String> deptNames = departmentDao.findAll().stream()
                 .map(Department::getDepartmentName)
                 .collect(Collectors.toList());
-        deptNames.add(0, "All Departments");
+        deptNames.add(0, lang.getTranslatedText("dept.filterAllDepts"));
         filterDepartment.setItems(FXCollections.observableArrayList(deptNames));
         filterDepartment.setOnAction(e -> applyFilters());
 
         filterCapacity.setItems(FXCollections.observableArrayList(
-                "All Capacities", "Small (< 30)", "Medium (30-50)", "Large (> 50)"));
+                lang.getTranslatedText("dept.filterAllCaps"), "Small (< 30)", "Medium (30-50)", "Large (> 50)"));
         filterCapacity.setOnAction(e -> applyFilters());
     }
 
     private void applyFilters() {
+        entity.LanguageManager lang = entity.LanguageManager.getInstance();
         String dept   = filterDepartment.getValue();
         String cap    = filterCapacity.getValue();
         String search = searchField != null ? searchField.getText().trim().toLowerCase() : "";
 
         // Only do the full-page swap when dept filter changes AND no search text
         // (search should filter the dept TABLE, not jump to employee view)
-        if (dept != null && !dept.equals("All Departments") && search.isEmpty()) {
+        if (dept != null && !dept.equals(lang.getTranslatedText("dept.filterAllDepts")) && search.isEmpty()) {
             int deptId = -1;
             for (ObservableList<String> row : deptData) {
                 if (row.get(1).equalsIgnoreCase(dept)) {
@@ -194,10 +253,10 @@ public class DepartmentController extends BaseController {
 
         // row indices: 0=id, 1=name, 2=capacity, 3=empCount, 4=creationDate, 5=description
         FilteredList<ObservableList<String>> filtered = new FilteredList<>(deptData, row -> {
-            if (dept != null && !dept.equals("All Departments")) {
+            if (dept != null && !dept.equals(lang.getTranslatedText("dept.filterAllDepts"))) {
                 if (!row.get(1).equalsIgnoreCase(dept)) return false;
             }
-            if (cap != null && !cap.equals("All Capacities")) {
+            if (cap != null && !cap.equals(lang.getTranslatedText("dept.filterAllCaps"))) {
                 try {
                     int capacity = Integer.parseInt(row.get(2));
                     if (cap.equals("Small (< 30)")    && capacity >= 30) return false;
@@ -896,6 +955,7 @@ public class DepartmentController extends BaseController {
     private void navigateTo(String fxmlPath, String cssPath) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+            loader.setResources(LanguageManager.getInstance().getCurrentBundle());
             Parent root = loader.load();
             Stage stage = (Stage) btnLogout.getScene().getWindow();
             double w = stage.getWidth();

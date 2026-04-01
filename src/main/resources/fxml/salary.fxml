@@ -28,7 +28,7 @@
                 <Text fx:id="userName" text="Admin" styleClass="user-name"/>
                 <Text fx:id="userRole" text="Administrator" styleClass="user-role"/>
                 <VBox alignment="CENTER">
-                    <ComboBox fx:id="languageComboBox" promptText="English" styleClass="input-field" >
+                    <ComboBox fx:id="languageComboBox" promptText="English" styleClass="language-switcher-combo" >
                         <items >
                             <FXCollections fx:factory="observableArrayList">
                                 <String fx:value="English" />
@@ -58,7 +58,7 @@
         <VBox styleClass="main-content" minWidth="0">
             <HBox styleClass="header-bar" alignment="CENTER_LEFT" spacing="20">
                 <padding><Insets top="15" bottom="15" left="25" right="25"/></padding>
-                <VBox spacing="2"><Text text="Dashboard / Salary Management" styleClass="page-breadcrumb"/></VBox>
+                <VBox spacing="2"><Text fx:id="breadcrumbText" text="Dashboard / Salary Management" styleClass="page-breadcrumb"/></VBox>
                 <Region HBox.hgrow="ALWAYS"/>
                 <HBox styleClass="search-container" alignment="CENTER_LEFT" spacing="10">
                     <TextField fx:id="searchField" promptText="Search by employee name..." styleClass="search-field" prefWidth="250" maxWidth="350" onAction="#handleSearch"/>
@@ -70,10 +70,10 @@
                     <padding><Insets top="25" bottom="25" left="25" right="25"/></padding>
 
                     <HBox alignment="CENTER_LEFT" spacing="10">
-                        <Text text="Salary Management" styleClass="page-title"/>
+                        <Text fx:id="pageTitleText" text="Salary Management" styleClass="page-title"/>
                         <Region HBox.hgrow="ALWAYS"/>
                         <ComboBox fx:id="filterDepartment" promptText="All Departments" styleClass="filter-combo" prefWidth="150"/>
-                        <Button text="💵 Run Payroll" styleClass="action-primary" onAction="#handleRunPayroll"/>
+                        <Button fx:id="btnRunPayroll" text="💵 Run Payroll" styleClass="action-primary" onAction="#handleRunPayroll"/>
                     </HBox>
 
                     <!-- Salary Stats -->
@@ -81,22 +81,22 @@
                         <VBox styleClass="stat-card, stat-card-blue" HBox.hgrow="ALWAYS" spacing="5" alignment="CENTER">
                             <padding><Insets top="15" bottom="15" left="15" right="15"/></padding>
                             <Text fx:id="totalPayroll" text="€285,000" styleClass="stat-number-sm"/>
-                            <Text text="Total Monthly Payroll" styleClass="stat-label"/>
+                            <Text fx:id="totalPayrollLabelText" text="Total Monthly Payroll" styleClass="stat-label"/>
                         </VBox>
                         <VBox styleClass="stat-card, stat-card-green" HBox.hgrow="ALWAYS" spacing="5" alignment="CENTER">
                             <padding><Insets top="15" bottom="15" left="15" right="15"/></padding>
                             <Text fx:id="avgSalary" text="€4,200" styleClass="stat-number-sm"/>
-                            <Text text="Average Salary" styleClass="stat-label"/>
+                            <Text fx:id="avgSalaryLabelText" text="Average Salary" styleClass="stat-label"/>
                         </VBox>
                         <VBox styleClass="stat-card, stat-card-orange" HBox.hgrow="ALWAYS" spacing="5" alignment="CENTER">
                             <padding><Insets top="15" bottom="15" left="15" right="15"/></padding>
                             <Text fx:id="highestSalary" text="€7,200" styleClass="stat-number-sm"/>
-                            <Text text="Highest Salary" styleClass="stat-label"/>
+                            <Text fx:id="highestSalaryLabelText" text="Highest Salary" styleClass="stat-label"/>
                         </VBox>
                         <VBox styleClass="stat-card, stat-card-purple" HBox.hgrow="ALWAYS" spacing="5" alignment="CENTER">
                             <padding><Insets top="15" bottom="15" left="15" right="15"/></padding>
                             <Text fx:id="employeesPaid" text="540" styleClass="stat-number-sm"/>
-                            <Text text="Employees Paid" styleClass="stat-label"/>
+                            <Text fx:id="employeesPaidLabelText" text="Employees Paid" styleClass="stat-label"/>
                         </VBox>
                     </HBox>
 

@@ -20,7 +20,7 @@ public class MariaDbConnection {
         if (host == null || host.isEmpty()) {
             // Local machine fallback
             host = "localhost";
-            port = "3306"; // default MariaDB port locally
+            port = "3307"; // default MariaDB port locally
         }
 
         String url = "jdbc:mariadb://" + host + ":" + port + "/employment_management";
@@ -30,7 +30,7 @@ public class MariaDbConnection {
 
         // Optional: read user/password from env as well
         String user = System.getenv().getOrDefault("DB_USER", "root");
-        String password = System.getenv().getOrDefault("DB_PASSWORD", "mehdizaidane1");
+        String password = System.getenv().getOrDefault("DB_PASSWORD", "password");
         props.put("jakarta.persistence.jdbc.user", user);
         props.put("jakarta.persistence.jdbc.password", password);
 

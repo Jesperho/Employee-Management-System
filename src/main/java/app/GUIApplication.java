@@ -1,5 +1,6 @@
 package app;
 
+import entity.LanguageManager;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -12,6 +13,7 @@ public class GUIApplication extends Application {
         System.out.println("Starting Employee Management System...");
 
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/login.fxml"));
+        loader.setResources(LanguageManager.getInstance().getCurrentBundle());
         Parent root = loader.load();
 
         Scene scene = new Scene(root, 1050, 700);

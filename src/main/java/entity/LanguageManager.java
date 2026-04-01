@@ -26,6 +26,10 @@ public class LanguageManager {
         return currentLanguage.get();
     }
 
+    public ResourceBundle getCurrentBundle() {
+        return currentBundle;
+    }
+
     public void setLanguage(String language) {
         updateResourceBundle(language);
         this.currentLanguage.set(language);

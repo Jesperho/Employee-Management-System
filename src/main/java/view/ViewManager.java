@@ -1,5 +1,6 @@
 package view;
 
+import entity.LanguageManager;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -56,6 +57,7 @@ public class ViewManager {
     private static void loadView(String fxmlPath, String cssPath, String title, int width, int height) {
         try {
             FXMLLoader loader = new FXMLLoader(ViewManager.class.getResource(fxmlPath));
+            loader.setResources(LanguageManager.getInstance().getCurrentBundle());
             Parent root = loader.load();
 
             Scene scene = new Scene(root, width, height);
@@ -86,6 +88,7 @@ public class ViewManager {
     public static <T> T loadViewWithController(String fxmlPath) {
         try {
             FXMLLoader loader = new FXMLLoader(ViewManager.class.getResource(fxmlPath));
+            loader.setResources(LanguageManager.getInstance().getCurrentBundle());
             loader.load();
             return loader.getController();
         } catch (IOException e) {
