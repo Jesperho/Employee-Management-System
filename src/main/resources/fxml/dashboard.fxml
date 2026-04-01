@@ -7,6 +7,8 @@
 <?import javafx.scene.shape.Circle?>
 <?import javafx.scene.image.ImageView?>
 
+<?import javafx.collections.FXCollections?>
+<?import java.lang.String?>
 <BorderPane xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="controller.DashboardController"
             styleClass="dashboard-root">
@@ -20,7 +22,7 @@
                     <Insets top="20" bottom="20" left="15" right="15"/>
                 </padding>
                 <Text text="EMS" styleClass="logo-text"/>
-                <Text text="Employee Management" styleClass="logo-subtitle"/>
+                <Text fx:id="logoSubtitle" text="Employee Management" styleClass="logo-subtitle"/>
             </VBox>
 
             <!-- User Profile Section -->
@@ -34,6 +36,18 @@
                 </StackPane>
                 <Text fx:id="userName" text="Osama Admin" styleClass="user-name"/>
                 <Text fx:id="userRole" text="Administrator" styleClass="user-role"/>
+                <VBox alignment="CENTER">
+                    <ComboBox fx:id="languageComboBox" promptText="English" styleClass="input-field" >
+                        <items >
+                            <FXCollections fx:factory="observableArrayList">
+                                <String fx:value="English" />
+                                <String fx:value="Spanish"/>
+                                <String fx:value="Persia"/>
+                                <String fx:value="Arabic"/>
+                            </FXCollections>
+                        </items>
+                    </ComboBox>
+                </VBox>
             </VBox>
 
             <!-- Navigation Menu -->
@@ -42,7 +56,7 @@
                     <Insets top="10" bottom="10" left="10" right="10"/>
                 </padding>
 
-                <Text text="MAIN MENU" styleClass="menu-section-label"/>
+                <Text fx:id="main_menu" text="MAIN MENU" styleClass="menu-section-label"/>
 
                 <Button fx:id="btnDashboard" text="📊  Dashboard" styleClass="nav-button, nav-button-active"
                         onAction="#handleDashboard" maxWidth="Infinity" alignment="CENTER_LEFT"/>
@@ -105,12 +119,12 @@
                                 <Text text="👥" styleClass="stat-icon"/>
                                 <VBox spacing="2">
                                     <Text fx:id="totalEmployeesCount" text="540" styleClass="stat-number"/>
-                                    <Text text="Total Employees" styleClass="stat-label"/>
+                                    <Text fx:id="totalEmployees" text="Total Employees" styleClass="stat-label"/>
                                 </VBox>
                             </HBox>
                             <HBox alignment="CENTER" spacing="5">
                                 <Text fx:id="employeeChangeText" text="↑ 12%" styleClass="stat-change-positive"/>
-                                <Text text="vs last month" styleClass="stat-change-label"/>
+                                <Text fx:id="totalEmpChangeLabel" text="vs last month" styleClass="stat-change-label"/>
                             </HBox>
                         </VBox>
 
@@ -123,12 +137,12 @@
                                 <Text text="✓" styleClass="stat-icon"/>
                                 <VBox spacing="2">
                                     <Text fx:id="activeEmployeesCount" text="532" styleClass="stat-number"/>
-                                    <Text text="Active Employees" styleClass="stat-label"/>
+                                    <Text fx:id="activeEmployees" text="Active Employees" styleClass="stat-label"/>
                                 </VBox>
                             </HBox>
                             <HBox alignment="CENTER" spacing="5">
                                 <Text fx:id="attendanceRateText" text="98.5%" styleClass="stat-change-positive"/>
-                                <Text text="attendance rate" styleClass="stat-change-label"/>
+                                <Text fx:id="activeEmpChangeLabel" text="attendance rate" styleClass="stat-change-label"/>
                             </HBox>
                         </VBox>
 
@@ -141,12 +155,12 @@
                                 <Text text="📅" styleClass="stat-icon"/>
                                 <VBox spacing="2">
                                     <Text fx:id="onLeaveCount" text="8" styleClass="stat-number"/>
-                                    <Text text="On Leave" styleClass="stat-label"/>
+                                    <Text fx:id="onLeaveLabel" text="On Leave" styleClass="stat-label"/>
                                 </VBox>
                             </HBox>
                             <HBox alignment="CENTER" spacing="5">
                                 <Text fx:id="pendingLeaveText" text="0 pending" styleClass="stat-change-neutral"/>
-                                <Text text="requests" styleClass="stat-change-label"/>
+                                <Text fx:id="leaveRequestsLabel" text="requests" styleClass="stat-change-label"/>
                             </HBox>
                         </VBox>
 
@@ -159,12 +173,12 @@
                                 <Text text="🏢" styleClass="stat-icon"/>
                                 <VBox spacing="2">
                                     <Text fx:id="departmentsCount" text="12" styleClass="stat-number"/>
-                                    <Text text="Departments" styleClass="stat-label"/>
+                                    <Text fx:id="departmentsLabel" text="Departments" styleClass="stat-label"/>
                                 </VBox>
                             </HBox>
                             <HBox alignment="CENTER" spacing="5">
                                 <Text fx:id="deptStatusText" text="All active" styleClass="stat-change-positive"/>
-                                <Text text="status" styleClass="stat-change-label"/>
+                                <Text fx:id="departmentsStatusLabel" text="status" styleClass="stat-change-label"/>
                             </HBox>
                         </VBox>
                     </HBox>
@@ -177,9 +191,9 @@
                                 <Insets top="20" bottom="20" left="20" right="20"/>
                             </padding>
                             <HBox alignment="CENTER_LEFT">
-                                <Text text="Recent Activities" styleClass="card-title"/>
+                                <Text fx:id="recentActivitiesTitle" text="Recent Activities" styleClass="card-title"/>
                                 <Region HBox.hgrow="ALWAYS"/>
-                                <Button text="View More →" styleClass="link-button" onAction="#handleViewMoreActivities"/>
+                                <Button fx:id="viewMoreBtn" text="View More →" styleClass="link-button" onAction="#handleViewMoreActivities"/>
                             </HBox>
 
                             <VBox fx:id="recentActivitiesContainer" styleClass="activities-list" spacing="12">
@@ -192,19 +206,14 @@
                             <padding>
                                 <Insets top="20" bottom="20" left="20" right="20"/>
                             </padding>
-                            <Text text="Quick Actions" styleClass="card-title"/>
+                            <Text fx:id="quickActionsTitle" text="Quick Actions" styleClass="card-title"/>
 
                             <VBox spacing="10">
-                                <Button text="➕  Add New Employee" styleClass="action-button, action-primary"
-                                        maxWidth="Infinity" onAction="#handleAddEmployee"/>
-                                <Button text="📋  Create Department" styleClass="action-button"
-                                        maxWidth="Infinity" onAction="#handleCreateDepartment"/>
-                                <Button text="📝  Process Leave Request" styleClass="action-button"
-                                        maxWidth="Infinity" onAction="#handleProcessLeave"/>
-                                <Button text="💵  Run Payroll" styleClass="action-button"
-                                        maxWidth="Infinity" onAction="#handleRunPayroll"/>
-                                <Button text="📊  Generate Report" styleClass="action-button"
-                                        maxWidth="Infinity" onAction="#handleGenerateReport"/>
+                                <Button fx:id="btnAddEmployee" text="➕  Add New Employee" styleClass="action-button, action-primary" maxWidth="Infinity" onAction="#handleAddEmployee"/>
+                                <Button fx:id="btnCreateDepartment" text="📋  Create Department" styleClass="action-button" maxWidth="Infinity" onAction="#handleCreateDepartment"/>
+                                <Button fx:id="btnProcessLeave" text="📝  Process Leave Request" styleClass="action-button" maxWidth="Infinity" onAction="#handleProcessLeave"/>
+                                <Button fx:id="btnRunPayroll" text="💵  Run Payroll" styleClass="action-button" maxWidth="Infinity" onAction="#handleRunPayroll"/>
+                                <Button fx:id="btnGenerateReport" text="📊  Generate Report" styleClass="action-button" maxWidth="Infinity" onAction="#handleGenerateReport"/>
                             </VBox>
                         </VBox>
                     </HBox>
@@ -217,9 +226,9 @@
                                 <Insets top="20" bottom="20" left="20" right="20"/>
                             </padding>
                             <HBox alignment="CENTER_LEFT">
-                                <Text text="Department Overview" styleClass="card-title"/>
+                                <Text fx:id="deptOverviewTitle" text="Department Overview" styleClass="card-title"/>
                                 <Region HBox.hgrow="ALWAYS"/>
-                                <Button text="Manage" styleClass="link-button" onAction="#handleDepartments"/>
+                                <Button fx:id="btnManageDepts" text="Manage" styleClass="link-button" onAction="#handleDepartments"/>
                             </HBox>
 
                             <TableView fx:id="departmentTable" styleClass="department-table" prefHeight="200">
@@ -237,12 +246,12 @@
                             <padding>
                                 <Insets top="20" bottom="20" left="20" right="20"/>
                             </padding>
-                            <Text text="Salary Summary" styleClass="card-title"/>
+                            <Text fx:id="salarySummaryTitle" text="Salary Summary" styleClass="card-title"/>
 
                             <VBox spacing="15">
                                 <VBox styleClass="salary-item" spacing="5">
                                     <HBox alignment="CENTER_LEFT">
-                                        <Text text="Total Monthly Payroll" styleClass="salary-label"/>
+                                        <Text fx:id="totalMonthlyPayrollLabel" text="Total Monthly Payroll" styleClass="salary-label"/>
                                         <Region HBox.hgrow="ALWAYS"/>
                                         <Text fx:id="totalPayroll" text="€285,000" styleClass="salary-value"/>
                                     </HBox>
@@ -251,7 +260,7 @@
 
                                 <VBox styleClass="salary-item" spacing="5">
                                     <HBox alignment="CENTER_LEFT">
-                                        <Text text="Average Salary" styleClass="salary-label"/>
+                                        <Text fx:id="avgSalaryLabel" text="Average Salary" styleClass="salary-label"/>
                                         <Region HBox.hgrow="ALWAYS"/>
                                         <Text fx:id="avgSalary" text="€4,200" styleClass="salary-value"/>
                                     </HBox>
@@ -259,14 +268,13 @@
 
                                 <VBox styleClass="salary-item" spacing="5">
                                     <HBox alignment="CENTER_LEFT">
-                                        <Text text="Pending Payments" styleClass="salary-label"/>
+                                        <Text fx:id="pendingPaymentsLabel" text="Pending Payments" styleClass="salary-label"/>
                                         <Region HBox.hgrow="ALWAYS"/>
                                         <Text fx:id="pendingPayments" text="€12,500" styleClass="salary-value-pending"/>
                                     </HBox>
                                 </VBox>
 
-                                <Button text="View Full Report" styleClass="secondary-button" maxWidth="Infinity"
-                                        onAction="#handleSalary"/>
+                                <Button fx:id="btnViewFullReport" text="View Full Report" styleClass="secondary-button" maxWidth="Infinity" onAction="#handleSalary"/>
                             </VBox>
                         </VBox>
                     </HBox>

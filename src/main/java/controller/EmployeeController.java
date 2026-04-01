@@ -12,7 +12,6 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
@@ -23,14 +22,17 @@ import javafx.scene.text.Text;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import utils.BaseController;
 
-import java.net.URL;
 import java.util.List;
 import java.util.Optional;
-import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
-public class EmployeeController implements Initializable {
+// Make sure to import BaseController if it's in a different package!
+// import util.BaseController;
+
+// 1. Extend BaseController instead of implementing Initializable
+public class EmployeeController extends BaseController {
 
     @FXML private TextField searchField;
     @FXML private ComboBox<String> filterDepartment;
@@ -74,14 +76,28 @@ public class EmployeeController implements Initializable {
     // Holds the full list of employees loaded from the DB
     private final ObservableList<Employee> employeeData = FXCollections.observableArrayList();
 
+    // 2. Replace initialize() with setupController()
     @Override
-    public void initialize(URL location, ResourceBundle resources) {
+    protected void setupController() {
         updateUserProfile();
         setupTable();
         setupFilters();
         loadFromDatabase();
         if (searchField != null)
             searchField.textProperty().addListener((obs, o, n) -> applyFilters());
+    }
+
+    // 3. Add the required updateUIText method
+    @Override
+    protected void updateUIText(String newLanguage) {
+        System.out.println("Employee View updating to: " + newLanguage);
+
+        // Example:
+        // if (newLanguage.equals("Spanish")) {
+        //     btnDashboard.setText("Tablero");
+        //     searchField.setPromptText("Buscar empleado...");
+        //     // Update table column headers, stats titles, etc.
+        // }
     }
 
     private void updateUserProfile() {

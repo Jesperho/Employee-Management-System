@@ -2,23 +2,17 @@ pipeline {
     agent any
 
     tools {
-        maven 'Maven 3.8.5'
+        maven 'Maven3'
     }
 
     environment {
         PATH = "C:\\Program Files\\Docker\\Docker\\resources\\bin;${env.PATH}"
-        DOCKERHUB_CREDENTIALS_ID = 'Docker-Hub'
-        DOCKERHUB_REPO = 'mehdizaidane/employee-management-system'
+        DOCKERHUB_CREDENTIALS_ID = 'docker-hub-cred'
+        DOCKERHUB_REPO = 'osamaaa1/employee-management-system'
         DOCKER_IMAGE_TAG = 'latest'
     }
 
     stages {
-
-        stage('Check') {
-            steps {
-                git branch: 'main', url: 'https://github.com/Jesperho/Employee-Management-System.git'
-            }
-        }
 
         stage('Build Job') {
             steps {

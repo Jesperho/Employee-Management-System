@@ -11,7 +11,6 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
@@ -23,22 +22,54 @@ import javafx.scene.text.Text;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import utils.BaseController;
 
-import java.net.URL;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.ResourceBundle;
 
-public class DashboardController implements Initializable {
+// Make sure to import BaseController if it's in a different package!
+// import util.BaseController;
+
+// 1. Extend BaseController instead of implementing Initializable
+public class DashboardController extends BaseController {
 
     @FXML private Text avatarInitials;
     @FXML private Text userName;
     @FXML private Text userRole;
+    @FXML private Text main_menu;
+
+    @FXML private Text totalEmployees;
+    @FXML private Text activeEmployees;
 
     @FXML private Text welcomeText;
     @FXML private Text dateText;
     @FXML private TextField searchField;
+
+    @FXML private Text logoSubtitle;
+    @FXML private Text totalEmpChangeLabel;
+    @FXML private Text activeEmpChangeLabel;
+    @FXML private Text onLeaveLabel;
+    @FXML private Text leaveRequestsLabel;
+    @FXML private Text departmentsLabel;
+    @FXML private Text departmentsStatusLabel;
+    @FXML private Text recentActivitiesTitle;
+    @FXML private Button viewMoreBtn;
+    @FXML private Text quickActionsTitle;
+    @FXML private Button btnAddEmployee;
+    @FXML private Button btnCreateDepartment;
+    @FXML private Button btnProcessLeave;
+    @FXML private Button btnRunPayroll;
+    @FXML private Button btnGenerateReport;
+    @FXML private Text deptOverviewTitle;
+    @FXML private Button btnManageDepts;
+    @FXML private Text salarySummaryTitle;
+    @FXML private Text totalMonthlyPayrollLabel;
+    @FXML private Text avgSalaryLabel;
+    @FXML private Text pendingPaymentsLabel;
+    @FXML private Button btnViewFullReport;
+
+
 
     @FXML private Text totalEmployeesCount;
     @FXML private Text activeEmployeesCount;
@@ -75,12 +106,71 @@ public class DashboardController implements Initializable {
     private final LeaveDao leaveDao = new LeaveDao();
 
     @Override
-    public void initialize(URL location, ResourceBundle resources) {
+    protected void setupController() {
         setupUserProfile();
         setupDateDisplay();
         setupDepartmentTable();
         loadDashboardData();
         loadRecentActivities();
+    }
+
+    @Override
+    protected void updateUIText(String newLanguage) {
+        System.out.println("Dashboard View updating to: " + newLanguage);
+
+        entity.LanguageManager langManager = entity.LanguageManager.getInstance();
+
+        if (btnDashboard != null) btnDashboard.setText(langManager.getTranslatedText("nav.dashboard"));
+        if (btnEmployees != null) btnEmployees.setText(langManager.getTranslatedText("nav.employees"));
+        if (btnDepartments != null) btnDepartments.setText(langManager.getTranslatedText("nav.departments"));
+        if (btnLeave != null) btnLeave.setText(langManager.getTranslatedText("nav.leave"));
+        if (btnSalary != null) btnSalary.setText(langManager.getTranslatedText("nav.salary"));
+        if (btnLogout != null) btnLogout.setText(langManager.getTranslatedText("nav.logout"));
+
+        if (deptNameColumn != null) deptNameColumn.setText(langManager.getTranslatedText("table.deptName"));
+        if (deptHeadColumn != null) deptHeadColumn.setText(langManager.getTranslatedText("table.deptHead"));
+        if (deptEmployeesColumn != null) deptEmployeesColumn.setText(langManager.getTranslatedText("table.employees"));
+        if (deptStatusColumn != null) deptStatusColumn.setText(langManager.getTranslatedText("table.status"));
+
+        userRole.setText(langManager.getTranslatedText("user.role"));
+        main_menu.setText(langManager.getTranslatedText("main_menu"));
+        totalEmployees.setText(langManager.getTranslatedText("totalEmployees"));
+        activeEmployees.setText(langManager.getTranslatedText("activeEmployees"));
+
+        if (logoSubtitle != null) logoSubtitle.setText(langManager.getTranslatedText("app.subtitle"));
+        if (totalEmpChangeLabel != null) totalEmpChangeLabel.setText(langManager.getTranslatedText("dashboard.vsLastMonth"));
+        if (activeEmpChangeLabel != null) activeEmpChangeLabel.setText(langManager.getTranslatedText("dashboard.attendanceRate"));
+        if (onLeaveLabel != null) onLeaveLabel.setText(langManager.getTranslatedText("dashboard.onLeave"));
+        if (leaveRequestsLabel != null) leaveRequestsLabel.setText(langManager.getTranslatedText("dashboard.requests"));
+        if (departmentsLabel != null) departmentsLabel.setText(langManager.getTranslatedText("dashboard.departments"));
+        if (departmentsStatusLabel != null) departmentsStatusLabel.setText(langManager.getTranslatedText("dashboard.status"));
+
+        if (recentActivitiesTitle != null) recentActivitiesTitle.setText(langManager.getTranslatedText("dashboard.recentActivities"));
+        if (viewMoreBtn != null) viewMoreBtn.setText(langManager.getTranslatedText("dashboard.viewMore"));
+        if (quickActionsTitle != null) quickActionsTitle.setText(langManager.getTranslatedText("dashboard.quickActions"));
+        if (deptOverviewTitle != null) deptOverviewTitle.setText(langManager.getTranslatedText("dashboard.deptOverview"));
+        if (btnManageDepts != null) btnManageDepts.setText(langManager.getTranslatedText("dashboard.manage"));
+        if (salarySummaryTitle != null) salarySummaryTitle.setText(langManager.getTranslatedText("dashboard.salarySummary"));
+        if (totalMonthlyPayrollLabel != null) totalMonthlyPayrollLabel.setText(langManager.getTranslatedText("dashboard.totalPayroll"));
+        if (avgSalaryLabel != null) avgSalaryLabel.setText(langManager.getTranslatedText("dashboard.avgSalary"));
+        if (pendingPaymentsLabel != null) pendingPaymentsLabel.setText(langManager.getTranslatedText("dashboard.pendingPayments"));
+        if (btnViewFullReport != null) btnViewFullReport.setText(langManager.getTranslatedText("dashboard.viewFullReport"));
+
+        if (btnAddEmployee != null) btnAddEmployee.setText("➕  " + langManager.getTranslatedText("action.addEmployee"));
+        if (btnCreateDepartment != null) btnCreateDepartment.setText("📋  " + langManager.getTranslatedText("action.createDepartment"));
+        if (btnProcessLeave != null) btnProcessLeave.setText("📝  " + langManager.getTranslatedText("action.processLeave"));
+        if (btnRunPayroll != null) btnRunPayroll.setText("💵  " + langManager.getTranslatedText("action.runPayroll"));
+        if (btnGenerateReport != null) btnGenerateReport.setText("📊  " + langManager.getTranslatedText("action.generateReport"));
+
+        if (searchField != null) searchField.setPromptText(langManager.getTranslatedText("search.prompt"));
+
+
+        if (welcomeText != null) {
+            app.UserSession s = app.UserSession.getInstance();
+            String firstName = s.getFullName().split(" ")[0];
+            String greeting = langManager.getTranslatedText("dashboard.welcome");
+            welcomeText.setText(greeting + ", " + firstName + "!");
+        }
     }
 
     private void setupUserProfile() {
@@ -171,8 +261,8 @@ public class DashboardController implements Initializable {
         // "All active" vs how many departments have employees
         if (deptStatusText != null) {
             long activeDepts = departments.stream()
-                .filter(d -> departmentDao.countEmployees(d.getId()) > 0)
-                .count();
+                    .filter(d -> departmentDao.countEmployees(d.getId()) > 0)
+                    .count();
             if (activeDepts == departments.size() && !departments.isEmpty()) {
                 deptStatusText.setText("All active");
             } else {
@@ -295,7 +385,7 @@ public class DashboardController implements Initializable {
         header.setPadding(new Insets(22, 25, 18, 25));
         header.setSpacing(12);
         header.setStyle("-fx-background-color: linear-gradient(to right, #1a1f36, #2d3561);" +
-                        "-fx-background-radius: 15 15 0 0;");
+                "-fx-background-radius: 15 15 0 0;");
 
         StackPane iconWrap = new StackPane();
         javafx.scene.shape.Circle iconCircle = new javafx.scene.shape.Circle(20);
@@ -316,8 +406,8 @@ public class DashboardController implements Initializable {
 
         Button closeBtn = new Button("✕");
         closeBtn.setStyle("-fx-background-color: rgba(255,255,255,0.1); -fx-text-fill: white;" +
-                          "-fx-background-radius: 6; -fx-font-size: 14px; -fx-cursor: hand;" +
-                          "-fx-padding: 4 10;");
+                "-fx-background-radius: 6; -fx-font-size: 14px; -fx-cursor: hand;" +
+                "-fx-padding: 4 10;");
         closeBtn.setOnAction(e -> popup.close());
 
         header.getChildren().addAll(iconWrap, titleBox, spacer, closeBtn);
@@ -344,11 +434,11 @@ public class DashboardController implements Initializable {
                         ? emp.getDepartment().getDepartmentName() : "No Department";
                 String date = emp.getStartDate() != null ? emp.getStartDate().toString() : "—";
                 activityList.getChildren().add(
-                    buildActivityRow(rowNum++,
-                        "👤", "#e8f4ff", "#1565c0",
-                        "New Employee Added",
-                        emp.getFullName() + " joined " + dept,
-                        date, "Employee", "#1565c0", "#dbeafe"));
+                        buildActivityRow(rowNum++,
+                                "👤", "#e8f4ff", "#1565c0",
+                                "New Employee Added",
+                                emp.getFullName() + " joined " + dept,
+                                date, "Employee", "#1565c0", "#dbeafe"));
             }
             if (leaveIdx < leaves.size()) {
                 Leave leave = leaves.get(leaveIdx++);
@@ -358,11 +448,11 @@ public class DashboardController implements Initializable {
                 String date  = leave.getStartDate() != null ? leave.getStartDate().toString() : "—";
                 String[] lc  = getActivityLeaveColor(type);
                 activityList.getChildren().add(
-                    buildActivityRow(rowNum++,
-                        getActivityLeaveEmoji(type), lc[0], lc[1],
-                        type + " Leave",
-                        empName + " — " + leave.getReason() != null ? (empName + " — " + (leave.getReason() != null && !leave.getReason().isEmpty() ? leave.getReason() : "No reason")) : empName,
-                        date, type, lc[1], lc[2]));
+                        buildActivityRow(rowNum++,
+                                getActivityLeaveEmoji(type), lc[0], lc[1],
+                                type + " Leave",
+                                empName + " — " + leave.getReason() != null ? (empName + " — " + (leave.getReason() != null && !leave.getReason().isEmpty() ? leave.getReason() : "No reason")) : empName,
+                                date, type, lc[1], lc[2]));
             }
         }
 
@@ -384,24 +474,24 @@ public class DashboardController implements Initializable {
         footer.setAlignment(Pos.CENTER_RIGHT);
         footer.setPadding(new Insets(14, 25, 16, 25));
         footer.setStyle("-fx-background-color: #f8f9ff; -fx-background-radius: 0 0 15 15;" +
-                        "-fx-border-color: #e8eaf0; -fx-border-width: 1 0 0 0;");
+                "-fx-border-color: #e8eaf0; -fx-border-width: 1 0 0 0;");
         Label countLbl = new Label(
-            "Showing " + activityList.getChildren().size() + " activities  •  " +
-            employees.size() + " employees  •  " + leaves.size() + " leave records");
+                "Showing " + activityList.getChildren().size() + " activities  •  " +
+                        employees.size() + " employees  •  " + leaves.size() + " leave records");
         countLbl.setStyle("-fx-text-fill: #7f8c8d; -fx-font-size: 11px;");
         HBox.setHgrow(countLbl, Priority.ALWAYS);
 
         Button doneBtn = new Button("Close");
         doneBtn.setStyle("-fx-background-color: linear-gradient(to right,#6c63ff,#5a52d4);" +
-                         "-fx-text-fill:white;-fx-font-weight:bold;-fx-font-size:13px;" +
-                         "-fx-padding:9 28;-fx-background-radius:8;-fx-cursor:hand;");
+                "-fx-text-fill:white;-fx-font-weight:bold;-fx-font-size:13px;" +
+                "-fx-padding:9 28;-fx-background-radius:8;-fx-cursor:hand;");
         doneBtn.setOnAction(e -> popup.close());
         footer.getChildren().addAll(countLbl, doneBtn);
 
         // ── Assemble card ─────────────────────────────────────────────────
         VBox card = new VBox();
         card.setStyle("-fx-background-color: white; -fx-background-radius: 15;" +
-                      "-fx-effect: dropshadow(gaussian,rgba(0,0,0,0.28),24,0,0,6);");
+                "-fx-effect: dropshadow(gaussian,rgba(0,0,0,0.28),24,0,0,6);");
         card.getChildren().addAll(header, scroll, footer);
         card.setMaxWidth(600);
         card.setMinWidth(560);
@@ -418,13 +508,13 @@ public class DashboardController implements Initializable {
 
     /** Builds one styled row in the activity popup list */
     private HBox buildActivityRow(int index, String emoji, String iconBg, String iconFg,
-                                   String title, String detail, String date,
-                                   String badgeText, String badgeFg, String badgeBg) {
+                                  String title, String detail, String date,
+                                  String badgeText, String badgeFg, String badgeBg) {
         HBox row = new HBox(14);
         row.setAlignment(Pos.CENTER_LEFT);
         row.setPadding(new Insets(14, 22, 14, 22));
         row.setStyle("-fx-background-color: " + (index % 2 == 0 ? "white" : "#fafbff") + ";" +
-                     "-fx-border-color: #f0f2f8; -fx-border-width: 0 0 1 0;");
+                "-fx-border-color: #f0f2f8; -fx-border-width: 0 0 1 0;");
 
         // Icon bubble
         StackPane bubble = new StackPane();
@@ -448,8 +538,8 @@ public class DashboardController implements Initializable {
         // Badge
         Label badge = new Label(badgeText);
         badge.setStyle("-fx-background-color: " + badgeBg + "; -fx-text-fill: " + badgeFg + ";" +
-                       "-fx-font-size: 10px; -fx-font-weight: bold; -fx-padding: 2 8;" +
-                       "-fx-background-radius: 10;");
+                "-fx-font-size: 10px; -fx-font-weight: bold; -fx-padding: 2 8;" +
+                "-fx-background-radius: 10;");
         titleRow.getChildren().addAll(titleLbl, badge);
 
         Label detailLbl = new Label(detail);
@@ -578,7 +668,6 @@ public class DashboardController implements Initializable {
         alert.showAndWait();
     }
 
-    // Called from LoginController after successful login to pass the user's name
     public void setCurrentUser(String name, String role) {
         app.UserSession.getInstance().setUser(name, role);
         setupUserProfile();

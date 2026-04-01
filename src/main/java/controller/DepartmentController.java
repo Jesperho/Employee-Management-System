@@ -12,7 +12,6 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
@@ -23,14 +22,17 @@ import javafx.scene.text.Text;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import utils.BaseController;
 
-import java.net.URL;
 import java.util.List;
 import java.util.Optional;
-import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
-public class DepartmentController implements Initializable {
+// Make sure to import BaseController if it's in a different package!
+// import util.BaseController;
+
+// 1. Extend BaseController instead of implementing Initializable
+public class DepartmentController extends BaseController {
 
     @FXML private TextField searchField;
     @FXML private ComboBox<String> filterDepartment;
@@ -96,8 +98,9 @@ public class DepartmentController implements Initializable {
     private ObservableList<ObservableList<String>> employeeData = FXCollections.observableArrayList();
     private List<Employee> currentDeptEmployees = new java.util.ArrayList<>();
 
+    // 2. Replace initialize() with setupController()
     @Override
-    public void initialize(URL location, ResourceBundle resources) {
+    protected void setupController() {
         updateUserProfile();
         setupTable();
         setupEmployeeTable();
@@ -105,6 +108,19 @@ public class DepartmentController implements Initializable {
         setupFilters();
         if (searchField != null)
             searchField.textProperty().addListener((obs, o, n) -> applyFilters());
+    }
+
+    // 3. Add the required updateUIText method
+    @Override
+    protected void updateUIText(String newLanguage) {
+        System.out.println("Department View updating to: " + newLanguage);
+
+        // Example:
+        // if (newLanguage.equals("Spanish")) {
+        //     btnDashboard.setText("Tablero");
+        //     searchField.setPromptText("Buscar departamento...");
+        //     // Update table column headers, buttons, etc...
+        // }
     }
 
     private void updateUserProfile() {
@@ -265,8 +281,8 @@ public class DepartmentController implements Initializable {
         javafx.collections.transformation.FilteredList<ObservableList<String>> filtered =
                 new javafx.collections.transformation.FilteredList<>(employeeData, row ->
                         row.get(1).toLowerCase().contains(q) ||
-                        row.get(3).toLowerCase().contains(q) ||
-                        row.get(5).toLowerCase().contains(q)
+                                row.get(3).toLowerCase().contains(q) ||
+                                row.get(5).toLowerCase().contains(q)
                 );
         employeeTable.setItems(filtered);
     }
@@ -389,8 +405,8 @@ public class DepartmentController implements Initializable {
         avatarCircle.setStyle("-fx-fill: linear-gradient(to bottom right, #6c63ff, #4834d4);");
         String initials = emp.getFullName() != null && !emp.getFullName().isEmpty()
                 ? (emp.getFullName().trim().contains(" ")
-                    ? String.valueOf(emp.getFullName().charAt(0)) + emp.getFullName().trim().split(" ")[1].charAt(0)
-                    : String.valueOf(emp.getFullName().charAt(0)))
+                ? String.valueOf(emp.getFullName().charAt(0)) + emp.getFullName().trim().split(" ")[1].charAt(0)
+                : String.valueOf(emp.getFullName().charAt(0)))
                 : "?";
         javafx.scene.text.Text avatarText = new javafx.scene.text.Text(initials.toUpperCase());
         avatarText.setStyle("-fx-fill: white; -fx-font-size: 18px; -fx-font-weight: bold;");
