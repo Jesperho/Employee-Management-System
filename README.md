@@ -177,3 +177,24 @@ Every update to:
 This ensures full transparency and traceability.
 
 ---
+
+## Language Support
+
+The application is available in **4 languages**: English, Spanish, Persian, and Arabic.
+
+### How to Change Language
+
+1. Log in to the application.
+2. Find the **language dropdown** in the top navigation bar.
+3. Select your preferred language — the UI updates instantly.
+
+> Arabic and Persian display right-to-left automatically.
+
+### Localization Resources Used
+
+| Category | Tool / Resource |
+| :--- | :--- |
+| **Translation Review** | Native speakers — dialect validation for Arabic and Persian |
+| **Key Management** | IntelliJ IDEA Resource Bundle Editor — edit all language files side-by-side |
+
+---

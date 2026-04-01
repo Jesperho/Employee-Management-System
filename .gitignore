@@ -42,3 +42,4 @@ build/
 nul
 
 /src/main/resources/META-INF/persistence.xml
+/src/main/java/datasource/MariaDbConnection.java
