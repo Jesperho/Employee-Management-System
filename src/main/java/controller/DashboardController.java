@@ -134,10 +134,10 @@ public class DashboardController extends BaseController {
         if (deptEmployeesColumn != null) deptEmployeesColumn.setText(langManager.getTranslatedText("table.employees"));
         if (deptStatusColumn != null) deptStatusColumn.setText(langManager.getTranslatedText("table.status"));
 
-        userRole.setText(langManager.getTranslatedText("user.role"));
-        main_menu.setText(langManager.getTranslatedText("main_menu"));
-        totalEmployees.setText(langManager.getTranslatedText("totalEmployees"));
-        activeEmployees.setText(langManager.getTranslatedText("activeEmployees"));
+        if (userRole != null) userRole.setText(langManager.getTranslatedText("user.role"));
+        if (main_menu != null) main_menu.setText(langManager.getTranslatedText("main_menu"));
+        if (totalEmployees != null) totalEmployees.setText(langManager.getTranslatedText("totalEmployees"));
+        if (activeEmployees != null) activeEmployees.setText(langManager.getTranslatedText("activeEmployees"));
 
         if (logoSubtitle != null) logoSubtitle.setText(langManager.getTranslatedText("app.subtitle"));
         if (languageLabelText != null) languageLabelText.setText(langManager.getTranslatedText("lang.label"));

@@ -306,11 +306,12 @@ public class SalaryController extends BaseController {
         GridPane grid = new GridPane();
         grid.setHgap(20); grid.setVgap(14);
         grid.setPadding(new Insets(24, 30, 10, 30));
-        addSalaryInfoCard(grid, 0, "🪪  Employee ID",  row.get(0),  "⚧  Gender",     row.get(6));
-        addSalaryInfoCard(grid, 1, "🏢  Department",   row.get(2),  "📋  Job Title",   row.get(3));
-        addSalaryInfoCard(grid, 2, "🎯  Position",     row.get(4),  "💰  Monthly Salary", "€ " + row.get(5));
+        entity.LanguageManager lang = entity.LanguageManager.getInstance();
+        addSalaryInfoCard(grid, 0, "🪪  " + lang.getTranslatedText("salary.col.id"),         row.get(0),  "⚧  " + lang.getTranslatedText("salary.col.gender"),   row.get(6));
+        addSalaryInfoCard(grid, 1, "🏢  " + lang.getTranslatedText("salary.col.department"),  row.get(2),  "📋  " + lang.getTranslatedText("salary.col.jobTitle"),  row.get(3));
+        addSalaryInfoCard(grid, 2, "🎯  " + lang.getTranslatedText("salary.col.position"),    row.get(4),  "💰  " + lang.getTranslatedText("salary.col.salary"),    "€ " + row.get(5));
 
-        Button closeBtn = new Button("✕  Close");
+        Button closeBtn = new Button("✕  " + lang.getTranslatedText("btn.close"));
         closeBtn.setStyle("-fx-background-color: linear-gradient(to right, #27ae60, #1e8449); -fx-text-fill: white; " +
                 "-fx-font-weight: bold; -fx-font-size: 13px; -fx-padding: 10 30; -fx-background-radius: 8; -fx-cursor: hand;");
         closeBtn.setOnAction(e -> popup.close());
@@ -369,22 +370,24 @@ public class SalaryController extends BaseController {
         form.setPadding(new Insets(25));
         form.setStyle("-fx-background-color: white;");
 
-        Text formTitle = new Text("Edit Salary");
+        entity.LanguageManager lang = entity.LanguageManager.getInstance();
+
+        Text formTitle = new Text(lang.getTranslatedText("salary.form.editTitle"));
         formTitle.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-fill: #1a1f36;");
 
-        Text empName = new Text("Employee: " + row.get(1) + " (" + row.get(2) + ")");
+        Text empName = new Text(lang.getTranslatedText("salary.col.name") + ": " + row.get(1) + " (" + row.get(2) + ")");
         empName.setStyle("-fx-font-size: 14px; -fx-fill: #7f8c8d;");
 
         GridPane grid = new GridPane();
         grid.setHgap(15);
         grid.setVgap(12);
 
-        TextField currentSalaryField = createFormField("Current Salary");
+        TextField currentSalaryField = createFormField(lang.getTranslatedText("salary.form.currentSalary"));
         currentSalaryField.setText("€" + row.get(5));
         currentSalaryField.setEditable(false);
         currentSalaryField.setStyle("-fx-background-color: #e9ecef; -fx-border-color: #e0e3e8; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 10 12;");
 
-        TextField newSalaryField = createFormField("New Salary (€)");
+        TextField newSalaryField = createFormField(lang.getTranslatedText("salary.form.newSalary"));
 
         ComboBox<String> positionCombo = new ComboBox<>(FXCollections.observableArrayList(
                 "Manager", "Employee", "Specialist", "Analyst", "Intern", "Lead"));
@@ -393,37 +396,37 @@ public class SalaryController extends BaseController {
         positionCombo.setStyle("-fx-background-color: #f8f9fa; -fx-border-color: #e0e3e8; -fx-border-radius: 8; -fx-background-radius: 8;");
 
         TextArea reasonField = new TextArea();
-        reasonField.setPromptText("Reason for salary change");
+        reasonField.setPromptText(lang.getTranslatedText("salary.form.reason"));
         reasonField.setPrefRowCount(2);
         reasonField.setStyle("-fx-background-color: #f8f9fa; -fx-border-color: #e0e3e8; -fx-border-radius: 8;");
 
-        grid.add(createLabel("Current Salary"), 0, 0);  grid.add(currentSalaryField, 1, 0);
-        grid.add(createLabel("New Salary"), 0, 1);       grid.add(newSalaryField, 1, 1);
-        grid.add(createLabel("Position"), 0, 2);         grid.add(positionCombo, 1, 2);
-        grid.add(createLabel("Reason"), 0, 3);
+        grid.add(createLabel(lang.getTranslatedText("salary.form.currentSalary")), 0, 0); grid.add(currentSalaryField, 1, 0);
+        grid.add(createLabel(lang.getTranslatedText("salary.form.newSalary")), 0, 1);     grid.add(newSalaryField, 1, 1);
+        grid.add(createLabel(lang.getTranslatedText("salary.form.position")), 0, 2);      grid.add(positionCombo, 1, 2);
+        grid.add(createLabel(lang.getTranslatedText("salary.form.reason")), 0, 3);
         GridPane.setColumnSpan(reasonField, 1);
         grid.add(reasonField, 1, 3);
 
         HBox buttonBar = new HBox(15);
         buttonBar.setAlignment(Pos.CENTER_RIGHT);
 
-        Button updateBtn = new Button("Update Salary");
+        Button updateBtn = new Button(lang.getTranslatedText("salary.form.update"));
         updateBtn.setStyle("-fx-background-color: linear-gradient(to right, #6c63ff, #5a52d4); -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 12 30; -fx-background-radius: 8; -fx-cursor: hand;");
 
-        Button cancelBtn = new Button("Cancel");
+        Button cancelBtn = new Button(lang.getTranslatedText("salary.form.cancel"));
         cancelBtn.setStyle("-fx-background-color: white; -fx-text-fill: #e74c3c; -fx-border-color: #e74c3c; -fx-border-radius: 8; -fx-background-radius: 8; -fx-font-size: 14px; -fx-padding: 12 30; -fx-cursor: hand; -fx-font-weight: bold;");
 
         updateBtn.setOnAction(e -> {
             String newSal = newSalaryField.getText().trim();
             if (newSal.isEmpty()) {
-                showAlert("Validation Error", "Please enter a new salary.");
+                showAlert(lang.getTranslatedText("alert.validationError"), lang.getTranslatedText("alert.enterNewSalary"));
                 return;
             }
             double salaryValue;
             try {
                 salaryValue = Double.parseDouble(newSal);
             } catch (NumberFormatException ex) {
-                showAlert("Validation Error", "Salary must be a number.");
+                showAlert(lang.getTranslatedText("alert.validationError"), lang.getTranslatedText("alert.salaryMustBeNumber"));
                 return;
             }
             // Persist the salary change to the Employee entity in DB
@@ -464,10 +467,13 @@ public class SalaryController extends BaseController {
         }).sum();
         int empCount = dataToProcess.size();
 
+        entity.LanguageManager lang = entity.LanguageManager.getInstance();
+
         // Label for which dept (or all)
         String deptVal = filterDepartment.getValue();
-        boolean isDeptFilter = deptVal != null && !deptVal.equals("All Departments");
-        String scopeLabel = isDeptFilter ? deptVal + " Department" : "All Departments";
+        String allDeptsLabel = lang.getTranslatedText("salary.filterAllDepts");
+        boolean isDeptFilter = deptVal != null && !deptVal.equals(allDeptsLabel);
+        String scopeLabel = isDeptFilter ? deptVal : allDeptsLabel;
 
         Stage popup = new Stage();
         popup.initModality(Modality.APPLICATION_MODAL);
@@ -479,7 +485,7 @@ public class SalaryController extends BaseController {
         header.setPadding(new Insets(28, 30, 20, 30));
         header.setStyle("-fx-background-color: linear-gradient(to bottom right, #1a1f36, #2d3561); -fx-background-radius: 15 15 0 0;");
 
-        javafx.scene.text.Text titleTxt = new javafx.scene.text.Text("💵  Run Payroll");
+        javafx.scene.text.Text titleTxt = new javafx.scene.text.Text("💵  " + lang.getTranslatedText("action.runPayroll"));
         titleTxt.setStyle("-fx-fill: white; -fx-font-size: 22px; -fx-font-weight: bold;");
 
         // Scope badge
@@ -488,7 +494,7 @@ public class SalaryController extends BaseController {
                 "-fx-font-size: 12px; -fx-font-weight: bold; -fx-padding: 4 14; -fx-background-radius: 20;");
 
         javafx.scene.text.Text subTxt = new javafx.scene.text.Text(
-                "Processing salaries for " + empCount + " employee" + (empCount == 1 ? "" : "s") + "...");
+                lang.getTranslatedText("salary.employeesPaid") + ": " + empCount);
         subTxt.setStyle("-fx-fill: rgba(255,255,255,0.65); -fx-font-size: 12px;");
         header.getChildren().addAll(titleTxt, scopeBadge, subTxt);
 
@@ -504,7 +510,7 @@ public class SalaryController extends BaseController {
         progressBar.setPrefHeight(12);
         progressBar.setStyle("-fx-accent: #27ae60; -fx-background-color: #e8f5e9; -fx-background-radius: 6; -fx-effect: null;");
 
-        Label statusLabel = new Label("Initializing payroll run...");
+        Label statusLabel = new Label(lang.getTranslatedText("salary.runPayroll") + "...");
         statusLabel.setStyle("-fx-text-fill: #7f8c8d; -fx-font-size: 12px;");
         statusLabel.setAlignment(Pos.CENTER);
         statusLabel.setMaxWidth(Double.MAX_VALUE);
@@ -520,13 +526,13 @@ public class SalaryController extends BaseController {
         summaryRow.setVisible(false);
 
         summaryRow.getChildren().addAll(
-                makeSummaryCard("👥 Employees", String.valueOf(empCount), "#dbeafe", "#1d4ed8"),
-                makeSummaryCard("💰 Total Payout", "€ " + String.format("%,d", total), "#d1fae5", "#065f46"),
-                makeSummaryCard("📊 Avg Salary", "€ " + String.format("%,d", empCount > 0 ? total / empCount : 0), "#fef3c7", "#92400e"),
-                makeSummaryCard("🏢 Scope", isDeptFilter ? deptVal : "All", "#f3e5f5", "#6a1b9a")
+                makeSummaryCard("👥 " + lang.getTranslatedText("salary.employeesPaid"),  String.valueOf(empCount),                                      "#dbeafe", "#1d4ed8"),
+                makeSummaryCard("💰 " + lang.getTranslatedText("dashboard.totalPayroll"),  "€ " + String.format("%,d", total),                             "#d1fae5", "#065f46"),
+                makeSummaryCard("📊 " + lang.getTranslatedText("dashboard.avgSalary"),      "€ " + String.format("%,d", empCount > 0 ? total / empCount : 0), "#fef3c7", "#92400e"),
+                makeSummaryCard("🏢 " + lang.getTranslatedText("dashboard.departments"),    isDeptFilter ? deptVal : lang.getTranslatedText("salary.filterAllDepts"), "#f3e5f5", "#6a1b9a")
         );
 
-        Button doneBtn = new Button("✓  Done");
+        Button doneBtn = new Button("✓  " + lang.getTranslatedText("btn.close"));
         doneBtn.setStyle("-fx-background-color: linear-gradient(to right, #27ae60, #1e8449); -fx-text-fill: white; " +
                 "-fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 11 35; -fx-background-radius: 8; -fx-cursor: hand;");
         doneBtn.setVisible(false);
@@ -582,7 +588,8 @@ public class SalaryController extends BaseController {
 
         countUp.setOnFinished(e -> {
             counterLabel.setText("€ " + String.format("%,d", total));
-            statusLabel.setText("✅  Payroll complete!  " + empCount + " employees processed.");
+            String completeMsg = "✅  " + lang.getTranslatedText("salary.runPayroll") + "  " + empCount + " " + lang.getTranslatedText("salary.employeesPaid") + ".";
+            statusLabel.setText(completeMsg);
             statusLabel.setStyle("-fx-text-fill: #27ae60; -fx-font-size: 13px; -fx-font-weight: bold;");
             summaryRow.setVisible(true);
             doneBtn.setVisible(true);

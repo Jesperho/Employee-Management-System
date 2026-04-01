@@ -269,7 +269,8 @@ public class EmployeeController extends BaseController {
 
     @FXML
     private void handleAddEmployee() {
-        showEmployeeFormPopup("Add New Employee", null);
+        entity.LanguageManager lang = entity.LanguageManager.getInstance();
+        showEmployeeFormPopup(lang.getTranslatedText("emp.form.addTitle"), null);
     }
 
     private void showViewPopup(Employee emp) {
@@ -308,14 +309,15 @@ public class EmployeeController extends BaseController {
         grid.setHgap(20); grid.setVgap(14);
         grid.setPadding(new Insets(24, 30, 10, 30));
         String salary = emp.getSalary() != null ? "€" + String.format("%,.0f", emp.getSalary()) : "N/A";
+        entity.LanguageManager lang = entity.LanguageManager.getInstance();
 
-        addInfoCard(grid, 0, "🪪  Employee ID",  String.valueOf(emp.getId()),                  "📅  Start Date", emp.getStartDate() != null ? emp.getStartDate().toString() : "N/A");
-        addInfoCard(grid, 1, "⚧  Gender",        getOrDefault(emp.getGender()),                "📋  Contract",   getOrDefault(emp.getContractType()));
-        addInfoCard(grid, 2, "💰  Salary",        salary,                                       "🏢  Department", deptName);
+        addInfoCard(grid, 0, "🪪  " + lang.getTranslatedText("emp.col.id"),         String.valueOf(emp.getId()),       "📅  " + lang.getTranslatedText("emp.col.startDate"), emp.getStartDate() != null ? emp.getStartDate().toString() : "N/A");
+        addInfoCard(grid, 1, "⚧  " + lang.getTranslatedText("emp.col.gender"),      getOrDefault(emp.getGender()),     "📋  " + lang.getTranslatedText("emp.col.contract"),  getOrDefault(emp.getContractType()));
+        addInfoCard(grid, 2, "💰  " + lang.getTranslatedText("emp.form.salary"),     salary,                            "🏢  " + lang.getTranslatedText("emp.col.department"), deptName);
         if (emp.getDescription() != null && !emp.getDescription().isEmpty())
-            addInfoCard(grid, 3, "📝  Description", emp.getDescription(), "", "");
+            addInfoCard(grid, 3, "📝  " + lang.getTranslatedText("emp.form.description"), emp.getDescription(), "", "");
 
-        Button closeBtn = new Button("✕  Close");
+        Button closeBtn = new Button("✕  " + lang.getTranslatedText("btn.close"));
         closeBtn.setStyle("-fx-background-color: linear-gradient(to right, #6c63ff, #5a52d4); -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 13px; -fx-padding: 10 30; -fx-background-radius: 8; -fx-cursor: hand;");
         closeBtn.setOnAction(e -> popup.close());
         HBox footer = new HBox(closeBtn);
@@ -363,7 +365,8 @@ public class EmployeeController extends BaseController {
     }
 
     private void showEditPopup(Employee emp) {
-        showEmployeeFormPopup("Edit Employee", emp);
+        entity.LanguageManager lang = entity.LanguageManager.getInstance();
+        showEmployeeFormPopup(lang.getTranslatedText("emp.form.editTitle"), emp);
     }
 
     // Opens a form popup for adding a new employee (existingEmployee = null) or editing one
@@ -384,16 +387,18 @@ public class EmployeeController extends BaseController {
         grid.setHgap(15);
         grid.setVgap(12);
 
-        TextField nameField = createFormField("Full Name");
+        entity.LanguageManager lang = entity.LanguageManager.getInstance();
+
+        TextField nameField = createFormField(lang.getTranslatedText("emp.form.name"));
 
         ComboBox<String> genderCombo = new ComboBox<>(FXCollections.observableArrayList("Male", "Female", "Other"));
-        genderCombo.setPromptText("Select Gender");
+        genderCombo.setPromptText(lang.getTranslatedText("emp.form.selectGender"));
         genderCombo.setPrefWidth(200);
         genderCombo.setStyle("-fx-background-color: #f8f9fa; -fx-border-color: #e0e3e8; -fx-border-radius: 8; -fx-background-radius: 8;");
 
         List<Department> departments = departmentDao.findAll();
         ComboBox<Department> deptCombo = new ComboBox<>(FXCollections.observableArrayList(departments));
-        deptCombo.setPromptText("Select Department");
+        deptCombo.setPromptText(lang.getTranslatedText("emp.form.selectDept"));
         deptCombo.setPrefWidth(200);
         deptCombo.setStyle("-fx-background-color: #f8f9fa; -fx-border-color: #e0e3e8; -fx-border-radius: 8; -fx-background-radius: 8;");
         deptCombo.setCellFactory(lv -> new ListCell<Department>() {
@@ -419,34 +424,34 @@ public class EmployeeController extends BaseController {
             }
         });
 
-        TextField jobTitleField = createFormField("Job Title");
+        TextField jobTitleField = createFormField(lang.getTranslatedText("emp.form.jobTitle"));
 
         TextArea descriptionField = new TextArea();
-        descriptionField.setPromptText("Description");
+        descriptionField.setPromptText(lang.getTranslatedText("emp.form.description"));
         descriptionField.setPrefRowCount(3);
         descriptionField.setStyle("-fx-background-color: #f8f9fa; -fx-border-color: #e0e3e8; -fx-border-radius: 8;");
 
         DatePicker startDatePicker = new DatePicker();
-        startDatePicker.setPromptText("Start Date");
+        startDatePicker.setPromptText(lang.getTranslatedText("emp.form.startDate"));
         startDatePicker.setPrefWidth(200);
 
         ComboBox<String> contractCombo = new ComboBox<>(FXCollections.observableArrayList("Full Time", "Part Time", "Remote", "Intern"));
-        contractCombo.setPromptText("Contract Type");
+        contractCombo.setPromptText(lang.getTranslatedText("emp.form.contractType"));
         contractCombo.setPrefWidth(200);
         contractCombo.setStyle("-fx-background-color: #f8f9fa; -fx-border-color: #e0e3e8; -fx-border-radius: 8; -fx-background-radius: 8;");
 
-        TextField salaryField = createFormField("Salary (€)");
+        TextField salaryField = createFormField(lang.getTranslatedText("emp.form.salary"));
 
-        grid.add(createLabel("Name"), 0, 0);       grid.add(nameField, 1, 0);
-        grid.add(createLabel("Gender"), 2, 0);     grid.add(genderCombo, 3, 0);
-        grid.add(createLabel("Department"), 0, 1); grid.add(deptCombo, 1, 1);
-        grid.add(createLabel("Job Title"), 2, 1);  grid.add(jobTitleField, 3, 1);
-        grid.add(createLabel("Description"), 0, 2);
+        grid.add(createLabel(lang.getTranslatedText("emp.form.name")), 0, 0);       grid.add(nameField, 1, 0);
+        grid.add(createLabel(lang.getTranslatedText("emp.form.gender")), 2, 0);     grid.add(genderCombo, 3, 0);
+        grid.add(createLabel(lang.getTranslatedText("emp.form.department")), 0, 1); grid.add(deptCombo, 1, 1);
+        grid.add(createLabel(lang.getTranslatedText("emp.form.jobTitle")), 2, 1);   grid.add(jobTitleField, 3, 1);
+        grid.add(createLabel(lang.getTranslatedText("emp.form.description")), 0, 2);
         GridPane.setColumnSpan(descriptionField, 3);
         grid.add(descriptionField, 1, 2);
-        grid.add(createLabel("Start Date"), 0, 3); grid.add(startDatePicker, 1, 3);
-        grid.add(createLabel("Contract"), 2, 3);   grid.add(contractCombo, 3, 3);
-        grid.add(createLabel("Salary"), 0, 4);     grid.add(salaryField, 1, 4);
+        grid.add(createLabel(lang.getTranslatedText("emp.form.startDate")), 0, 3); grid.add(startDatePicker, 1, 3);
+        grid.add(createLabel(lang.getTranslatedText("emp.form.contract")), 2, 3);  grid.add(contractCombo, 3, 3);
+        grid.add(createLabel(lang.getTranslatedText("emp.form.salary")), 0, 4);    grid.add(salaryField, 1, 4);
 
         if (existingEmployee != null) {
             nameField.setText(existingEmployee.getFullName());
@@ -468,15 +473,15 @@ public class EmployeeController extends BaseController {
             }
         }
 
-        Button submitBtn = new Button(existingEmployee == null ? "Submit" : "Update");
+        Button submitBtn = new Button(existingEmployee == null ? lang.getTranslatedText("emp.form.submit") : lang.getTranslatedText("emp.form.update"));
         submitBtn.setStyle("-fx-background-color: linear-gradient(to right, #6c63ff, #5a52d4); -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 12 30; -fx-background-radius: 8; -fx-cursor: hand;");
 
-        Button cancelBtn = new Button("Cancel");
+        Button cancelBtn = new Button(lang.getTranslatedText("emp.form.cancel"));
         cancelBtn.setStyle("-fx-background-color: white; -fx-text-fill: #e74c3c; -fx-border-color: #e74c3c; -fx-border-radius: 8; -fx-background-radius: 8; -fx-font-size: 14px; -fx-padding: 12 30; -fx-cursor: hand; -fx-font-weight: bold;");
 
         submitBtn.setOnAction(e -> {
             if (nameField.getText().isEmpty()) {
-                showAlert("Validation Error", "Name is required.");
+                showAlert(lang.getTranslatedText("alert.validationError"), lang.getTranslatedText("alert.nameRequired"));
                 return;
             }
 
@@ -485,7 +490,7 @@ public class EmployeeController extends BaseController {
                 try {
                     salary = Double.parseDouble(salaryField.getText());
                 } catch (NumberFormatException ex) {
-                    showAlert("Validation Error", "Salary must be a valid number.");
+                    showAlert(lang.getTranslatedText("alert.validationError"), lang.getTranslatedText("alert.salaryMustBeNumber"));
                     return;
                 }
             }
