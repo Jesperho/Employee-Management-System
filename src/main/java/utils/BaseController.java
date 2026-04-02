@@ -2,11 +2,10 @@ package utils;
 
 import entity.LanguageManager;
 import javafx.application.Platform;
-import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.ComboBox;
-import javafx.geometry.NodeOrientation;
 import java.net.URL;
+import javafx.geometry.NodeOrientation;
 import java.util.ResourceBundle;
 
 public abstract class BaseController implements Initializable {
@@ -35,17 +34,18 @@ public abstract class BaseController implements Initializable {
                     languageComboBox.setValue(newValue);
                 }
                 updateUIText(newValue);
-                applyLanguageDirection(newValue);
             });
+                applyLanguageDirection(newValue);
         }
 
         setupController();
+    }
         updateUIText(LanguageManager.getInstance().getLanguage());
         applyLanguageDirection(LanguageManager.getInstance().getLanguage());
-    }
 
     protected abstract void updateUIText(String newLanguage);
     protected abstract void setupController();
+}
 
     protected void applyLanguageDirection(String language) {
         boolean isRTL = language != null && (
@@ -63,4 +63,3 @@ public abstract class BaseController implements Initializable {
             }
         });
     }
-}

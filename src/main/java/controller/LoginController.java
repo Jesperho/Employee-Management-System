@@ -3,7 +3,6 @@ package controller;
 import entity.Admin;
 import app.UserSession;
 import entity.LanguageManager;
-import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -103,8 +102,8 @@ public class LoginController extends BaseController {
     private void navigateToDashboard() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/dashboard.fxml"));
-            loader.setResources(LanguageManager.getInstance().getCurrentBundle());
             Parent root = loader.load();
+            loader.setResources(LanguageManager.getInstance().getCurrentBundle());
 
             Stage stage = (Stage) loginEmail.getScene().getWindow();
             Scene scene = new Scene(root, 1280, 800);
