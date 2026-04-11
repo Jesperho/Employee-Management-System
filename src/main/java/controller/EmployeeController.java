@@ -3,10 +3,8 @@ package controller;
 import dao.CompanyDao;
 import dao.DepartmentDao;
 import dao.EmployeeDao;
-import entity.LanguageManager;
-import entity.Company;
-import entity.Department;
-import entity.Employee;
+import dao.ChangeEmpDao;
+import entity.*;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -25,6 +23,8 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import utils.BaseController;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -82,6 +82,7 @@ public class EmployeeController extends BaseController {
     private final EmployeeDao employeeDao = new EmployeeDao();
     private final DepartmentDao departmentDao = new DepartmentDao();
     private final CompanyDao companyDao = new CompanyDao();
+    private final ChangeEmpDao changeEmpDao = new ChangeEmpDao();
 
     // Holds the full list of employees loaded from the DB
     private final ObservableList<Employee> employeeData = FXCollections.observableArrayList();
@@ -314,8 +315,7 @@ public class EmployeeController extends BaseController {
         addInfoCard(grid, 0, "🪪  " + lang.getTranslatedText("emp.col.id"),         String.valueOf(emp.getId()),       "📅  " + lang.getTranslatedText("emp.col.startDate"), emp.getStartDate() != null ? emp.getStartDate().toString() : "N/A");
         addInfoCard(grid, 1, "⚧  " + lang.getTranslatedText("emp.col.gender"),      getOrDefault(emp.getGender()),     "📋  " + lang.getTranslatedText("emp.col.contract"),  getOrDefault(emp.getContractType()));
         addInfoCard(grid, 2, "💰  " + lang.getTranslatedText("emp.form.salary"),     salary,                            "🏢  " + lang.getTranslatedText("emp.col.department"), deptName);
-        if (emp.getDescription() != null && !emp.getDescription().isEmpty())
-            addInfoCard(grid, 3, "📝  " + lang.getTranslatedText("emp.form.description"), emp.getDescription(), "", "");
+
 
         Button closeBtn = new Button("✕  " + lang.getTranslatedText("btn.close"));
         closeBtn.setStyle("-fx-background-color: linear-gradient(to right, #6c63ff, #5a52d4); -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 13px; -fx-padding: 10 30; -fx-background-radius: 8; -fx-cursor: hand;");
@@ -426,11 +426,6 @@ public class EmployeeController extends BaseController {
 
         TextField jobTitleField = createFormField(lang.getTranslatedText("emp.form.jobTitle"));
 
-        TextArea descriptionField = new TextArea();
-        descriptionField.setPromptText(lang.getTranslatedText("emp.form.description"));
-        descriptionField.setPrefRowCount(3);
-        descriptionField.setStyle("-fx-background-color: #f8f9fa; -fx-border-color: #e0e3e8; -fx-border-radius: 8;");
-
         DatePicker startDatePicker = new DatePicker();
         startDatePicker.setPromptText(lang.getTranslatedText("emp.form.startDate"));
         startDatePicker.setPrefWidth(200);
@@ -446,9 +441,6 @@ public class EmployeeController extends BaseController {
         grid.add(createLabel(lang.getTranslatedText("emp.form.gender")), 2, 0);     grid.add(genderCombo, 3, 0);
         grid.add(createLabel(lang.getTranslatedText("emp.form.department")), 0, 1); grid.add(deptCombo, 1, 1);
         grid.add(createLabel(lang.getTranslatedText("emp.form.jobTitle")), 2, 1);   grid.add(jobTitleField, 3, 1);
-        grid.add(createLabel(lang.getTranslatedText("emp.form.description")), 0, 2);
-        GridPane.setColumnSpan(descriptionField, 3);
-        grid.add(descriptionField, 1, 2);
         grid.add(createLabel(lang.getTranslatedText("emp.form.startDate")), 0, 3); grid.add(startDatePicker, 1, 3);
         grid.add(createLabel(lang.getTranslatedText("emp.form.contract")), 2, 3);  grid.add(contractCombo, 3, 3);
         grid.add(createLabel(lang.getTranslatedText("emp.form.salary")), 0, 4);    grid.add(salaryField, 1, 4);
@@ -457,7 +449,6 @@ public class EmployeeController extends BaseController {
             nameField.setText(existingEmployee.getFullName());
             genderCombo.setValue(existingEmployee.getGender());
             jobTitleField.setText(existingEmployee.getPosition());
-            descriptionField.setText(existingEmployee.getDescription());
             startDatePicker.setValue(existingEmployee.getStartDate());
             contractCombo.setValue(existingEmployee.getContractType());
             if (existingEmployee.getSalary() != null) {
@@ -503,7 +494,6 @@ public class EmployeeController extends BaseController {
                 Employee newEmp = new Employee(
                         nameField.getText(),
                         genderCombo.getValue(),
-                        descriptionField.getText(),
                         startDatePicker.getValue(),
                         salary,
                         company,
@@ -513,11 +503,16 @@ public class EmployeeController extends BaseController {
                         jobTitleField.getText()
                 );
                 employeeDao.create(newEmp);
+
+                LocalDate date = newEmp.getStartDate();
+                app.UserSession s = app.UserSession.getInstance();
+                ChangeEmp newChangeEmp = new ChangeEmp(date, "New Employee Added", s.getAdmin(), newEmp);
+                changeEmpDao.create(newChangeEmp);
+
             } else {
                 existingEmployee.setFullName(nameField.getText());
                 existingEmployee.setGender(genderCombo.getValue());
                 existingEmployee.setPosition(jobTitleField.getText());
-                existingEmployee.setDescription(descriptionField.getText());
                 existingEmployee.setStartDate(startDatePicker.getValue());
                 existingEmployee.setContractType(contractCombo.getValue());
                 existingEmployee.setSalary(salary);

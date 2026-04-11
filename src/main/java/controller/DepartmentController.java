@@ -489,9 +489,7 @@ public class DepartmentController extends BaseController {
         addInfoRow(grid, 0, "🪪  Employee ID",  String.valueOf(emp.getId()),                    "📅  Start Date",  emp.getStartDate() != null ? emp.getStartDate().toString() : "N/A");
         addInfoRow(grid, 1, "⚧  Gender",        emp.getGender() != null ? emp.getGender() : "N/A", "📋  Contract",  emp.getContractType() != null ? emp.getContractType() : "N/A");
         addInfoRow(grid, 2, "💰  Salary",        salary,                                        "🏢  Department", deptName);
-        if (emp.getDescription() != null && !emp.getDescription().isEmpty()) {
-            addInfoRow(grid, 3, "📝  Description", emp.getDescription(), "", "");
-        }
+
 
         // Close button
         Button closeBtn = new Button("✕  Close");
@@ -591,11 +589,6 @@ public class DepartmentController extends BaseController {
         TextField jobTitleField = createFormField("Job Title");
         jobTitleField.setText(emp.getPosition() != null ? emp.getPosition() : "");
 
-        TextArea descField = new TextArea();
-        descField.setPromptText("Description");
-        descField.setPrefRowCount(3);
-        descField.setText(emp.getDescription() != null ? emp.getDescription() : "");
-        descField.setStyle("-fx-background-color: #f8f9fa; -fx-border-color: #e0e3e8; -fx-border-radius: 8;");
 
         DatePicker startDate = new DatePicker(emp.getStartDate());
         startDate.setPrefWidth(200);
@@ -614,8 +607,6 @@ public class DepartmentController extends BaseController {
         grid.add(createLabel("Department"),  0, 1); grid.add(deptCombo,    1, 1);
         grid.add(createLabel("Job Title"),   2, 1); grid.add(jobTitleField,3, 1);
         grid.add(createLabel("Description"), 0, 2);
-        GridPane.setColumnSpan(descField, 3);
-        grid.add(descField, 1, 2);
         grid.add(createLabel("Start Date"),  0, 3); grid.add(startDate,    1, 3);
         grid.add(createLabel("Contract"),    2, 3); grid.add(contractCombo,3, 3);
         grid.add(createLabel("Salary"),      0, 4); grid.add(salaryField,  1, 4);
@@ -636,7 +627,6 @@ public class DepartmentController extends BaseController {
             emp.setFullName(nameField.getText());
             emp.setGender(genderCombo.getValue());
             emp.setPosition(jobTitleField.getText());
-            emp.setDescription(descField.getText());
             emp.setStartDate(startDate.getValue());
             emp.setContractType(contractCombo.getValue());
             emp.setSalary(salary);

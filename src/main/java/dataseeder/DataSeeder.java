@@ -122,7 +122,7 @@ public class DataSeeder {
                 "SELECT e FROM Employee e WHERE e.fullName = :n", Employee.class)
                 .setParameter("n", fullName).getResultList();
         if (!existing.isEmpty()) return; // skip if already exists
-        em.persist(new Employee(fullName, gender, desc, start, salary, company, dept, role, contract, position));
+        em.persist(new Employee(fullName, gender, start, salary, company, dept, role, contract, position));
     }
 
     private static void addLeave(EntityManager em, String empName,

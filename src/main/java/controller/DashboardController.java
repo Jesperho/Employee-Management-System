@@ -1,12 +1,10 @@
 package controller;
 
+import dao.ChangeEmpDao;
 import dao.DepartmentDao;
 import dao.EmployeeDao;
 import dao.LeaveDao;
-import entity.LanguageManager;
-import entity.Department;
-import entity.Employee;
-import entity.Leave;
+import entity.*;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -104,6 +102,7 @@ public class DashboardController extends BaseController {
     @FXML private VBox recentActivitiesContainer;
 
     private final EmployeeDao employeeDao = new EmployeeDao();
+    private final ChangeEmpDao changeEmpDao = new ChangeEmpDao();
     private final DepartmentDao departmentDao = new DepartmentDao();
     private final LeaveDao leaveDao = new LeaveDao();
 
@@ -310,18 +309,17 @@ public class DashboardController extends BaseController {
         if (recentActivitiesContainer == null) return;
         recentActivitiesContainer.getChildren().clear();
 
-        // Last 3 employees added (sorted by ID descending)
-        List<Employee> employees = employeeDao.findAll();
-        employees.sort((a, b) -> Integer.compare(b.getId(), a.getId()));
-        int empLimit = Math.min(3, employees.size());
+        List<ChangeEmp> changesEmps = changeEmpDao.findAll();
+        changesEmps.sort((a, b) -> Integer.compare(b.getId(), a.getId()));
+        int empLimit = Math.min(3, changesEmps.size());
+
         for (int i = 0; i < empLimit; i++) {
-            Employee emp = employees.get(i);
-            String dept = emp.getDepartment() != null ? emp.getDepartment().getDepartmentName() : "No Department";
+            ChangeEmp emp = changesEmps.get(i);
             recentActivitiesContainer.getChildren().add(
                     createActivityItem("+", "activity-new",
-                            "New employee added",
-                            emp.getFullName() + " joined " + dept,
-                            emp.getStartDate() != null ? emp.getStartDate().toString() : "")
+                            emp.getMessage(),
+                            emp.getEmployee().getFullName() + " joined " + emp.getEmployee().getDepartment().getDepartmentName(),
+                            emp.getEmployee().getStartDate() != null ? emp.getEmployee().getStartDate().toString() : "")
             );
         }
 

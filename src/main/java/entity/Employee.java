@@ -16,7 +16,6 @@ public class Employee {
 
     private String fullName;
     private String gender;
-    private String description;
 
     private LocalDate startDate;
     private Double salary;
@@ -41,7 +40,6 @@ public class Employee {
     public Employee(
             String fullName,
             String gender,
-            String description,
             LocalDate startDate,
             Double salary,
             Company company,
@@ -52,7 +50,6 @@ public class Employee {
     ) {
         this.fullName = fullName;
         this.gender = gender;
-        this.description = description;
         this.startDate = startDate;
         this.salary = salary;
         this.company = company;
@@ -85,14 +82,6 @@ public class Employee {
 
     public void setGender(String gender) {
         this.gender = gender;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
     }
 
     public LocalDate getStartDate() {

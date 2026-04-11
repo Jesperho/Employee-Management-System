@@ -1,6 +1,8 @@
 package entity;
 
 import jakarta.persistence.*;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -12,7 +14,7 @@ public class ChangeEmp {
     private int id;
 
     @Column(name = "date")
-    private LocalDateTime date;
+    private LocalDate date;
 
     private String message;
 
@@ -28,7 +30,7 @@ public class ChangeEmp {
     public ChangeEmp() {
     }
 
-    public ChangeEmp(LocalDateTime date, String message, Admin admin, Employee employee) {
+    public ChangeEmp(LocalDate date, String message, Admin admin, Employee employee) {
         this.date = date;
         this.message = message;
         this.admin = admin;
@@ -38,11 +40,11 @@ public class ChangeEmp {
     // Getters & Setters
     public int getId() { return id; }
 
-    public LocalDateTime getDate() {
+    public LocalDate getDate() {
         return date;
     }
 
-    public void setDate(LocalDateTime date) {
+    public void setDate(LocalDate date) {
         this.date = date;
     }
 

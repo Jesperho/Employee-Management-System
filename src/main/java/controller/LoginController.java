@@ -92,7 +92,7 @@ public class LoginController extends BaseController {
             String emailPrefix = admin.getEmail() != null
                     ? admin.getEmail().split("@")[0] : "Admin";
             String displayName = capitaliseEmailPrefix(emailPrefix);
-            UserSession.getInstance().setUser(displayName, "Administrator");
+            UserSession.getInstance().setUser(displayName, "Administrator", admin);
             showSuccess(loginMessage, "Login successful!");
             navigateToDashboard();
         } else {
