@@ -3,6 +3,10 @@ package entity;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "department")
@@ -23,6 +27,8 @@ public class Department {
     @JoinColumn(name = "company_id")
     private Company company;
 
+    @OneToMany(mappedBy = "department", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<DepartmentTranslation> translations = new HashSet<>();
 
 
     public Department() {}
@@ -37,6 +43,22 @@ public class Department {
 
     public int getId() {
         return id;
+    }
+
+    public DepartmentTranslation getTranslation(String languageCode) {
+        if (translations == null) return null;
+
+        for (DepartmentTranslation t : translations) {
+            if (t.getLanguageCode().equalsIgnoreCase(languageCode)) {
+                return t;
+            }
+        }
+        return null;
+    }
+
+    public String getTranslatedName(String langCode) {
+        DepartmentTranslation t = getTranslation(langCode);
+        return t != null ? t.getDepartmentName() : this.departmentName;
     }
 
     public void setId(int id) {

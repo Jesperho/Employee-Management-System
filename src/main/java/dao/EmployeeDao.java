@@ -27,6 +27,23 @@ public class EmployeeDao extends BaseDao<Employee> {
         }
     }
 
+    public List<Employee> findAllWithTranslations() {
+        EntityManager em = MariaDbConnection.getEntityManager();
+        try {
+            return em.createQuery(
+                    "SELECT DISTINCT e " +
+                            "FROM Employee e " +
+                            "LEFT JOIN FETCH e.department d " +
+                            "LEFT JOIN FETCH d.translations " +
+                            "LEFT JOIN FETCH e.translations",
+                    Employee.class
+            ).getResultList();
+        } finally {
+            em.close();
+        }
+    }
+
+
     // READ: Find all employees in a specific company
     public List<Employee> findByCompany(int companyId) {
         EntityManager em = MariaDbConnection.getEntityManager();

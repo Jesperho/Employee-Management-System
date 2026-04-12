@@ -59,7 +59,6 @@ class ChangeEmpDaoTest {
         Employee e = new Employee(
                 "Emp_" + unique(),
                 "Male",
-                "Test employee",
                 LocalDate.now(),
                 3000.0,
                 c,
@@ -88,7 +87,7 @@ class ChangeEmpDaoTest {
 
     private ChangeEmp createChangeEmp(Employee e) {
         ChangeEmp ce = new ChangeEmp(
-                LocalDateTime.now(),
+                LocalDate.now(),
                 "Employee updated",
                 null,
                 e
@@ -139,7 +138,7 @@ class ChangeEmpDaoTest {
         Admin a = createAdmin();
 
         ChangeEmp ce = new ChangeEmp(
-                LocalDateTime.now(),
+                LocalDate.now(),
                 "Admin updated employee",
                 a,
                 e
@@ -158,7 +157,7 @@ class ChangeEmpDaoTest {
         Employee e = createEmployee();
 
         ChangeEmp older = new ChangeEmp(
-                LocalDateTime.now().minusDays(1),
+                LocalDate.now().minusDays(1),
                 "Old message",
                 null,
                 e
@@ -166,7 +165,7 @@ class ChangeEmpDaoTest {
         changeEmpDao.create(older);
 
         ChangeEmp newer = new ChangeEmp(
-                LocalDateTime.now(),
+                LocalDate.now(),
                 "New message",
                 null,
                 e
@@ -184,7 +183,7 @@ class ChangeEmpDaoTest {
         Employee e = createEmployee();
 
         ChangeEmp older = new ChangeEmp(
-                LocalDateTime.now().minusDays(2),
+                LocalDate.now().minusDays(2),
                 "Older",
                 null,
                 e
@@ -192,7 +191,7 @@ class ChangeEmpDaoTest {
         changeEmpDao.create(older);
 
         ChangeEmp newer = new ChangeEmp(
-                LocalDateTime.now(),
+                LocalDate.now(),
                 "Newer",
                 null,
                 e

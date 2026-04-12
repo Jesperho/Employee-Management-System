@@ -3,7 +3,9 @@ package entity;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "employee")
@@ -15,14 +17,15 @@ public class Employee {
     private int id;
 
     private String fullName;
-    private String gender;
-
     private LocalDate startDate;
     private Double salary;
 
-    private String role;
+
+    private String gender;
     private String contractType;
     private String position;
+    private String role;
+
 
     @ManyToOne
     @JoinColumn(name = "company_id")
@@ -31,6 +34,9 @@ public class Employee {
     @ManyToOne
     @JoinColumn(name = "department_id")
     private Department department;
+
+    @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<EmployeeTranslation> translations = new HashSet<>();
 
     @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Leave> leaves = new ArrayList<>();   // ⭐ FIXED: always initialized
@@ -62,6 +68,42 @@ public class Employee {
 
     public int getId() {
         return id;
+    }
+
+    public EmployeeTranslation getTranslation(String languageCode) {
+        if (translations == null) return null;
+
+        for (EmployeeTranslation t : translations) {
+            if (t.getLanguage_code().equalsIgnoreCase(languageCode)) {
+                return t;
+            }
+        }
+        return null;
+    }
+
+    public String getTranslatedGender(String langCode) {
+        EmployeeTranslation t = getTranslation(langCode);
+        return t != null ? t.getGender() : this.gender;
+    }
+
+    public String getTranslatedContract(String langCode) {
+        EmployeeTranslation t = getTranslation(langCode);
+        return t != null ? t.getContractType() : this.contractType;
+    }
+
+    public String getTranslatedPosition(String langCode) {
+        EmployeeTranslation t = getTranslation(langCode);
+        return t != null ? t.getPosition() : this.position;
+    }
+
+    public String getTranslatedStartDate(String langCode){
+        EmployeeTranslation t = getTranslation(langCode);
+        return t != null ? t.getStartDate() : this.position;
+    }
+
+    public String getTranslatedSalary(String langCode){
+        EmployeeTranslation t = getTranslation(langCode);
+        return t != null ? t.getSalary().toString() : this.position;
     }
 
     public void setId(int id) {

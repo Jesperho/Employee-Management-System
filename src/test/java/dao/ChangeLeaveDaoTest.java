@@ -61,7 +61,6 @@ class ChangeLeaveDaoTest {
         Employee e = new Employee(
                 "Emp_" + unique(),
                 "Male",
-                "Test emp",
                 LocalDate.now(),
                 3000.0,
                 c,
@@ -90,7 +89,7 @@ class ChangeLeaveDaoTest {
 
     private ChangeLeave createChangeLeave(Leave leave) {
         ChangeLeave cl = new ChangeLeave(
-                LocalDateTime.now(),
+                LocalDate.now(),
                 "Leave updated",
                 null,   // admin optional
                 leave
@@ -153,7 +152,7 @@ class ChangeLeaveDaoTest {
         em.getTransaction().commit();
 
         ChangeLeave cl = new ChangeLeave(
-                LocalDateTime.now(),
+                LocalDate.now(),
                 "Admin updated leave",
                 admin,
                 l
@@ -172,7 +171,7 @@ class ChangeLeaveDaoTest {
         Leave l = createLeave(e);
 
         ChangeLeave older = new ChangeLeave(
-                LocalDateTime.now().minusDays(1),
+                LocalDate.now().minusDays(1),
                 "Old message",
                 null,
                 l
@@ -180,7 +179,7 @@ class ChangeLeaveDaoTest {
         changeLeaveDao.create(older);
 
         ChangeLeave newer = new ChangeLeave(
-                LocalDateTime.now(),
+                LocalDate.now(),
                 "New message",
                 null,
                 l
@@ -200,7 +199,7 @@ class ChangeLeaveDaoTest {
         Leave l = createLeave(e);
 
         ChangeLeave older = new ChangeLeave(
-                LocalDateTime.now().minusDays(2),
+                LocalDate.now().minusDays(2),
                 "Older",
                 null,
                 l
@@ -208,7 +207,7 @@ class ChangeLeaveDaoTest {
         changeLeaveDao.create(older);
 
         ChangeLeave newer = new ChangeLeave(
-                LocalDateTime.now(),
+                LocalDate.now(),
                 "Newer",
                 null,
                 l

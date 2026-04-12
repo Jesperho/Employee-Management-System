@@ -16,16 +16,16 @@ class ChangeEmpTest {
     private Employee employee;
     private Company company;
     private Department department;
-    private LocalDateTime dateTime;
+    private LocalDate dateTime;
 
     @BeforeEach
     void setUp() {
         company = new Company("TestCorp", "123 Test Street", "Finland");
         admin = new Admin("admin@testcorp.com", "securePassword123", company);
         department = new Department(50, "IT", "IT Department", LocalDate.now(), company);
-        employee = new Employee("John Doe", "Male", "Developer", LocalDate.now(),
+        employee = new Employee("John Doe", "Male", LocalDate.now(),
                 55000.0, company, department, "Developer", "Full-time", "Senior");
-        dateTime = LocalDateTime.of(2024, 6, 15, 10, 30);
+        dateTime = LocalDate.of(2024, 6, 15);
         changeEmp = new ChangeEmp(dateTime, "Hired employee", admin, employee);
     }
 
@@ -53,7 +53,7 @@ class ChangeEmpTest {
     @Test
     @DisplayName("setDate should update date")
     void testSetDate() {
-        LocalDateTime newDate = LocalDateTime.of(2025, 1, 1, 12, 0);
+        LocalDate newDate = LocalDate.of(2025, 1, 1);
         changeEmp.setDate(newDate);
         assertEquals(newDate, changeEmp.getDate());
     }
@@ -76,7 +76,7 @@ class ChangeEmpTest {
     @Test
     @DisplayName("setEmployee should update employee")
     void testSetEmployee() {
-        Employee newEmployee = new Employee("Jane Doe", "Female", "Manager", LocalDate.now(),
+        Employee newEmployee = new Employee("Jane Doe", "Female", LocalDate.now(),
                 65000.0, company, department, "Manager", "Full-time", "Lead");
         changeEmp.setEmployee(newEmployee);
         assertEquals(newEmployee, changeEmp.getEmployee());

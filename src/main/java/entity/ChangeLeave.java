@@ -1,7 +1,8 @@
+
 package entity;
 
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "change_leave")
@@ -9,11 +10,22 @@ public class ChangeLeave {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
-    @Column(name = "date")
-    private LocalDateTime date;
+    private Integer id;
 
-    private String message;
+    @Column(name = "date")
+    private LocalDate date;
+
+    @Column(name = "message_en")
+    private String messageEn;
+
+    @Column(name = "message_fa")
+    private String messageFa;
+
+    @Column(name = "message_ar")
+    private String messageAr;
+
+    @Column(name = "message_es")
+    private String messageEs;
 
     @ManyToOne
     @JoinColumn(name = "admin_id")
@@ -23,33 +35,66 @@ public class ChangeLeave {
     @JoinColumn(name = "leave_id")
     private Leave leave;
 
-    public ChangeLeave() {
-    }
+    public ChangeLeave() {}
 
-    public ChangeLeave(LocalDateTime date, String message, Admin admin, Leave leave) {
+    public ChangeLeave(LocalDate date,
+                       String messageEn,
+                       String messageFa,
+                       String messageAr,
+                       String messageEs,
+                       Admin admin,
+                       Leave leave) {
         this.date = date;
-        this.message = message;
+        this.messageEn = messageEn;
+        this.messageFa = messageFa;
+        this.messageAr = messageAr;
+        this.messageEs = messageEs;
         this.admin = admin;
         this.leave = leave;
     }
 
-    public int getId() { return id; }
-    // Getters & Setters
+    public Integer getId() {
+        return id;
+    }
 
-    public LocalDateTime getDate() {
+    public LocalDate getDate() {
         return date;
     }
 
-    public void setDate(LocalDateTime date) {
+    public void setDate(LocalDate date) {
         this.date = date;
     }
 
-    public String getMessage() {
-        return message;
+    public String getMessageEn() {
+        return messageEn;
     }
 
-    public void setMessage(String message) {
-        this.message = message;
+    public void setMessageEn(String messageEn) {
+        this.messageEn = messageEn;
+    }
+
+    public String getMessageFa() {
+        return messageFa;
+    }
+
+    public void setMessageFa(String messageFa) {
+        this.messageFa = messageFa;
+    }
+
+    public String getMessageAr() {
+        return messageAr;
+    }
+
+    public void setMessageAr(String messageAr) {
+        this.messageAr = messageAr;
+    }
+
+    public String getMessageEs() {
+        return messageEs;
+    }
+
+    public void setMessageEs(String messageEs) {
+        this.messageEs = messageEs;
     }
 
     public Admin getAdmin() {
@@ -67,4 +112,15 @@ public class ChangeLeave {
     public void setLeave(Leave leave) {
         this.leave = leave;
     }
+
+
+public String getMessage(String lang) {
+    return switch (lang.toLowerCase()) {
+        case "en" -> messageEn;
+        case "fa" -> messageFa;
+        case "ar" -> messageAr;
+        case "es" -> messageEs;
+        default -> messageEn;
+    };
+}
 }

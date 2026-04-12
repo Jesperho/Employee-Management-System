@@ -23,6 +23,9 @@ public class Leave {
     @JoinColumn(name = "employee_id")
     private Employee employee;
 
+    @OneToMany(mappedBy = "leave", cascade = CascadeType.ALL, orphanRemoval = true)
+    private java.util.List<LeaveTranslation> translations = new java.util.ArrayList<>();
+
     public Leave() {
     }
 
@@ -37,6 +40,22 @@ public class Leave {
         if (startDate != null && endDate != null) {
             this.duration = (int) ChronoUnit.DAYS.between(startDate, endDate) + 1;
         }
+    }
+
+    public LeaveTranslation getTranslation(String languageCode) {
+        if (translations == null) return null;
+
+        for (LeaveTranslation t : translations) {
+            if (t.getLanguageCode().equalsIgnoreCase(languageCode)) {
+                return t;
+            }
+        }
+        return null;
+    }
+
+    public String getTranslatedType(String langCode) {
+        LeaveTranslation t = getTranslation(langCode);
+        return t != null ? t.getType() : this.type;
     }
 
     public int getId() {
@@ -58,6 +77,22 @@ public class Leave {
 
     public LocalDate getEndDate() {
         return endDate;
+    }
+
+
+    public String getTranslatedStartDate(String langCode){
+        LeaveTranslation t = getTranslation(langCode);
+        return t != null ? t.getStartDateText() : "";
+    }
+
+    public String getTranslatedEndDate(String langCode){
+        LeaveTranslation t = getTranslation(langCode);
+        return t != null ? t.getEndDateText() : "";
+    }
+
+    public String getTranslatedDuration(String langCode){
+        LeaveTranslation t = getTranslation(langCode);
+        return t != null ? t.getDurationText() : "";
     }
 
     public void setEndDate(LocalDate endDate) {

@@ -1,12 +1,7 @@
 package controller;
 
-import dao.CompanyDao;
-import dao.DepartmentDao;
-import dao.EmployeeDao;
-import entity.LanguageManager;
-import entity.Company;
-import entity.Department;
-import entity.Employee;
+import dao.*;
+import entity.*;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -25,6 +20,7 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import utils.BaseController;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -36,7 +32,7 @@ import java.util.stream.Collectors;
 public class DepartmentController extends BaseController {
 
     @FXML private TextField searchField;
-    @FXML private ComboBox<String> filterDepartment;
+    @FXML private ComboBox<Department> filterDepartment;
     @FXML private ComboBox<String> filterCapacity;
 
     @FXML private Text breadcrumbText;
@@ -108,6 +104,8 @@ public class DepartmentController extends BaseController {
     private final DepartmentDao departmentDao = new DepartmentDao();
     private final EmployeeDao employeeDao = new EmployeeDao();
     private final CompanyDao companyDao = new CompanyDao();
+    private final ChangeDeptDao changeDeptDao = new ChangeDeptDao();
+    private final DepartmentTranslationDao departmentTranslationDao = new DepartmentTranslationDao();
 
     private ObservableList<ObservableList<String>> deptData = FXCollections.observableArrayList();
     private ObservableList<ObservableList<String>> employeeData = FXCollections.observableArrayList();
@@ -177,7 +175,14 @@ public class DepartmentController extends BaseController {
 
         if (employeeSectionTitle != null) employeeSectionTitle.setText(lang.getTranslatedText("nav.employees") + " - " + lang.getTranslatedText("dept.pageTitle"));
 
+        loadFromDatabase();
         setupFilters();
+        applyFilters();
+        setupTable();
+
+        departmentTable.setItems(null);
+        departmentTable.setItems(deptData);
+        departmentTable.refresh();
     }
 
     private void updateUserProfile() {
@@ -189,19 +194,24 @@ public class DepartmentController extends BaseController {
 
     // Loads all departments from DB and refreshes the table and stats
     private void loadFromDatabase() {
+        entity.LanguageManager lang = entity.LanguageManager.getInstance();
         deptData.clear();
-        List<Department> departments = departmentDao.findAll();
+
+        List<Department> departments = departmentDao.findAllWithTranslations();
+
         for (Department dept : departments) {
             long empCount = departmentDao.countEmployees(dept.getId());
+
             deptData.add(FXCollections.observableArrayList(
                     String.valueOf(dept.getId()),
-                    dept.getDepartmentName() != null ? dept.getDepartmentName() : "",
+                    dept.getTranslatedName(lang.getCurrentLanguageCode()),
                     String.valueOf(dept.getCapacity()),
                     String.valueOf(empCount),
                     dept.getCreationDate() != null ? dept.getCreationDate().toString() : "N/A",
                     dept.getDescription() != null ? dept.getDescription() : ""
             ));
         }
+
         departmentTable.setItems(deptData);
         updateStats();
     }
@@ -209,37 +219,93 @@ public class DepartmentController extends BaseController {
     // Populates the filter dropdowns; department names come from the DB
     private void setupFilters() {
         entity.LanguageManager lang = entity.LanguageManager.getInstance();
-        List<String> deptNames = departmentDao.findAll().stream()
-                .map(Department::getDepartmentName)
-                .collect(Collectors.toList());
-        deptNames.add(0, lang.getTranslatedText("dept.filterAllDepts"));
-        filterDepartment.setItems(FXCollections.observableArrayList(deptNames));
-        filterDepartment.setOnAction(e -> applyFilters());
 
         filterCapacity.setItems(FXCollections.observableArrayList(
-                lang.getTranslatedText("dept.filterAllCaps"), "Small (< 30)", "Medium (30-50)", "Large (> 50)"));
+                lang.getTranslatedText("dept.filterAllCaps"),
+                lang.getTranslatedText("dept.cap.small"),
+                lang.getTranslatedText("dept.cap.medium"),
+                lang.getTranslatedText("dept.cap.large")
+        ));
+
+        filterCapacity.getSelectionModel().selectFirst(); // default = "All"
+
+        List<Department> departments = departmentDao.findAllWithTranslations();
+
+        filterDepartment.setItems(FXCollections.observableArrayList(departments));
+
+        filterDepartment.setCellFactory(lv -> new ListCell<>() {
+            @Override
+            protected void updateItem(Department d, boolean empty) {
+                super.updateItem(d, empty);
+                setText(empty || d == null
+                        ? null
+                        : d.getTranslatedName(lang.getCurrentLanguageCode()));
+            }
+        });
+
+        filterDepartment.setButtonCell(new ListCell<>() {
+            @Override
+            protected void updateItem(Department d, boolean empty) {
+                super.updateItem(d, empty);
+                setText(empty || d == null
+                        ? null
+                        : d.getTranslatedName(lang.getCurrentLanguageCode()));
+            }
+        });
+
+        filterDepartment.getItems().add(0, null); // "All departments"
+        filterDepartment.setPromptText(lang.getTranslatedText("dept.filterAllDepts"));
+
+        filterDepartment.setOnAction(e -> applyFilters());
+
         filterCapacity.setOnAction(e -> applyFilters());
+    }
+
+    private boolean matchesCapacityFilter(String capFilter, int capacity) {
+        entity.LanguageManager lang = entity.LanguageManager.getInstance();
+
+        if (capFilter == null || capFilter.equals(lang.getTranslatedText("dept.filterAllCaps"))) {
+            return true;
+        }
+
+        if (capFilter.equals(lang.getTranslatedText("dept.cap.small"))) {
+            return capacity < 30;
+        }
+
+        if (capFilter.equals(lang.getTranslatedText("dept.cap.medium"))) {
+            return capacity >= 30 && capacity <= 50;
+        }
+
+        if (capFilter.equals(lang.getTranslatedText("dept.cap.large"))) {
+            return capacity > 50;
+        }
+
+        return true;
     }
 
     private void applyFilters() {
         entity.LanguageManager lang = entity.LanguageManager.getInstance();
-        String dept   = filterDepartment.getValue();
-        String cap    = filterCapacity.getValue();
+        Department dept = filterDepartment.getValue();
+        Department selectedDept = filterDepartment.getValue();
         String search = searchField != null ? searchField.getText().trim().toLowerCase() : "";
+        String cap = filterCapacity.getValue();
 
         // Only do the full-page swap when dept filter changes AND no search text
         // (search should filter the dept TABLE, not jump to employee view)
-        if (dept != null && !dept.equals(lang.getTranslatedText("dept.filterAllDepts")) && search.isEmpty()) {
+        if (dept != null) {
             int deptId = -1;
             for (ObservableList<String> row : deptData) {
-                if (row.get(1).equalsIgnoreCase(dept)) {
+                if (!row.get(0).equals(String.valueOf(dept.getId()))) {
                     deptId = Integer.parseInt(row.get(0));
                     break;
                 }
             }
-            if (deptId != -1) {
-                showEmployeesForDepartment(dept, deptId);
-                return; // page is swapped, no need to filter the dept table
+            if (dept != null && search.isEmpty()) {
+                showEmployeesForDepartment(
+                        dept.getTranslatedName(lang.getCurrentLanguageCode()),
+                        dept.getId()
+                );
+                return;
             }
         } else if ((dept == null || dept.equals("All Departments")) && !search.isEmpty()) {
             // Make sure we're on the dept view (not employee detail view) when searching
@@ -253,17 +319,18 @@ public class DepartmentController extends BaseController {
 
         // row indices: 0=id, 1=name, 2=capacity, 3=empCount, 4=creationDate, 5=description
         FilteredList<ObservableList<String>> filtered = new FilteredList<>(deptData, row -> {
-            if (dept != null && !dept.equals(lang.getTranslatedText("dept.filterAllDepts"))) {
-                if (!row.get(1).equalsIgnoreCase(dept)) return false;
+            if (selectedDept != null) {
+                if (!row.get(0).equals(String.valueOf(selectedDept.getId()))) {
+                    return false;
+                }
             }
-            if (cap != null && !cap.equals(lang.getTranslatedText("dept.filterAllCaps"))) {
+            if (cap != null) {
                 try {
                     int capacity = Integer.parseInt(row.get(2));
-                    if (cap.equals("Small (< 30)")    && capacity >= 30) return false;
-                    if (cap.equals("Medium (30-50)")  && (capacity < 30 || capacity > 50)) return false;
-                    if (cap.equals("Large (> 50)")    && capacity <= 50) return false;
+                    if (!matchesCapacityFilter(cap, capacity)) return false;
                 } catch (NumberFormatException ignored) {}
             }
+
             if (!search.isEmpty()) {
                 // Search by dept name (index 1) OR description (index 5)
                 boolean nameMatch = row.get(1).toLowerCase().contains(search);
@@ -327,7 +394,7 @@ public class DepartmentController extends BaseController {
         employeeDetailView.setManaged(false);
         deptScrollPane.setVisible(true);
         deptScrollPane.setManaged(true);
-        filterDepartment.setValue("All Departments");
+        filterDepartment.setValue(null);
     }
 
     @FXML
@@ -347,6 +414,7 @@ public class DepartmentController extends BaseController {
     }
 
     private void setupTable() {
+        entity.LanguageManager lang = entity.LanguageManager.getInstance();
         departmentTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
         colId.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().get(0)));
@@ -371,8 +439,8 @@ public class DepartmentController extends BaseController {
         });
 
         colActions.setCellFactory(col -> new TableCell<>() {
-            private final Button editBtn = new Button("Edit");
-            private final Button deleteBtn = new Button("Del");
+            private final Button editBtn = new Button(lang.getTranslatedText("btn.edit"));
+            private final Button deleteBtn = new Button(lang.getTranslatedText("btn.delete"));
             private final HBox box = new HBox(5, editBtn, deleteBtn);
 
             {
@@ -741,7 +809,30 @@ public class DepartmentController extends BaseController {
         grid.setHgap(15);
         grid.setVgap(12);
 
-        TextField nameField = createFormField(lang.getTranslatedText("dept.col.name"));
+
+        ComboBox<String> nameField = new ComboBox<>(FXCollections.observableArrayList(
+                lang.getTranslatedText("dept.operations"),
+                lang.getTranslatedText("dept.production"),
+                lang.getTranslatedText("dept.research"),
+                lang.getTranslatedText("dept.sales"),
+                lang.getTranslatedText("dept.marketing"),
+                lang.getTranslatedText("dept.customerService"),
+                lang.getTranslatedText("dept.hr"),
+                lang.getTranslatedText("dept.finance"),
+                lang.getTranslatedText("dept.legal"),
+                lang.getTranslatedText("dept.it"),
+                lang.getTranslatedText("dept.data"),
+                lang.getTranslatedText("dept.executive"),
+                lang.getTranslatedText("dept.strategy"),
+                lang.getTranslatedText("dept.logistics"),
+                lang.getTranslatedText("dept.quality"),
+                lang.getTranslatedText("dept.assurance"),
+                lang.getTranslatedText("dept.pr")
+        ));
+
+        nameField.setPrefWidth(200);
+        nameField.setStyle("-fx-background-color: #f8f9fa; -fx-border-color: #e0e3e8; -fx-border-radius: 8; -fx-background-radius: 8;");
+
         TextField capacityField = createFormField(lang.getTranslatedText("dept.col.capacity"));
         DatePicker creationDate = new DatePicker();
         creationDate.setPromptText(lang.getTranslatedText("dept.col.created"));
@@ -760,7 +851,7 @@ public class DepartmentController extends BaseController {
         grid.add(descriptionField, 1, 2);
 
         if (existingData != null) {
-            nameField.setText(existingData.get(1));
+            nameField.setValue(existingData.get(1));
             capacityField.setText(existingData.get(2));
             descriptionField.setText(existingData.get(5));
             if (!"N/A".equals(existingData.get(4))) {
@@ -780,7 +871,7 @@ public class DepartmentController extends BaseController {
         cancelBtn.setStyle("-fx-background-color: white; -fx-text-fill: #e74c3c; -fx-border-color: #e74c3c; -fx-border-radius: 8; -fx-background-radius: 8; -fx-font-size: 14px; -fx-padding: 12 30; -fx-cursor: hand; -fx-font-weight: bold;");
 
         submitBtn.setOnAction(e -> {
-            if (nameField.getText().isEmpty()) {
+            if (nameField.getValue().isEmpty()) {
                 showAlert(lang.getTranslatedText("alert.validationError"), lang.getTranslatedText("alert.deptNameRequired"));
                 return;
             }
@@ -800,21 +891,70 @@ public class DepartmentController extends BaseController {
                 Company company = companies.isEmpty() ? null : companies.get(0);
                 Department newDept = new Department(
                         capacity,
-                        nameField.getText(),
+                        nameField.getValue(),
                         descriptionField.getText(),
                         creationDate.getValue(),
                         company
                 );
+
                 departmentDao.create(newDept);
+
+                departmentTranslationDao.submitCreateDepartmentTranslation(nameField.getValue(),newDept);
+
+
+                LocalDate date = LocalDate.now();
+                app.UserSession s = app.UserSession.getInstance();
+
+                String deptName = newDept.getDepartmentName();
+                String deptKey = lang.getKey(deptName);
+
+                String en = "Department " + lang.getTranslatedTexts(deptKey, "en") + " was added.";
+                String fa = "بخش " + lang.getTranslatedTexts(deptKey, "fa") + " اضافه شد.";
+                String ar = "تمت إضافة قسم " + lang.getTranslatedTexts(deptKey, "ar");
+                String es = "El departamento " + lang.getTranslatedTexts(deptKey, "es") + " fue agregado.";
+
+                ChangeDept newChangeDept = new ChangeDept(
+                        date,
+                        en,
+                        fa,
+                        ar,
+                        es,
+                        s.getAdmin(),
+                        newDept
+                );
+                changeDeptDao.create(newChangeDept);
+
+
             } else {
                 int id = Integer.parseInt(existingData.get(0));
                 Department dept = departmentDao.find(id);
                 if (dept != null) {
-                    dept.setDepartmentName(nameField.getText());
+                    dept.setDepartmentName(nameField.getValue());
                     dept.setCapacity(capacity);
                     dept.setDescription(descriptionField.getText());
                     dept.setCreationDate(creationDate.getValue());
+
                     departmentDao.update(dept);
+                    departmentTranslationDao.deleteByDepartment(dept);
+                    departmentTranslationDao.submitCreateDepartmentTranslation(nameField.getValue(),dept);
+
+
+
+                    LocalDate date = LocalDate.now();
+                    app.UserSession s = app.UserSession.getInstance();
+
+                    String deptName = dept.getDepartmentName();
+                    String deptKey = lang.getKey(deptName);
+
+                    changeDeptDao.create(new ChangeDept(
+                            date,
+                            "Department " + lang.getTranslatedTexts(deptKey, "en") + " was edited.",
+                            "بخش " + lang.getTranslatedTexts(deptKey, "fa") + " ویرایش شد.",
+                            "تم تعديل قسم " + lang.getTranslatedTexts(deptKey, "ar"),
+                            "El departamento " + lang.getTranslatedTexts(deptKey, "es") + " fue editado.",
+                            s.getAdmin(),
+                            dept
+                    ));
                 }
             }
 
@@ -899,6 +1039,29 @@ public class DepartmentController extends BaseController {
         Optional<ButtonType> result = confirm.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
             int id = Integer.parseInt(row.get(0));
+            Department dept = departmentDao.find(id);
+
+            departmentTranslationDao.deleteByDepartment(dept);
+
+            LocalDate date = LocalDate.now();
+            entity.LanguageManager lang = entity.LanguageManager.getInstance();
+            app.UserSession s = app.UserSession.getInstance();
+
+
+            String deptName = dept.getDepartmentName();
+            String deptKey = lang.getKey(deptName);
+
+
+            changeDeptDao.create(new ChangeDept(
+                    date,
+                    "Department " + lang.getTranslatedTexts(deptKey, "en") + " was deleted.",
+                    "بخش " + lang.getTranslatedTexts(deptKey, "fa") + " حذف شد.",
+                    "تم حذف قسم " + lang.getTranslatedTexts(deptKey, "ar"),
+                    "El departamento " + lang.getTranslatedTexts(deptKey, "es") + " fue eliminado.",
+                    s.getAdmin(),
+                    dept
+            ));
+
             boolean deleted = departmentDao.safeDelete(id);
             if (!deleted) {
                 showAlert("Cannot Delete", "This department still has employees assigned to it.\nReassign or remove them first.");
@@ -912,20 +1075,18 @@ public class DepartmentController extends BaseController {
     @FXML
     private void handleSearch() {
         String search = searchField.getText().trim().toLowerCase();
-        String dept = filterDepartment.getValue();
+        Department dept = filterDepartment.getValue();
         String cap = filterCapacity.getValue();
 
         FilteredList<ObservableList<String>> filtered = new FilteredList<>(deptData, row -> {
             if (!search.isEmpty() && !row.get(1).toLowerCase().contains(search)) return false;
-            if (dept != null && !dept.equals("All Departments")) {
-                if (!row.get(1).equalsIgnoreCase(dept)) return false;
+            if (dept != null) {
+                if (!row.get(0).equals(String.valueOf(dept.getId()))) return false;
             }
-            if (cap != null && !cap.equals("All Capacities")) {
+            if (cap != null) {
                 try {
                     int capacity = Integer.parseInt(row.get(2));
-                    if (cap.equals("Small (< 30)") && capacity >= 30) return false;
-                    if (cap.equals("Medium (30-50)") && (capacity < 30 || capacity > 50)) return false;
-                    if (cap.equals("Large (> 50)") && capacity <= 50) return false;
+                    if (!matchesCapacityFilter(cap, capacity)) return false;
                 } catch (NumberFormatException ignored) {}
             }
             return true;

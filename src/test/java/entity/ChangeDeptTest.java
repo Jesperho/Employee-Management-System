@@ -15,14 +15,14 @@ class ChangeDeptTest {
     private Admin admin;
     private Department department;
     private Company company;
-    private LocalDateTime dateTime;
+    private LocalDate dateTime;
 
     @BeforeEach
     void setUp() {
         company = new Company("TestCorp", "123 Test Street", "Finland");
         admin = new Admin("admin@testcorp.com", "securePassword123", company);
         department = new Department(50, "IT", "IT Department", LocalDate.now(), company);
-        dateTime = LocalDateTime.of(2024, 6, 15, 10, 30);
+        dateTime = LocalDate.of(2024, 6, 15);
         changeDept = new ChangeDept(dateTime, "Created department", admin, department);
     }
 
@@ -50,7 +50,7 @@ class ChangeDeptTest {
     @Test
     @DisplayName("setDate should update date")
     void testSetDate() {
-        LocalDateTime newDate = LocalDateTime.of(2025, 1, 1, 12, 0);
+        LocalDate newDate = LocalDate.of(2025, 1, 1);
         changeDept.setDate(newDate);
         assertEquals(newDate, changeDept.getDate());
     }

@@ -28,6 +28,18 @@ public class LeaveDao extends BaseDao<Leave> {
         }
     }
 
+    public List<Leave> findAllWithTranslations() {
+        EntityManager em = MariaDbConnection.getEntityManager();
+        try {
+            return em.createQuery(
+                    "SELECT DISTINCT l FROM Leave l LEFT JOIN FETCH l.translations",
+                    Leave.class
+            ).getResultList();
+        } finally {
+            em.close();
+        }
+    }
+
     // READ: Filter leaves by type (Vacation, Sick Leave, etc.)
     public List<Leave> findByType(String type) {
         EntityManager em = MariaDbConnection.getEntityManager();

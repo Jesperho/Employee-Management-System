@@ -64,7 +64,7 @@ class ChangeDeptDaoTest {
 
     private ChangeDept createChangeDept(Department d) {
         ChangeDept cd = new ChangeDept(
-                LocalDateTime.now(),
+                LocalDate.now(),
                 "Department updated",
                 null,
                 d
@@ -112,7 +112,7 @@ class ChangeDeptDaoTest {
         Admin a = createAdmin();
 
         ChangeDept cd = new ChangeDept(
-                LocalDateTime.now(),
+                LocalDate.now(),
                 "Admin updated department",
                 a,
                 d
@@ -129,7 +129,7 @@ class ChangeDeptDaoTest {
         Department d = createDepartment();
 
         ChangeDept older = new ChangeDept(
-                LocalDateTime.now().minusDays(1),
+                LocalDate.now().minusDays(1),
                 "Old message",
                 null,
                 d
@@ -137,7 +137,7 @@ class ChangeDeptDaoTest {
         changeDeptDao.create(older);
 
         ChangeDept newer = new ChangeDept(
-                LocalDateTime.now(),
+                LocalDate.now(),
                 "New message",
                 null,
                 d
@@ -154,7 +154,7 @@ class ChangeDeptDaoTest {
         Department d = createDepartment();
 
         ChangeDept older = new ChangeDept(
-                LocalDateTime.now().minusDays(2),
+                LocalDate.now().minusDays(2),
                 "Older",
                 null,
                 d
@@ -162,7 +162,7 @@ class ChangeDeptDaoTest {
         changeDeptDao.create(older);
 
         ChangeDept newer = new ChangeDept(
-                LocalDateTime.now(),
+                LocalDate.now(),
                 "Newer",
                 null,
                 d

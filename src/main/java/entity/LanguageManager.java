@@ -43,6 +43,39 @@ public class LanguageManager {
         return "!" + key + "!";
     }
 
+    public String getTranslatedTexts(String key, String code){
+        Locale locale;
+
+        switch (code.toLowerCase()) {
+            case "es":
+                locale = new Locale("es", "ES");
+                break;
+            case "fa":
+                locale = new Locale("fa", "AF");
+                break;
+            case "ar":
+                locale = new Locale("ar", "AR");
+                break;
+            default:
+                locale = new Locale("en", "US");
+                break;
+        }
+
+        ResourceBundle temporalResoruce = ResourceBundle.getBundle("MessagesBundle", locale);
+
+        return temporalResoruce.getString(key);
+    }
+
+    public String getKey(String text){
+        for (String key : currentBundle.keySet()) {
+            if (currentBundle.getString(key).equals(text)) {
+                return key;
+            }
+        }
+        return null;
+    }
+
+
     private void updateResourceBundle(String languageName) {
         Locale locale;
 
@@ -63,4 +96,33 @@ public class LanguageManager {
         currentBundle = ResourceBundle.getBundle("MessagesBundle", locale);
         System.out.println("Local bundle set to" + languageName);
     }
+
+    public String getAbreviation(String language){
+        switch (language.toLowerCase()){
+            case "spanish":
+                return "es";
+            case "persia":
+                return "fa";
+            case "arabic":
+                return "ar";
+            default:
+                return "en";
+        }
+    }
+
+    public String getCurrentLanguageCode(){
+        String currentlang = currentLanguage.get().toLowerCase();;
+        switch (currentlang){
+            case "spanish":
+                return "es";
+            case "persia":
+                return "fa";
+            case "arabic":
+                return "ar";
+            default:
+                return "en";
+        }
+    }
+
+
 }

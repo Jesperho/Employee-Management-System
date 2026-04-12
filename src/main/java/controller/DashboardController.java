@@ -1,9 +1,6 @@
 package controller;
 
-import dao.ChangeEmpDao;
-import dao.DepartmentDao;
-import dao.EmployeeDao;
-import dao.LeaveDao;
+import dao.*;
 import entity.*;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -103,6 +100,8 @@ public class DashboardController extends BaseController {
 
     private final EmployeeDao employeeDao = new EmployeeDao();
     private final ChangeEmpDao changeEmpDao = new ChangeEmpDao();
+    private final ChangeLeaveDao changeLeaveDao = new ChangeLeaveDao();
+    private final ChangeDeptDao changeDeptDao = new ChangeDeptDao();
     private final DepartmentDao departmentDao = new DepartmentDao();
     private final LeaveDao leaveDao = new LeaveDao();
 
@@ -173,6 +172,8 @@ public class DashboardController extends BaseController {
             String greeting = langManager.getTranslatedText("dashboard.welcome");
             welcomeText.setText(greeting + ", " + firstName + "!");
         }
+
+        loadRecentActivities();
     }
 
     private void setupUserProfile() {
@@ -306,6 +307,8 @@ public class DashboardController extends BaseController {
 
     // Builds recent activity items from real DB data (last added employees + leaves)
     private void loadRecentActivities() {
+        app.UserSession s = app.UserSession.getInstance();
+        entity.LanguageManager lang = entity.LanguageManager.getInstance();
         if (recentActivitiesContainer == null) return;
         recentActivitiesContainer.getChildren().clear();
 
@@ -317,27 +320,44 @@ public class DashboardController extends BaseController {
             ChangeEmp emp = changesEmps.get(i);
             recentActivitiesContainer.getChildren().add(
                     createActivityItem("+", "activity-new",
-                            emp.getMessage(),
-                            emp.getEmployee().getFullName() + " joined " + emp.getEmployee().getDepartment().getDepartmentName(),
+                            emp.getMessage(lang.getCurrentLanguageCode()),
+                            ("Made by admin " + s.getFullName()),
                             emp.getEmployee().getStartDate() != null ? emp.getEmployee().getStartDate().toString() : "")
             );
         }
 
         // Last 2 leave records added (sorted by ID descending)
-        List<Leave> leaves = leaveDao.findAll();
+        List<ChangeLeave> leaves = changeLeaveDao.findAll();
         leaves.sort((a, b) -> Integer.compare(b.getId(), a.getId()));
+
         int leaveLimit = Math.min(2, leaves.size());
         for (int i = 0; i < leaveLimit; i++) {
-            Leave leave = leaves.get(i);
-            String empName = leave.getEmployee() != null ? leave.getEmployee().getFullName() : "Unknown";
-            String type = leave.getType() != null ? leave.getType() : "Leave";
+            ChangeLeave leave = leaves.get(i);
             recentActivitiesContainer.getChildren().add(
                     createActivityItem("📅", "activity-leave",
-                            "Leave record",
-                            empName + " - " + type,
-                            leave.getStartDate() != null ? leave.getStartDate().toString() : "")
+                            leave.getMessage(lang.getCurrentLanguageCode()),
+                            ("Made by admin " + s.getFullName()),
+                            leave.getLeave().getStartDate() != null ? leave.getLeave().getStartDate().toString() : "")
             );
         }
+
+        List<ChangeDept> changeDepts = changeDeptDao.findAll();
+        changeDepts.sort((a, b) -> Integer.compare(b.getId(), a.getId()));
+        int changeDeptsLimit = Math.min(2, changeDepts.size());
+        for (int i = 0; i < changeDeptsLimit; i++) {
+            ChangeDept changeDept = changeDepts.get(i);
+            recentActivitiesContainer.getChildren().add(
+                    createActivityItem("+", "activity-new",
+                            changeDept.getMessage(lang.getCurrentLanguageCode()),
+                            ("Made by admin " + s.getFullName()),
+                            changeDept.getDepartment().getCreationDate() != null ? changeDept.getDepartment().getCreationDate().toString() : "")
+            );
+        }
+
+
+
+
+
 
         if (recentActivitiesContainer.getChildren().isEmpty()) {
             Text empty = new Text("No recent activity.");

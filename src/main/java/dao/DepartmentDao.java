@@ -27,6 +27,18 @@ public class DepartmentDao extends BaseDao<Department> {
         }
     }
 
+    public List<Department> findAllWithTranslations() {
+        EntityManager em = MariaDbConnection.getEntityManager();
+        try {
+            return em.createQuery(
+                    "SELECT DISTINCT d FROM Department d LEFT JOIN FETCH d.translations",
+                    Department.class
+            ).getResultList();
+        } finally {
+            em.close();
+        }
+    }
+
     // Count employees assigned to a department
     public long countEmployees(int departmentId) {
         EntityManager em = MariaDbConnection.getEntityManager();
