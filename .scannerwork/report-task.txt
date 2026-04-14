@@ -1,0 +1,6 @@
+projectKey=EMP
+serverUrl=http://localhost:9000
+serverVersion=26.3.0.120487
+dashboardUrl=http://localhost:9000/dashboard?id=EMP
+ceTaskId=493912d2-c828-49c8-beb1-705ea40d17c0
+ceTaskUrl=http://localhost:9000/api/ce/task?id=493912d2-c828-49c8-beb1-705ea40d17c0

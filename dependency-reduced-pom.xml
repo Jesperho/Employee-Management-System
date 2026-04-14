@@ -76,6 +76,7 @@
         <configuration>
           <excludes>
             <exclude>app/Main.class</exclude>
+            <exclude>app/GUIApplication.class</exclude>
             <exclude>view/ViewManager.class</exclude>
             <exclude>dataseeder/DataSeeder.class</exclude>
             <exclude>datasource/MariaDbConnection.class</exclude>

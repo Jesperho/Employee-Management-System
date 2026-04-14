@@ -135,6 +135,104 @@ class EmployeeDaoTest {
         assertTrue(list.size() > 0);
     }
 
+    @Test
+    @Order(6)
+    void testFindByDepartment() {
+        Employee e = createEmployee();
+        List<Employee> list = employeeDao.findByDepartment(e.getDepartment().getId());
+        assertFalse(list.isEmpty());
+        assertTrue(list.stream().anyMatch(emp -> emp.getId() == e.getId()));
+    }
+
+    @Test
+    @Order(7)
+    void testFindByCompany() {
+        Employee e = createEmployee();
+        List<Employee> list = employeeDao.findByCompany(e.getCompany().getId());
+        assertFalse(list.isEmpty());
+        assertTrue(list.stream().anyMatch(emp -> emp.getId() == e.getId()));
+    }
+
+    @Test
+    @Order(8)
+    void testSearchByName() {
+        Employee e = createEmployee();
+        List<Employee> list = employeeDao.searchByName(e.getFullName().substring(0, 8));
+        assertFalse(list.isEmpty());
+    }
+
+    @Test
+    @Order(9)
+    void testFindByRole() {
+        createEmployee();
+        List<Employee> list = employeeDao.findByRole("Developer");
+        assertFalse(list.isEmpty());
+    }
+
+    @Test
+    @Order(10)
+    void testFindByContractType() {
+        createEmployee();
+        List<Employee> list = employeeDao.findByContractType("Full-time");
+        assertFalse(list.isEmpty());
+    }
+
+    @Test
+    @Order(11)
+    void testSortBySalaryAscending() {
+        createEmployee();
+        createEmployee();
+        List<Employee> list = employeeDao.sortBySalary(true);
+        assertFalse(list.isEmpty());
+        for (int i = 1; i < list.size(); i++) {
+            assertTrue(list.get(i - 1).getSalary() <= list.get(i).getSalary());
+        }
+    }
+
+    @Test
+    @Order(12)
+    void testSortBySalaryDescending() {
+        createEmployee();
+        createEmployee();
+        List<Employee> list = employeeDao.sortBySalary(false);
+        assertFalse(list.isEmpty());
+        for (int i = 1; i < list.size(); i++) {
+            assertTrue(list.get(i - 1).getSalary() >= list.get(i).getSalary());
+        }
+    }
+
+    @Test
+    @Order(13)
+    void testSortByStartDateAscending() {
+        createEmployee();
+        List<Employee> list = employeeDao.sortByStartDate(true);
+        assertFalse(list.isEmpty());
+    }
+
+    @Test
+    @Order(14)
+    void testSortByStartDateDescending() {
+        createEmployee();
+        List<Employee> list = employeeDao.sortByStartDate(false);
+        assertFalse(list.isEmpty());
+    }
+
+    @Test
+    @Order(15)
+    void testCountEmployees() {
+        createEmployee();
+        long count = employeeDao.countEmployees();
+        assertTrue(count > 0);
+    }
+
+    @Test
+    @Order(16)
+    void testFindAllWithTranslations() {
+        createEmployee();
+        List<Employee> list = employeeDao.findAllWithTranslations();
+        assertFalse(list.isEmpty());
+    }
+
     @AfterEach
     void tearDown() {
         if (em.isOpen()) {

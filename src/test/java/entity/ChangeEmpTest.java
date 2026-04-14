@@ -80,4 +80,48 @@ class ChangeEmpTest {
         changeEmp.setEmployee(newEmployee);
         assertEquals(newEmployee, changeEmp.getEmployee());
     }
+
+    @Test
+    @DisplayName("getMessage returns correct translation for each language code")
+    void testGetMessageAllLanguages() {
+        changeEmp = new ChangeEmp(date, "en-msg", "fa-msg", "ar-msg", "es-msg", admin, employee);
+        assertEquals("en-msg", changeEmp.getMessage("en"));
+        assertEquals("fa-msg", changeEmp.getMessage("fa"));
+        assertEquals("ar-msg", changeEmp.getMessage("ar"));
+        assertEquals("es-msg", changeEmp.getMessage("es"));
+        assertEquals("en-msg", changeEmp.getMessage("unknown"));
+    }
+
+    @Test
+    @DisplayName("setMessageFa and getMessageFa work correctly")
+    void testSetMessageFa() {
+        changeEmp.setMessageFa("استخدام کارمند");
+        assertEquals("استخدام کارمند", changeEmp.getMessageFa());
+    }
+
+    @Test
+    @DisplayName("setMessageAr and getMessageAr work correctly")
+    void testSetMessageAr() {
+        changeEmp.setMessageAr("توظيف موظف");
+        assertEquals("توظيف موظف", changeEmp.getMessageAr());
+    }
+
+    @Test
+    @DisplayName("setMessageEs and getMessageEs work correctly")
+    void testSetMessageEs() {
+        changeEmp.setMessageEs("Empleado contratado");
+        assertEquals("Empleado contratado", changeEmp.getMessageEs());
+    }
+
+    @Test
+    @DisplayName("getId returns null for unsaved entity")
+    void testGetId() {
+        assertNull(changeEmp.getId());
+    }
+
+    @Test
+    @DisplayName("getMessageEn returns the English message")
+    void testGetMessageEn() {
+        assertEquals("Hired employee", changeEmp.getMessageEn());
+    }
 }

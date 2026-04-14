@@ -90,6 +90,45 @@ class AdminDaoTest {
         assertNull(deleted);
     }
 
+    @Test
+    @Order(5)
+    void testFindByEmailAndPassword() {
+        Admin admin = createAdmin();
+        Admin found = adminDao.findByEmailAndPassword(admin.getEmail(), "pass123");
+        assertNotNull(found);
+        assertEquals(admin.getId(), found.getId());
+    }
+
+    @Test
+    @Order(6)
+    void testFindByEmailAndPasswordWrongPassword() {
+        Admin admin = createAdmin();
+        Admin found = adminDao.findByEmailAndPassword(admin.getEmail(), "wrongPassword");
+        assertNull(found);
+    }
+
+    @Test
+    @Order(7)
+    void testEmailExistsReturnsTrue() {
+        Admin admin = createAdmin();
+        assertTrue(adminDao.emailExists(admin.getEmail()));
+    }
+
+    @Test
+    @Order(8)
+    void testEmailExistsReturnsFalse() {
+        assertFalse(adminDao.emailExists("nobody+" + System.nanoTime() + "@test.com"));
+    }
+
+    @Test
+    @Order(9)
+    void testFindByCompany() {
+        Admin admin = createAdmin();
+        java.util.List<Admin> list = adminDao.findByCompany(admin.getCompany().getId());
+        assertFalse(list.isEmpty());
+        assertTrue(list.stream().anyMatch(a -> a.getId() == admin.getId()));
+    }
+
     @AfterEach
     void tearDown() {
         if (em.isOpen()) {

@@ -128,8 +128,8 @@ class ChangeEmpDaoTest {
 
         List<ChangeEmp> list = changeEmpDao.findByEmployee(e.getId());
 
-        assertTrue(list.stream().anyMatch(x -> x.getId() == ce1.getId()));
-        assertTrue(list.stream().anyMatch(x -> x.getId() == ce2.getId()));
+        assertTrue(list.stream().anyMatch(x -> x.getId().equals(ce1.getId())));
+        assertTrue(list.stream().anyMatch(x -> x.getId().equals(ce2.getId())));
     }
 
     @Test
@@ -150,7 +150,7 @@ class ChangeEmpDaoTest {
 
         List<ChangeEmp> list = changeEmpDao.findByAdmin(a.getId());
 
-        assertTrue(list.stream().anyMatch(x -> x.getId() == ce.getId()));
+        assertTrue(list.stream().anyMatch(x -> x.getId().equals(ce.getId())));
     }
 
     @Test

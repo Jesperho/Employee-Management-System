@@ -76,4 +76,48 @@ class ChangeDeptTest {
         changeDept.setDepartment(newDept);
         assertEquals(newDept, changeDept.getDepartment());
     }
+
+    @Test
+    @DisplayName("getMessage should return correct translation for each language code")
+    void testGetMessageAllLanguages() {
+        changeDept = new ChangeDept(date, "en-msg", "fa-msg", "ar-msg", "es-msg", admin, department);
+        assertEquals("en-msg", changeDept.getMessage("en"));
+        assertEquals("fa-msg", changeDept.getMessage("fa"));
+        assertEquals("ar-msg", changeDept.getMessage("ar"));
+        assertEquals("es-msg", changeDept.getMessage("es"));
+        assertEquals("en-msg", changeDept.getMessage("unknown"));
+    }
+
+    @Test
+    @DisplayName("setMessageFa and getMessageFa work correctly")
+    void testSetMessageFa() {
+        changeDept.setMessageFa("تغییر بخش");
+        assertEquals("تغییر بخش", changeDept.getMessageFa());
+    }
+
+    @Test
+    @DisplayName("setMessageAr and getMessageAr work correctly")
+    void testSetMessageAr() {
+        changeDept.setMessageAr("تغيير القسم");
+        assertEquals("تغيير القسم", changeDept.getMessageAr());
+    }
+
+    @Test
+    @DisplayName("setMessageEs and getMessageEs work correctly")
+    void testSetMessageEs() {
+        changeDept.setMessageEs("Cambio de departamento");
+        assertEquals("Cambio de departamento", changeDept.getMessageEs());
+    }
+
+    @Test
+    @DisplayName("getId returns null for unsaved entity")
+    void testGetId() {
+        assertNull(changeDept.getId());
+    }
+
+    @Test
+    @DisplayName("getMessageEn returns the English message")
+    void testGetMessageEn() {
+        assertEquals("Created department", changeDept.getMessageEn());
+    }
 }
