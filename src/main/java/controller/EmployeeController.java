@@ -297,7 +297,7 @@
 
 
                 employeeTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-                colId.setCellValueFactory(data -> new SimpleStringProperty(String.valueOf(data.getValue().getId())));
+                colId.setCellValueFactory(data -> new SimpleStringProperty(String.valueOf(employeeTranslationDao.formatNumber(data.getValue().getId(), lang.getLanguage()))));
                 colName.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getFullName()));
 
                 colDepartment.setCellValueFactory(data -> {

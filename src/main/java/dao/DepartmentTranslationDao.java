@@ -6,6 +6,7 @@ import entity.DepartmentTranslation;
 import entity.LanguageManager;
 import jakarta.persistence.EntityManager;
 
+import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -19,21 +20,80 @@ public class DepartmentTranslationDao extends BaseDao<DepartmentTranslation> {
         super(DepartmentTranslation.class);
     }
 
-    private String formatDate(LocalDate date, String language) {
-        if (date == null) return "N/A";
+    private String convertDigits(String input, Locale locale) {
+        if (!locale.getLanguage().equals("ar") && !locale.getLanguage().equals("fa")) {
+            return input;
+        }
 
-        Locale locale = switch (language) {
-            case "arabic" -> new Locale("ar");
-            case "spanish" -> new Locale("es");
-            case "persia"  -> new Locale("fa");
-            default        -> Locale.ENGLISH;
+        char[][] digits = {
+                "0123456789".toCharArray(),
+                locale.getLanguage().equals("ar")
+                        ? "٠١٢٣٤٥٦٧٨٩".toCharArray()
+                        : "۰۱۲۳۴۵۶۷۸۹".toCharArray()
         };
 
-        DateTimeFormatter formatter =
-                DateTimeFormatter.ofPattern("dd MMMM yyyy", locale);
+        StringBuilder sb = new StringBuilder();
 
-        return date.format(formatter);
+        for (char c : input.toCharArray()) {
+            if (Character.isDigit(c)) {
+                sb.append(digits[1][c - '0']);
+            } else {
+                sb.append(c);
+            }
+        }
+
+        return sb.toString();
     }
+
+
+    private String formatDate(LocalDate date, String language) {
+
+        String code = lang.getAbreviation(language);
+        Locale locale;
+
+        switch (code) {
+            case "ar":
+                locale = new Locale("ar");
+                break;
+
+            case "fa":
+                locale = new Locale("fa", "AF");
+                break;
+
+            case "es":
+                locale = new Locale("es", "ES");
+                break;
+
+            default:
+                locale = Locale.ENGLISH;
+        }
+
+        DateTimeFormatter formatter =
+                DateTimeFormatter.ofPattern("d MMMM yyyy", locale);
+
+        String formatted = date.format(formatter);
+
+        return convertDigits(formatted, locale);
+    }
+
+    public String formatNumber(double salary, String language) {
+        String code = lang.getAbreviation(language);
+
+        Locale locale = switch (code) {
+            case "ar" -> new Locale.Builder()
+                    .setLanguage("ar")
+                    .setRegion("AE")
+                    .setUnicodeLocaleKeyword("nu", "arab") // 🔥 THIS LINE
+                    .build();
+            case "es" -> new Locale("es", "ES");
+            case "fa" -> new Locale("fa", "AF");
+            default -> Locale.US;
+        };
+
+        NumberFormat formatter = NumberFormat.getInstance(locale);
+        return formatter.format(salary);
+    }
+
 
     // CREATE translations for all languages (same pattern as Employee)
     public void submitCreateDepartmentTranslation(
@@ -52,7 +112,7 @@ public class DepartmentTranslationDao extends BaseDao<DepartmentTranslation> {
                 lang.setLanguage(language);
 
                 String departmentNameTrans = lang.getTranslatedText(departmentNameKey);
-
+                String capacity = formatNumber(department.getCapacity(), language);
                 String startDateText = formatDate(department.getCreationDate(), language);
 
                 DepartmentTranslation translation = new DepartmentTranslation(
@@ -60,7 +120,7 @@ public class DepartmentTranslationDao extends BaseDao<DepartmentTranslation> {
                         departmentNameTrans,
                         department,
                         startDateText,
-                        department.getCapacity()
+                        capacity
                 );
 
                 create(translation);

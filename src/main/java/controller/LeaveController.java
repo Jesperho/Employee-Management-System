@@ -143,7 +143,6 @@ public class LeaveController extends BaseController {
         if (colStartDate != null) colStartDate.setText(lang.getTranslatedText("leave.col.startDate"));
         if (colEndDate != null) colEndDate.setText(lang.getTranslatedText("leave.col.endDate"));
         if (colType != null) colType.setText(lang.getTranslatedText("leave.col.type"));
-        if (colReason != null) colReason.setText(lang.getTranslatedText("leave.col.reason"));
         if (colActions != null) colActions.setText(lang.getTranslatedText("leave.col.actions"));
 
         if (pageInfo != null) pageInfo.setText(lang.getTranslatedText("btn.pageInfo"));
@@ -317,7 +316,6 @@ public class LeaveController extends BaseController {
                 new SimpleStringProperty(getOrDefault(data.getValue().getTranslatedType(langCode)))
         );
 
-        colReason.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getReason() != null ? data.getValue().getReason() : ""));
 
         colActions.setMinWidth(160);
         colActions.setCellFactory(col -> new TableCell<>() {
@@ -647,19 +645,15 @@ public class LeaveController extends BaseController {
         startDatePicker.valueProperty().addListener((obs, o, n) -> calcDuration(startDatePicker, endDatePicker, durationField));
         endDatePicker.valueProperty().addListener((obs, o, n) -> calcDuration(startDatePicker, endDatePicker, durationField));
 
-        TextArea reasonField = new TextArea();
-        reasonField.setPromptText(lang.getTranslatedText("leave.form.reason"));
-        reasonField.setPrefRowCount(3);
-        reasonField.setStyle("-fx-background-color: #f8f9fa; -fx-border-color: #e0e3e8; -fx-border-radius: 8;");
+
 
         grid.add(createLabel(lang.getTranslatedText("leave.form.employee")), 0, 0);    grid.add(empCombo, 1, 0);
         grid.add(createLabel(lang.getTranslatedText("leave.form.type")), 2, 0);        grid.add(typeCombo, 3, 0);
         grid.add(createLabel(lang.getTranslatedText("leave.form.startDate")), 0, 1);   grid.add(startDatePicker, 1, 1);
         grid.add(createLabel(lang.getTranslatedText("leave.form.endDate")), 2, 1);     grid.add(endDatePicker, 3, 1);
         grid.add(createLabel(lang.getTranslatedText("leave.form.duration")), 0, 2);    grid.add(durationField, 1, 2);
-        grid.add(createLabel(lang.getTranslatedText("leave.form.reason")), 0, 3);
-        GridPane.setColumnSpan(reasonField, 3);
-        grid.add(reasonField, 1, 3);
+
+
 
         if (existingData != null) {
             if (existingData.getEmployee() != null) {
@@ -673,7 +667,6 @@ public class LeaveController extends BaseController {
             typeCombo.setValue(existingData.getType());
             startDatePicker.setValue(existingData.getStartDate());
             endDatePicker.setValue(existingData.getEndDate());
-            reasonField.setText(existingData.getReason() != null ? existingData.getReason() : "");
             calcDuration(startDatePicker, endDatePicker, durationField);
             empCombo.setDisable(true);
         }
@@ -707,7 +700,7 @@ public class LeaveController extends BaseController {
             if (existingData == null) {
                 Leave newLeave = new Leave(
                         startDatePicker.getValue(), endDatePicker.getValue(), typeCombo.getValue(),
-                        reasonField.getText(), empCombo.getValue()
+                        "", empCombo.getValue()
                 );
                 leaveDao.create(newLeave);
                 leaveTranslationDao.submitCreateLeaveTranslation(typeCombo.getValue(), newLeave);
@@ -732,7 +725,7 @@ public class LeaveController extends BaseController {
                 existingData.setType(typeCombo.getValue());
                 existingData.setStartDate(startDatePicker.getValue());
                 existingData.setEndDate(endDatePicker.getValue());
-                existingData.setReason(reasonField.getText());
+
                 leaveDao.update(existingData);
 
                 leaveTranslationDao.deleteByLeave(existingData);
@@ -763,7 +756,7 @@ public class LeaveController extends BaseController {
         resetBtn.setOnAction(e -> {
             if(existingData == null) empCombo.setValue(null);
             typeCombo.setValue(null); startDatePicker.setValue(null);
-            endDatePicker.setValue(null); durationField.clear(); reasonField.clear();
+            endDatePicker.setValue(null); durationField.clear();
         });
 
         cancelBtn.setOnAction(e -> popup.close());

@@ -41,7 +41,5 @@ build/
 ### Windows ###
 nul
 
-/src/main/resources/META-INF/persistence.xml
-/src/main/java/datasource/MariaDbConnection.java
 .idea/misc.xml
 sonar-project.properties

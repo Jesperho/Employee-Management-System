@@ -20,7 +20,7 @@ public class EmployeeTranslation {
     private String position;
 
     private String startDate;
-    private Double salary;
+    private String salary;
 
     @ManyToOne
     @JoinColumn(name = "employee_id")
@@ -36,7 +36,7 @@ public class EmployeeTranslation {
             String gender,
             Employee employee,
             String startDate,
-            Double salary
+            String salary
     ) {
 
         this.gender = gender;
@@ -60,7 +60,7 @@ public class EmployeeTranslation {
         return startDate;
     }
 
-    public Double getSalary(){
+    public String getSalary(){
         return salary;
     }
 
