@@ -61,7 +61,6 @@ class LeaveDaoTest {
         Employee e = new Employee(
                 uniqueName(),
                 "Male",
-                "Test employee",
                 LocalDate.now(),
                 3500.0,
                 company,

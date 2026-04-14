@@ -5,7 +5,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -16,7 +15,7 @@ class ChangeEmpTest {
     private Employee employee;
     private Company company;
     private Department department;
-    private LocalDate dateTime;
+    private LocalDate date;
 
     @BeforeEach
     void setUp() {
@@ -25,16 +24,16 @@ class ChangeEmpTest {
         department = new Department(50, "IT", "IT Department", LocalDate.now(), company);
         employee = new Employee("John Doe", "Male", LocalDate.now(),
                 55000.0, company, department, "Developer", "Full-time", "Senior");
-        dateTime = LocalDate.of(2024, 6, 15);
-        changeEmp = new ChangeEmp(dateTime, "Hired employee", admin, employee);
+        date = LocalDate.of(2024, 6, 15);
+        changeEmp = new ChangeEmp(date, "Hired employee", "", "", "", admin, employee);
     }
 
     @Test
     @DisplayName("ChangeEmp should be created with constructor parameters")
     void testConstructor() {
         assertNotNull(changeEmp);
-        assertEquals(dateTime, changeEmp.getDate());
-        assertEquals("Hired employee", changeEmp.getMessage());
+        assertEquals(date, changeEmp.getDate());
+        assertEquals("Hired employee", changeEmp.getMessage("en"));
         assertEquals(admin, changeEmp.getAdmin());
         assertEquals(employee, changeEmp.getEmployee());
     }
@@ -45,7 +44,7 @@ class ChangeEmpTest {
         ChangeEmp empty = new ChangeEmp();
         assertNotNull(empty);
         assertNull(empty.getDate());
-        assertNull(empty.getMessage());
+        assertNull(empty.getMessage("en"));
         assertNull(empty.getAdmin());
         assertNull(empty.getEmployee());
     }
@@ -59,10 +58,10 @@ class ChangeEmpTest {
     }
 
     @Test
-    @DisplayName("setMessage should update message")
+    @DisplayName("setMessageEn should update English message")
     void testSetMessage() {
-        changeEmp.setMessage("Promoted employee");
-        assertEquals("Promoted employee", changeEmp.getMessage());
+        changeEmp.setMessageEn("Promoted employee");
+        assertEquals("Promoted employee", changeEmp.getMessage("en"));
     }
 
     @Test

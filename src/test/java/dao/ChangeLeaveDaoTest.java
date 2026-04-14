@@ -91,7 +91,8 @@ class ChangeLeaveDaoTest {
         ChangeLeave cl = new ChangeLeave(
                 LocalDate.now(),
                 "Leave updated",
-                null,   // admin optional
+                "", "", "",
+                null,
                 leave
         );
         changeLeaveDao.create(cl);
@@ -106,7 +107,7 @@ class ChangeLeaveDaoTest {
         ChangeLeave cl = createChangeLeave(l);
 
         assertTrue(cl.getId() > 0);
-        assertEquals("Leave updated", cl.getMessage());
+        assertEquals("Leave updated", cl.getMessage("en"));
     }
 
     @Test
@@ -119,7 +120,7 @@ class ChangeLeaveDaoTest {
         ChangeLeave found = changeLeaveDao.find(cl.getId());
 
         assertNotNull(found);
-        assertEquals(cl.getMessage(), found.getMessage());
+        assertEquals(cl.getMessage("en"), found.getMessage("en"));
         assertEquals(l.getId(), found.getLeave().getId());
     }
 
@@ -154,6 +155,7 @@ class ChangeLeaveDaoTest {
         ChangeLeave cl = new ChangeLeave(
                 LocalDate.now(),
                 "Admin updated leave",
+                "", "", "",
                 admin,
                 l
         );
@@ -173,6 +175,7 @@ class ChangeLeaveDaoTest {
         ChangeLeave older = new ChangeLeave(
                 LocalDate.now().minusDays(1),
                 "Old message",
+                "", "", "",
                 null,
                 l
         );
@@ -181,6 +184,7 @@ class ChangeLeaveDaoTest {
         ChangeLeave newer = new ChangeLeave(
                 LocalDate.now(),
                 "New message",
+                "", "", "",
                 null,
                 l
         );
@@ -189,7 +193,7 @@ class ChangeLeaveDaoTest {
         ChangeLeave found = changeLeaveDao.findLatestForLeave(l.getId());
 
         assertNotNull(found);
-        assertEquals("New message", found.getMessage());
+        assertEquals("New message", found.getMessage("en"));
     }
 
     @Test
@@ -201,6 +205,7 @@ class ChangeLeaveDaoTest {
         ChangeLeave older = new ChangeLeave(
                 LocalDate.now().minusDays(2),
                 "Older",
+                "", "", "",
                 null,
                 l
         );
@@ -209,6 +214,7 @@ class ChangeLeaveDaoTest {
         ChangeLeave newer = new ChangeLeave(
                 LocalDate.now(),
                 "Newer",
+                "", "", "",
                 null,
                 l
         );

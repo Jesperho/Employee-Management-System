@@ -5,7 +5,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -15,23 +14,23 @@ class ChangeDeptTest {
     private Admin admin;
     private Department department;
     private Company company;
-    private LocalDate dateTime;
+    private LocalDate date;
 
     @BeforeEach
     void setUp() {
         company = new Company("TestCorp", "123 Test Street", "Finland");
         admin = new Admin("admin@testcorp.com", "securePassword123", company);
         department = new Department(50, "IT", "IT Department", LocalDate.now(), company);
-        dateTime = LocalDate.of(2024, 6, 15);
-        changeDept = new ChangeDept(dateTime, "Created department", admin, department);
+        date = LocalDate.of(2024, 6, 15);
+        changeDept = new ChangeDept(date, "Created department", "", "", "", admin, department);
     }
 
     @Test
     @DisplayName("ChangeDept should be created with constructor parameters")
     void testConstructor() {
         assertNotNull(changeDept);
-        assertEquals(dateTime, changeDept.getDate());
-        assertEquals("Created department", changeDept.getMessage());
+        assertEquals(date, changeDept.getDate());
+        assertEquals("Created department", changeDept.getMessage("en"));
         assertEquals(admin, changeDept.getAdmin());
         assertEquals(department, changeDept.getDepartment());
     }
@@ -42,7 +41,7 @@ class ChangeDeptTest {
         ChangeDept empty = new ChangeDept();
         assertNotNull(empty);
         assertNull(empty.getDate());
-        assertNull(empty.getMessage());
+        assertNull(empty.getMessage("en"));
         assertNull(empty.getAdmin());
         assertNull(empty.getDepartment());
     }
@@ -56,10 +55,10 @@ class ChangeDeptTest {
     }
 
     @Test
-    @DisplayName("setMessage should update message")
+    @DisplayName("setMessageEn should update English message")
     void testSetMessage() {
-        changeDept.setMessage("Updated department name");
-        assertEquals("Updated department name", changeDept.getMessage());
+        changeDept.setMessageEn("Updated department name");
+        assertEquals("Updated department name", changeDept.getMessage("en"));
     }
 
     @Test

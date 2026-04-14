@@ -59,7 +59,6 @@ class EmployeeDaoTest {
         Employee e = new Employee(
                 uniqueName(),          // fullName
                 "Male",                // gender
-                "Test employee",       // description
                 LocalDate.now(),       // startDate
                 3500.0,                // salary
                 company,               // company

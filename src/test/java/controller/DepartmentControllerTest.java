@@ -1,5 +1,6 @@
 package controller;
 
+import entity.Department;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -239,12 +240,12 @@ class DepartmentControllerTest {
         deptScroll.setManaged(false);
         setField("deptScrollPane", deptScroll);
 
-        ComboBox<String> deptFilter = getField("filterDepartment");
-        deptFilter.setValue("IT");
+        ComboBox<Department> deptFilter = getField("filterDepartment");
+        deptFilter.setValue(new Department());
 
         invoke("handleShowAllDepartments", new Class[]{});
 
-        assertEquals("All Departments", deptFilter.getValue());
+        assertNull(deptFilter.getValue());
         assertFalse(empDetailView.isVisible());
         assertFalse(empDetailView.isManaged());
         assertTrue(deptScroll.isVisible());
@@ -324,9 +325,8 @@ class DepartmentControllerTest {
     private void setupSearchScenario(ObservableList<String>... rows) throws Exception {
         setField("searchField", new TextField());
 
-        ComboBox<String> deptFilter = new ComboBox<>(
-                FXCollections.observableArrayList("All Departments", "IT", "HR", "Marketing"));
-        deptFilter.setValue("All Departments");
+        ComboBox<Department> deptFilter = new ComboBox<>();
+        deptFilter.setValue(null);
         setField("filterDepartment", deptFilter);
 
         ComboBox<String> capFilter = new ComboBox<>(

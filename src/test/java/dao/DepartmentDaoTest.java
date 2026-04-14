@@ -54,7 +54,6 @@ class DepartmentDaoTest {
         Employee e = new Employee(
                 "John Doe",
                 "Male",
-                "Test employee",
                 LocalDate.now(),
                 3000.0,
                 dept.getCompany(),

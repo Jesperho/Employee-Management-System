@@ -89,6 +89,7 @@ class ChangeEmpDaoTest {
         ChangeEmp ce = new ChangeEmp(
                 LocalDate.now(),
                 "Employee updated",
+                "", "", "",
                 null,
                 e
         );
@@ -114,7 +115,7 @@ class ChangeEmpDaoTest {
         ChangeEmp found = changeEmpDao.find(ce.getId());
 
         assertNotNull(found);
-        assertEquals(ce.getMessage(), found.getMessage());
+        assertEquals(ce.getMessage("en"), found.getMessage("en"));
     }
 
     @Test
@@ -140,6 +141,7 @@ class ChangeEmpDaoTest {
         ChangeEmp ce = new ChangeEmp(
                 LocalDate.now(),
                 "Admin updated employee",
+                "", "", "",
                 a,
                 e
         );
@@ -159,6 +161,7 @@ class ChangeEmpDaoTest {
         ChangeEmp older = new ChangeEmp(
                 LocalDate.now().minusDays(1),
                 "Old message",
+                "", "", "",
                 null,
                 e
         );
@@ -167,6 +170,7 @@ class ChangeEmpDaoTest {
         ChangeEmp newer = new ChangeEmp(
                 LocalDate.now(),
                 "New message",
+                "", "", "",
                 null,
                 e
         );
@@ -174,7 +178,7 @@ class ChangeEmpDaoTest {
 
         ChangeEmp found = changeEmpDao.findLatestForEmployee(e.getId());
 
-        assertEquals("New message", found.getMessage());
+        assertEquals("New message", found.getMessage("en"));
     }
 
     @Test
@@ -185,6 +189,7 @@ class ChangeEmpDaoTest {
         ChangeEmp older = new ChangeEmp(
                 LocalDate.now().minusDays(2),
                 "Older",
+                "", "", "",
                 null,
                 e
         );
@@ -193,6 +198,7 @@ class ChangeEmpDaoTest {
         ChangeEmp newer = new ChangeEmp(
                 LocalDate.now(),
                 "Newer",
+                "", "", "",
                 null,
                 e
         );

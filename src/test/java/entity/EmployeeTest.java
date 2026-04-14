@@ -24,7 +24,6 @@ class EmployeeTest {
         employee = new Employee(
                 "Jane Smith",
                 "Female",
-                "Senior Developer",
                 LocalDate.of(2023, 1, 15),
                 5500.0,
                 company,
@@ -41,7 +40,6 @@ class EmployeeTest {
         assertNotNull(employee);
         assertEquals("Jane Smith", employee.getFullName());
         assertEquals("Female", employee.getGender());
-        assertEquals("Senior Developer", employee.getDescription());
         assertEquals(LocalDate.of(2023, 1, 15), employee.getStartDate());
         assertEquals(5500.0, employee.getSalary());
         assertEquals(company, employee.getCompany());
@@ -75,13 +73,6 @@ class EmployeeTest {
     void testSetGender() {
         employee.setGender("Male");
         assertEquals("Male", employee.getGender());
-    }
-
-    @Test
-    @DisplayName("setDescription should update employee description")
-    void testSetDescription() {
-        employee.setDescription("Junior Developer");
-        assertEquals("Junior Developer", employee.getDescription());
     }
 
     @Test

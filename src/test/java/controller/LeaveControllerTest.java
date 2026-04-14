@@ -1,5 +1,8 @@
 package controller;
 
+import entity.Department;
+import entity.Employee;
+import entity.Leave;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -52,14 +55,13 @@ class LeaveControllerTest {
         return m.invoke(controller, args);
     }
 
-    // ─── Helper: build a leave row ────────────────────────────────────────────
-    // id, empName, duration(days), startDate, endDate, type, reason
+    // ─── Helper: build a Leave entity ────────────────────────────────────────
 
-    private ObservableList<String> leaveRow(String id, String emp, String dur,
-                                            String start, String end,
-                                            String type, String reason) {
-        // index 7 = department (used by applyFilters search branch); default "N/A"
-        return FXCollections.observableArrayList(id, emp, dur, start, end, type, reason, "N/A");
+    private Leave makeLeave(String type, String reason, String empName,
+                            LocalDate start, LocalDate end) {
+        Employee emp = new Employee();
+        emp.setFullName(empName);
+        return new Leave(start, end, type, reason, emp);
     }
 
     // ─── updateStats ─────────────────────────────────────────────────────────
@@ -74,20 +76,22 @@ class LeaveControllerTest {
         setField("sickLeaves",   sick);
         setField("avgDuration",  avg);
 
-        // active = today (2026-03-10) falls between start and end; type contains "sick" → sick
-        ObservableList<ObservableList<String>> data = FXCollections.observableArrayList(
-                leaveRow("1", "Alice",   "5",  "2024-03-01", "2024-03-06", "Sick",     "Flu"),
-                leaveRow("2", "Bob",     "15", "2026-03-01", "2026-03-25", "Vacation", "Trip"),
-                leaveRow("3", "Charlie", "3",  "2026-04-01", "2026-04-04", "Sick",     "Cold")
+        // Durations: 3 + 11 + 7 = 21 → avg = 21/3 = 7
+        // Active: Bob (2026-04-10 to 2026-04-20) spans today (2026-04-14)
+        // Sick: Alice + Charlie
+        ObservableList<Leave> data = FXCollections.observableArrayList(
+                makeLeave("Sick",     "Flu",  "Alice",   LocalDate.of(2024, 1, 1),  LocalDate.of(2024, 1, 3)),
+                makeLeave("Vacation", "Trip", "Bob",     LocalDate.of(2026, 4, 10), LocalDate.of(2026, 4, 20)),
+                makeLeave("Sick",     "Cold", "Charlie", LocalDate.of(2027, 1, 1),  LocalDate.of(2027, 1, 7))
         );
         setField("leaveData", data);
 
         invoke("updateStats", new Class[]{});
 
         assertEquals("3", total.getText());
-        assertEquals("1", active.getText());   // only Bob > 10 days
+        assertEquals("1", active.getText());   // only Bob is active today
         assertEquals("2", sick.getText());     // Alice + Charlie
-        assertEquals("7", avg.getText());      // (5+15+3)/3 = 7
+        assertEquals("7", avg.getText());      // (3+11+7)/3 = 7
     }
 
     @Test
@@ -119,9 +123,10 @@ class LeaveControllerTest {
         setField("sickLeaves",   sick);
         setField("avgDuration",  avg);
 
-        ObservableList<ObservableList<String>> data = FXCollections.observableArrayList(
-                leaveRow("1", "Alice", "3", "2024-01-01", "2024-01-04", "Sick", "Fever"),
-                leaveRow("2", "Bob",   "7", "2024-01-05", "2024-01-12", "Sick", "Flu")
+        // Durations: 3 + 7 = 10 → avg = 10/2 = 5; both past → active = 0
+        ObservableList<Leave> data = FXCollections.observableArrayList(
+                makeLeave("Sick", "Fever", "Alice", LocalDate.of(2024, 1, 1), LocalDate.of(2024, 1, 3)),
+                makeLeave("Sick", "Flu",   "Bob",   LocalDate.of(2024, 1, 5), LocalDate.of(2024, 1, 11))
         );
         setField("leaveData", data);
 
@@ -129,7 +134,7 @@ class LeaveControllerTest {
 
         assertEquals("2", total.getText());
         assertEquals("2", sick.getText());
-        assertEquals("0", active.getText()); // neither > 10
+        assertEquals("0", active.getText());
         assertEquals("5", avg.getText());    // (3+7)/2 = 5
     }
 
@@ -139,16 +144,16 @@ class LeaveControllerTest {
     @DisplayName("applyFilters: type filter shows only Sick leaves")
     void applyFilters_sickType() throws Exception {
         setupFilterScenario(
-                leaveRow("1", "Alice",   "5",  "2024-03-01", "2024-03-06", "Sick",     "Flu"),
-                leaveRow("2", "Bob",     "10", "2024-03-10", "2024-03-20", "Vacation", "Trip"),
-                leaveRow("3", "Charlie", "3",  "2024-04-01", "2024-04-04", "Sick",     "Cold")
+                makeLeave("Sick",     "Flu",  "Alice",   LocalDate.of(2024, 3, 1), LocalDate.of(2024, 3, 6)),
+                makeLeave("Vacation", "Trip", "Bob",     LocalDate.of(2024, 3, 10), LocalDate.of(2024, 3, 20)),
+                makeLeave("Sick",     "Cold", "Charlie", LocalDate.of(2024, 4, 1), LocalDate.of(2024, 4, 4))
         );
         ComboBox<String> filterType = getField("filterType");
         filterType.setValue("Sick");
 
         invoke("applyFilters", new Class[]{});
 
-        TableView<ObservableList<String>> table = getField("leaveTable");
+        TableView<Leave> table = getField("leaveTable");
         assertEquals(2, table.getItems().size());
     }
 
@@ -156,16 +161,16 @@ class LeaveControllerTest {
     @DisplayName("applyFilters: type filter Vacation shows only vacation leaves")
     void applyFilters_vacationType() throws Exception {
         setupFilterScenario(
-                leaveRow("1", "Alice",   "5",  "2024-03-01", "2024-03-06", "Sick",     ""),
-                leaveRow("2", "Bob",     "10", "2024-03-10", "2024-03-20", "Vacation", ""),
-                leaveRow("3", "Charlie", "3",  "2024-04-01", "2024-04-04", "Vacation", "")
+                makeLeave("Sick",     "", "Alice",   LocalDate.of(2024, 3, 1),  LocalDate.of(2024, 3, 6)),
+                makeLeave("Vacation", "", "Bob",     LocalDate.of(2024, 3, 10), LocalDate.of(2024, 3, 20)),
+                makeLeave("Vacation", "", "Charlie", LocalDate.of(2024, 4, 1),  LocalDate.of(2024, 4, 4))
         );
         ComboBox<String> filterType = getField("filterType");
         filterType.setValue("Vacation");
 
         invoke("applyFilters", new Class[]{});
 
-        TableView<ObservableList<String>> table = getField("leaveTable");
+        TableView<Leave> table = getField("leaveTable");
         assertEquals(2, table.getItems().size());
     }
 
@@ -173,15 +178,15 @@ class LeaveControllerTest {
     @DisplayName("applyFilters: All Types shows all leaves")
     void applyFilters_allTypes() throws Exception {
         setupFilterScenario(
-                leaveRow("1", "Alice", "5",  "2024-03-01", "2024-03-06", "Sick",     ""),
-                leaveRow("2", "Bob",   "10", "2024-03-10", "2024-03-20", "Vacation", "")
+                makeLeave("Sick",     "", "Alice", LocalDate.of(2024, 3, 1),  LocalDate.of(2024, 3, 6)),
+                makeLeave("Vacation", "", "Bob",   LocalDate.of(2024, 3, 10), LocalDate.of(2024, 3, 20))
         );
         ComboBox<String> filterType = getField("filterType");
-        filterType.setValue("All Types");
+        filterType.setValue("ALL");
 
         invoke("applyFilters", new Class[]{});
 
-        TableView<ObservableList<String>> table = getField("leaveTable");
+        TableView<Leave> table = getField("leaveTable");
         assertEquals(2, table.getItems().size());
     }
 
@@ -189,15 +194,15 @@ class LeaveControllerTest {
     @DisplayName("applyFilters: search by employee name")
     void applyFilters_searchByName() throws Exception {
         setupFilterScenario(
-                leaveRow("1", "Alice",   "5",  "2024-03-01", "2024-03-06", "Sick",     ""),
-                leaveRow("2", "Bob",     "10", "2024-03-10", "2024-03-20", "Vacation", "")
+                makeLeave("Sick",     "", "Alice", LocalDate.of(2024, 3, 1),  LocalDate.of(2024, 3, 6)),
+                makeLeave("Vacation", "", "Bob",   LocalDate.of(2024, 3, 10), LocalDate.of(2024, 3, 20))
         );
         TextField sf = getField("searchField");
         sf.setText("alice");
 
         invoke("applyFilters", new Class[]{});
 
-        TableView<ObservableList<String>> table = getField("leaveTable");
+        TableView<Leave> table = getField("leaveTable");
         assertEquals(1, table.getItems().size());
     }
 
@@ -205,15 +210,15 @@ class LeaveControllerTest {
     @DisplayName("applyFilters: search by leave type text")
     void applyFilters_searchByType() throws Exception {
         setupFilterScenario(
-                leaveRow("1", "Alice", "5",  "2024-03-01", "2024-03-06", "Sick",     ""),
-                leaveRow("2", "Bob",   "10", "2024-03-10", "2024-03-20", "Vacation", "")
+                makeLeave("Sick",     "", "Alice", LocalDate.of(2024, 3, 1),  LocalDate.of(2024, 3, 6)),
+                makeLeave("Vacation", "", "Bob",   LocalDate.of(2024, 3, 10), LocalDate.of(2024, 3, 20))
         );
         TextField sf = getField("searchField");
         sf.setText("vacation");
 
         invoke("applyFilters", new Class[]{});
 
-        TableView<ObservableList<String>> table = getField("leaveTable");
+        TableView<Leave> table = getField("leaveTable");
         assertEquals(1, table.getItems().size());
     }
 
@@ -286,12 +291,12 @@ class LeaveControllerTest {
         invoke("setupFilters", new Class[]{});
 
         assertFalse(filterType.getItems().isEmpty());
-        assertTrue(filterType.getItems().contains("All Types"));
-        assertTrue(filterType.getItems().contains("Sick"));
-        assertTrue(filterType.getItems().contains("Vacation"));
-        assertTrue(filterType.getItems().contains("Maternity"));
-        assertTrue(filterType.getItems().contains("Personal"));
-        assertTrue(filterType.getItems().contains("Exam"));
+        assertTrue(filterType.getItems().contains("ALL"));
+        assertTrue(filterType.getItems().contains("sick"));
+        assertTrue(filterType.getItems().contains("vacation"));
+        assertTrue(filterType.getItems().contains("maternity"));
+        assertTrue(filterType.getItems().contains("personal"));
+        assertTrue(filterType.getItems().contains("exam"));
     }
 
     // ─── handleLeaveHistory ───────────────────────────────────────────────────
@@ -299,7 +304,7 @@ class LeaveControllerTest {
     @Test
     @DisplayName("handleLeaveHistory does not throw unhandled exception")
     void handleLeaveHistory_noThrow() throws Exception {
-        TableView<ObservableList<String>> table = new TableView<>();
+        TableView<Leave> table = new TableView<>();
         setField("leaveTable", table);
         // hits leaveDao.findAll() — DB may not be available
         try {
@@ -356,22 +361,26 @@ class LeaveControllerTest {
     // ─── Helper ───────────────────────────────────────────────────────────────
 
     @SafeVarargs
-    private void setupFilterScenario(ObservableList<String>... rows) throws Exception {
+    private void setupFilterScenario(Leave... leaves) throws Exception {
         setField("searchField", new TextField());
 
         ComboBox<String> filterType = new ComboBox<>(
-                FXCollections.observableArrayList("All Types", "Sick", "Vacation", "Maternity", "Personal", "Exam"));
-        filterType.setValue("All Types");
+                FXCollections.observableArrayList("ALL", "sick", "vacation", "maternity", "personal", "exam"));
+        filterType.setValue("ALL");
         setField("filterType", filterType);
 
-        ObservableList<ObservableList<String>> data = FXCollections.observableArrayList(rows);
+        ComboBox<Department> filterDept = new ComboBox<>();
+        filterDept.setValue(null);
+        setField("filterDepartment", filterDept);
+
+        ObservableList<Leave> data = FXCollections.observableArrayList(leaves);
         setField("leaveData", data);
 
-        TableView<ObservableList<String>> table = new TableView<>();
+        TableView<Leave> table = new TableView<>();
         table.setItems(data);
         setField("leaveTable", table);
 
-        // applyFilters() always calls updateStats() — inject stat fields to avoid NPE
+        // updateStats() may be called — inject stat fields to avoid NPE
         setField("totalLeaves",  new Text());
         setField("activeLeaves", new Text());
         setField("sickLeaves",   new Text());

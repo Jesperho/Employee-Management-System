@@ -66,6 +66,7 @@ class ChangeDeptDaoTest {
         ChangeDept cd = new ChangeDept(
                 LocalDate.now(),
                 "Department updated",
+                "", "", "",
                 null,
                 d
         );
@@ -89,7 +90,7 @@ class ChangeDeptDaoTest {
 
         ChangeDept found = changeDeptDao.find(cd.getId());
         assertNotNull(found);
-        assertEquals(cd.getMessage(), found.getMessage());
+        assertEquals(cd.getMessage("en"), found.getMessage("en"));
     }
 
     @Test
@@ -114,6 +115,7 @@ class ChangeDeptDaoTest {
         ChangeDept cd = new ChangeDept(
                 LocalDate.now(),
                 "Admin updated department",
+                "", "", "",
                 a,
                 d
         );
@@ -131,6 +133,7 @@ class ChangeDeptDaoTest {
         ChangeDept older = new ChangeDept(
                 LocalDate.now().minusDays(1),
                 "Old message",
+                "", "", "",
                 null,
                 d
         );
@@ -139,13 +142,14 @@ class ChangeDeptDaoTest {
         ChangeDept newer = new ChangeDept(
                 LocalDate.now(),
                 "New message",
+                "", "", "",
                 null,
                 d
         );
         changeDeptDao.create(newer);
 
         ChangeDept found = changeDeptDao.findLatestForDepartment(d.getId());
-        assertEquals("New message", found.getMessage());
+        assertEquals("New message", found.getMessage("en"));
     }
 
     @Test
@@ -156,6 +160,7 @@ class ChangeDeptDaoTest {
         ChangeDept older = new ChangeDept(
                 LocalDate.now().minusDays(2),
                 "Older",
+                "", "", "",
                 null,
                 d
         );
@@ -164,6 +169,7 @@ class ChangeDeptDaoTest {
         ChangeDept newer = new ChangeDept(
                 LocalDate.now(),
                 "Newer",
+                "", "", "",
                 null,
                 d
         );

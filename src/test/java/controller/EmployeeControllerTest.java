@@ -290,17 +290,14 @@ class EmployeeControllerTest {
     private void setupFiltersAndTable(Employee... employees) throws Exception {
         setField("searchField", new TextField());
 
-        ComboBox<String> filterDept = new ComboBox<>(
-                FXCollections.observableArrayList("All Departments", "IT", "HR"));
-        filterDept.setValue("All Departments");
+        ComboBox<Department> filterDept = new ComboBox<>();
+        filterDept.setValue(null);
 
-        ComboBox<String> filterGender = new ComboBox<>(
-                FXCollections.observableArrayList("All Genders", "Male", "Female", "Other"));
-        filterGender.setValue("All Genders");
+        ComboBox<String> filterGender = new ComboBox<>();
+        filterGender.setValue(null);
 
-        ComboBox<String> filterContract = new ComboBox<>(
-                FXCollections.observableArrayList("All Contracts", "Full Time", "Part Time", "Remote", "Intern"));
-        filterContract.setValue("All Contracts");
+        ComboBox<String> filterContract = new ComboBox<>();
+        filterContract.setValue(null);
 
         setField("filterDepartment", filterDept);
         setField("filterGender",     filterGender);
