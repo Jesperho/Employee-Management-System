@@ -196,20 +196,20 @@ This ensures full transparency and traceability.
 The application is available in **4 languages**: English, Spanish, Persian, and Arabic.
 
 
-## Database Localization Strategy
+### Database Localization Strategy
 
 This project implements a multi-language (localization) architecture directly at the database level. The system uses a hybrid approach combining **Field Localization (Column-based)** and **Translation Tables (Entity-based)**.
 
 ![ER Diagram](https://github.com/Jesperho/Employee-Management-System/blob/main/docs/Diagrams/ER_Diagram2.png)
 
-### 1. Field Localization (Audit & Tracking Entities)
+#### 1. Field Localization
 For saving history and logs, the tables, specifically `ChangeLeave`, `ChangeDept`, and `ChangeEmp` utilizes a field localization pattern.
 
 Because these tables primarily store discrete message logs, translations are handled via dedicated columns directly within the table. This ensures fast inserts and simple retrieval.
 * **Supported Languages:** English, Spanish, Farsi, and Arabic.
 * **Column Format:** `message_en`, `message_es`, `message_fa`, and `message_ar`.
 
-### 2. Translation Tables (Core Entities)
+####     2. Translation Tables
 For the primary entities, such as `Department`, `Employee`, and `Leaves`, the project utilizes a Translation Table design pattern.
 
 Instead of adding language-specific columns to the main tables, a dedicated, related table is created to hold the translations. This keeps the core entity schemas clean, normalizes the database, and provides a scalable way to support all languages.
