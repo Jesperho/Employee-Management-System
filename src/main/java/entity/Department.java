@@ -61,6 +61,11 @@ public class Department {
         return t != null ? t.getDepartmentName() : this.departmentName;
     }
 
+    public String getTranslatedDate(String langCode) {
+        DepartmentTranslation t = getTranslation(langCode);
+        return t != null ? t.getCreationDateText() : "";
+    }
+
     public void setId(int id) {
         this.id = id;
     }

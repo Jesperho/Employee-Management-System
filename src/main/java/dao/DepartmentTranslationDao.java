@@ -46,7 +46,7 @@ public class DepartmentTranslationDao extends BaseDao<DepartmentTranslation> {
     }
 
 
-    private String formatDate(LocalDate date, String language) {
+    public String formatDate(LocalDate date, String language) {
 
         String code = lang.getAbreviation(language);
         Locale locale;

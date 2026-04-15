@@ -288,7 +288,7 @@ public class DashboardController extends BaseController {
                     employeeChangeText.setText(lang.getTranslatedText("full_staff"));
                     employeeChangeText.getStyleClass().setAll("stat-change-positive");
                 } else {
-                    employeeChangeText.setText(String.format("%.f%% on leave", formatedRate));
+                    employeeChangeText.setText(formatedRate + "% on leave");
                     employeeChangeText.getStyleClass().setAll("stat-change-neutral");
                 }
             } else {
