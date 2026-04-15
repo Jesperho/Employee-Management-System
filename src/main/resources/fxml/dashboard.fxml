@@ -93,7 +93,7 @@
 
                 <VBox spacing="2">
                     <Text fx:id="welcomeText" text="Welcome back, Osama!" styleClass="welcome-title"/>
-                    <Text fx:id="dateText" text="Monday, February 10, 2026" styleClass="date-text"/>
+<!--                    <Text fx:id="dateText" text="Monday, February 10, 2026" styleClass="date-text"/>-->
                 </VBox>
 
                 <Region HBox.hgrow="ALWAYS"/>

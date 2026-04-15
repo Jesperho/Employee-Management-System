@@ -106,6 +106,12 @@ public class Employee {
         return t != null ? t.getSalary().toString() : this.position;
     }
 
+    public String getTranslatedDepartment(String langCode){
+        Department dep = getDepartment();
+
+        return dep.getTranslatedName(langCode);
+    }
+
     public void setId(int id) {
         this.id = id;
     }

@@ -143,13 +143,13 @@ public class LeaveController extends BaseController {
         if (colStartDate != null) colStartDate.setText(lang.getTranslatedText("leave.col.startDate"));
         if (colEndDate != null) colEndDate.setText(lang.getTranslatedText("leave.col.endDate"));
         if (colType != null) colType.setText(lang.getTranslatedText("leave.col.type"));
-        if (colReason != null) colReason.setText(lang.getTranslatedText("leave.col.reason"));
         if (colActions != null) colActions.setText(lang.getTranslatedText("leave.col.actions"));
 
         if (pageInfo != null) pageInfo.setText(lang.getTranslatedText("btn.pageInfo"));
         setupFilters();
         applyFilters();
         setupTable();
+        updateStats();
     }
 
     private void updateUserProfile() {
@@ -292,7 +292,7 @@ public class LeaveController extends BaseController {
 
         leaveTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
 
-        colId.setCellValueFactory(data -> new SimpleStringProperty(String.valueOf(data.getValue().getId())));
+        colId.setCellValueFactory(data -> new SimpleStringProperty(String.valueOf(leaveTranslationDao.formatNumber(data.getValue().getId(), lang.getLanguage()))));
         colEmployee.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getEmployee() != null ? data.getValue().getEmployee().getFullName() : "N/A"));
         colStartDate.setCellValueFactory(data ->
                 new SimpleStringProperty(
@@ -317,7 +317,6 @@ public class LeaveController extends BaseController {
                 new SimpleStringProperty(getOrDefault(data.getValue().getTranslatedType(langCode)))
         );
 
-        colReason.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getReason() != null ? data.getValue().getReason() : ""));
 
         colActions.setMinWidth(160);
         colActions.setCellFactory(col -> new TableCell<>() {
@@ -350,22 +349,23 @@ public class LeaveController extends BaseController {
 
     // 6. Object-oriented updateStats
     private void updateStats() {
+        entity.LanguageManager lang = LanguageManager.getInstance();
         LocalDate today = LocalDate.now();
-        totalLeaves.setText(String.valueOf(leaveData.size()));
+        totalLeaves.setText(String.valueOf(leaveTranslationDao.formatNumber(leaveData.size(),lang.getLanguage())));
 
         long active = leaveData.stream().filter(r -> {
             if (r.getStartDate() == null || r.getEndDate() == null) return false;
             return (today.isEqual(r.getStartDate()) || today.isAfter(r.getStartDate()))
                     && (today.isEqual(r.getEndDate()) || today.isBefore(r.getEndDate()));
         }).count();
-        activeLeaves.setText(String.valueOf(active));
+        activeLeaves.setText(String.valueOf(leaveTranslationDao.formatNumber(active, lang.getLanguage())));
 
         long sick = leaveData.stream().filter(r -> r.getType() != null && r.getType().toLowerCase().contains("sick")).count();
-        sickLeaves.setText(String.valueOf(sick));
+        sickLeaves.setText(String.valueOf(leaveTranslationDao.formatNumber(sick, lang.getLanguage())));
 
-        long totalDays = leaveData.stream().mapToLong(this::resolveLeaveDuration).sum();
+        long totalDays = 0;
         long avg = leaveData.isEmpty() ? 0 : totalDays / leaveData.size();
-        avgDuration.setText(String.valueOf(avg));
+        avgDuration.setText(String.valueOf(leaveTranslationDao.formatNumber(avg, lang.getLanguage())));
     }
 
     @FXML
@@ -503,7 +503,7 @@ public class LeaveController extends BaseController {
         Label typeBadge = new Label(getLeaveEmoji(leave.getType()) + "  " + type);
         typeBadge.setStyle("-fx-background-color: rgba(255,255,255,0.2); -fx-text-fill: white; -fx-font-size: 13px; -fx-font-weight: bold; -fx-padding: 5 16; -fx-background-radius: 20;");
 
-        Label durBadge = new Label("🗓  " + resolveLeaveDuration(leave) + " days");
+        Label durBadge = new Label("🗓  " + resolveLeaveDuration(leave));
         durBadge.setStyle("-fx-background-color: rgba(0,0,0,0.15); -fx-text-fill: white; -fx-font-size: 13px; -fx-font-weight: bold; -fx-padding: 5 16; -fx-background-radius: 20;");
 
         HBox badges = new HBox(10, typeBadge, durBadge);
@@ -514,7 +514,7 @@ public class LeaveController extends BaseController {
         grid.setHgap(20); grid.setVgap(14);
         grid.setPadding(new Insets(24, 30, 10, 30));
 
-        addLeaveInfoCard(grid, 0, "🪪  " + lang.getTranslatedText("leave.col.id"), String.valueOf(leave.getId()), "📋  " + lang.getTranslatedText("leave.col.type"), type, lightBg, accent);
+        addLeaveInfoCard(grid, 0, "🪪  " + lang.getTranslatedText("leave.col.id"), String.valueOf(leaveTranslationDao.formatNumber(leave.getId(), lang.getLanguage())), "📋  " + lang.getTranslatedText("leave.col.type"), type, lightBg, accent);
         addLeaveInfoCard(grid, 1, "📅  " + lang.getTranslatedText("leave.col.startDate"), getOrDefault(leave.getTranslatedStartDate(langCode)), "📅  " + lang.getTranslatedText("leave.col.endDate"), getOrDefault(leave.getTranslatedEndDate(langCode)), lightBg, accent);
         addLeaveInfoCard(grid, 2, "⏱  " + lang.getTranslatedText("leave.col.duration"), getOrDefault(leave.getTranslatedDuration(langCode)), "📝  " + lang.getTranslatedText("leave.col.reason"), leave.getReason() == null || leave.getReason().isEmpty() ? "—" : leave.getReason(), lightBg, accent);
 
@@ -647,19 +647,15 @@ public class LeaveController extends BaseController {
         startDatePicker.valueProperty().addListener((obs, o, n) -> calcDuration(startDatePicker, endDatePicker, durationField));
         endDatePicker.valueProperty().addListener((obs, o, n) -> calcDuration(startDatePicker, endDatePicker, durationField));
 
-        TextArea reasonField = new TextArea();
-        reasonField.setPromptText(lang.getTranslatedText("leave.form.reason"));
-        reasonField.setPrefRowCount(3);
-        reasonField.setStyle("-fx-background-color: #f8f9fa; -fx-border-color: #e0e3e8; -fx-border-radius: 8;");
+
 
         grid.add(createLabel(lang.getTranslatedText("leave.form.employee")), 0, 0);    grid.add(empCombo, 1, 0);
         grid.add(createLabel(lang.getTranslatedText("leave.form.type")), 2, 0);        grid.add(typeCombo, 3, 0);
         grid.add(createLabel(lang.getTranslatedText("leave.form.startDate")), 0, 1);   grid.add(startDatePicker, 1, 1);
         grid.add(createLabel(lang.getTranslatedText("leave.form.endDate")), 2, 1);     grid.add(endDatePicker, 3, 1);
         grid.add(createLabel(lang.getTranslatedText("leave.form.duration")), 0, 2);    grid.add(durationField, 1, 2);
-        grid.add(createLabel(lang.getTranslatedText("leave.form.reason")), 0, 3);
-        GridPane.setColumnSpan(reasonField, 3);
-        grid.add(reasonField, 1, 3);
+
+
 
         if (existingData != null) {
             if (existingData.getEmployee() != null) {
@@ -673,7 +669,6 @@ public class LeaveController extends BaseController {
             typeCombo.setValue(existingData.getType());
             startDatePicker.setValue(existingData.getStartDate());
             endDatePicker.setValue(existingData.getEndDate());
-            reasonField.setText(existingData.getReason() != null ? existingData.getReason() : "");
             calcDuration(startDatePicker, endDatePicker, durationField);
             empCombo.setDisable(true);
         }
@@ -707,7 +702,7 @@ public class LeaveController extends BaseController {
             if (existingData == null) {
                 Leave newLeave = new Leave(
                         startDatePicker.getValue(), endDatePicker.getValue(), typeCombo.getValue(),
-                        reasonField.getText(), empCombo.getValue()
+                        "", empCombo.getValue()
                 );
                 leaveDao.create(newLeave);
                 leaveTranslationDao.submitCreateLeaveTranslation(typeCombo.getValue(), newLeave);
@@ -732,7 +727,7 @@ public class LeaveController extends BaseController {
                 existingData.setType(typeCombo.getValue());
                 existingData.setStartDate(startDatePicker.getValue());
                 existingData.setEndDate(endDatePicker.getValue());
-                existingData.setReason(reasonField.getText());
+
                 leaveDao.update(existingData);
 
                 leaveTranslationDao.deleteByLeave(existingData);
@@ -763,7 +758,7 @@ public class LeaveController extends BaseController {
         resetBtn.setOnAction(e -> {
             if(existingData == null) empCombo.setValue(null);
             typeCombo.setValue(null); startDatePicker.setValue(null);
-            endDatePicker.setValue(null); durationField.clear(); reasonField.clear();
+            endDatePicker.setValue(null); durationField.clear();
         });
 
         cancelBtn.setOnAction(e -> popup.close());
@@ -843,11 +838,9 @@ public class LeaveController extends BaseController {
         }
     }
 
-    private long resolveLeaveDuration(Leave leave) {
-        if (leave == null) return 0;
-        Integer storedDuration = leave.getDuration();
-        if (storedDuration != null && storedDuration > 0) return storedDuration;
-        return calculateInclusiveDuration(leave.getStartDate(), leave.getEndDate());
+    private String resolveLeaveDuration(Leave leave) {
+        entity.LanguageManager lang = LanguageManager.getInstance();
+        return leave.getTranslatedDuration(lang.getAbreviation(lang.getLanguage()));
     }
 
     private long calculateInclusiveDuration(LocalDate start, LocalDate end) {

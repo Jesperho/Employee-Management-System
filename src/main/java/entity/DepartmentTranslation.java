@@ -14,7 +14,7 @@ public class DepartmentTranslation {
     private String departmentName;
 
     private String creationDateText;
-    private int capacity;
+    private String capacity;
 
 
     @ManyToOne
@@ -23,7 +23,7 @@ public class DepartmentTranslation {
 
     public DepartmentTranslation() {}
 
-    public DepartmentTranslation(String languageCode, String departmentName, Department department, String creationDateText, int capacity) {
+    public DepartmentTranslation(String languageCode, String departmentName, Department department, String creationDateText, String capacity) {
         this.languageCode = languageCode;
         this.departmentName = departmentName;
         this.department = department;
@@ -54,7 +54,7 @@ public class DepartmentTranslation {
         return creationDateText;
     }
 
-    public int getCapacity() {
+    public String getCapacity() {
         return capacity;
     }
 

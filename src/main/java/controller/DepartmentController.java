@@ -55,7 +55,6 @@ public class DepartmentController extends BaseController {
     @FXML private TableColumn<ObservableList<String>, String> colCapacity;
     @FXML private TableColumn<ObservableList<String>, String> colEmployees;
     @FXML private TableColumn<ObservableList<String>, String> colCreationDate;
-    @FXML private TableColumn<ObservableList<String>, String> colDescription;
     @FXML private TableColumn<ObservableList<String>, String> colActions;
 
     @FXML private Text pageInfo;
@@ -161,7 +160,6 @@ public class DepartmentController extends BaseController {
         if (colCapacity != null) colCapacity.setText(lang.getTranslatedText("dept.col.capacity"));
         if (colEmployees != null) colEmployees.setText(lang.getTranslatedText("dept.col.employees"));
         if (colCreationDate != null) colCreationDate.setText(lang.getTranslatedText("dept.col.created"));
-        if (colDescription != null) colDescription.setText(lang.getTranslatedText("dept.col.description"));
         if (colActions != null) colActions.setText(lang.getTranslatedText("dept.col.actions"));
 
         if (empColId != null) empColId.setText(lang.getTranslatedText("emp.col.id"));
@@ -207,7 +205,7 @@ public class DepartmentController extends BaseController {
                     dept.getTranslatedName(lang.getCurrentLanguageCode()),
                     String.valueOf(dept.getCapacity()),
                     String.valueOf(empCount),
-                    dept.getCreationDate() != null ? dept.getCreationDate().toString() : "N/A",
+                    dept.getTranslatedDate(lang.getCurrentLanguageCode()) != null ? dept.getTranslatedDate(lang.getCurrentLanguageCode()) : "N/A",
                     dept.getDescription() != null ? dept.getDescription() : ""
             ));
         }
@@ -413,16 +411,23 @@ public class DepartmentController extends BaseController {
         employeeTable.setItems(filtered);
     }
 
+    private String getOrDefault(String value) {
+        if (value == null) return "N/A";
+        return value;
+    }
+
     private void setupTable() {
         entity.LanguageManager lang = entity.LanguageManager.getInstance();
+        String langCode = lang.getAbreviation(lang.getLanguage());
+
         departmentTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
-        colId.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().get(0)));
+        colId.setCellValueFactory(data -> new SimpleStringProperty(departmentTranslationDao.formatNumber(Double.parseDouble(data.getValue().get(0)), lang.getLanguage())));
         colName.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().get(1)));
-        colCapacity.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().get(2)));
-        colEmployees.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().get(3)));
+        colCapacity.setCellValueFactory(data -> new SimpleStringProperty(departmentTranslationDao.formatNumber(Double.parseDouble(data.getValue().get(2)), lang.getLanguage())));
+        colEmployees.setCellValueFactory(data -> new SimpleStringProperty(departmentTranslationDao.formatNumber(Double.parseDouble(data.getValue().get(3)), lang.getLanguage())));
         colCreationDate.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().get(4)));
-        colDescription.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().get(5)));
+
 
         // Double-click a row to show employees for that department
         departmentTable.setRowFactory(tv -> {
@@ -674,7 +679,6 @@ public class DepartmentController extends BaseController {
         grid.add(createLabel("Gender"),      2, 0); grid.add(genderCombo,  3, 0);
         grid.add(createLabel("Department"),  0, 1); grid.add(deptCombo,    1, 1);
         grid.add(createLabel("Job Title"),   2, 1); grid.add(jobTitleField,3, 1);
-        grid.add(createLabel("Description"), 0, 2);
         grid.add(createLabel("Start Date"),  0, 3); grid.add(startDate,    1, 3);
         grid.add(createLabel("Contract"),    2, 3); grid.add(contractCombo,3, 3);
         grid.add(createLabel("Salary"),      0, 4); grid.add(salaryField,  1, 4);
@@ -740,17 +744,18 @@ public class DepartmentController extends BaseController {
     }
 
     private void updateStats() {
-        totalDeptCount.setText(String.valueOf(deptData.size()));
-        activeDeptCount.setText(String.valueOf(deptData.size()));
+        entity.LanguageManager lang = LanguageManager.getInstance();
+        totalDeptCount.setText(String.valueOf(departmentTranslationDao.formatNumber(deptData.size(), lang.getLanguage())));
+        activeDeptCount.setText(String.valueOf(departmentTranslationDao.formatNumber(deptData.size(), lang.getLanguage())));
         int totalEmp = 0;
         int totalCap = 0;
         for (ObservableList<String> row : deptData) {
             try { totalEmp += Integer.parseInt(row.get(3)); } catch (NumberFormatException ignored) {}
             try { totalCap += Integer.parseInt(row.get(2)); } catch (NumberFormatException ignored) {}
         }
-        totalEmpInDepts.setText(String.valueOf(totalEmp));
+        totalEmpInDepts.setText(String.valueOf(departmentTranslationDao.formatNumber(totalEmp, lang.getLanguage())));
         int pct = totalCap > 0 ? (totalEmp * 100 / totalCap) : 0;
-        avgCapacity.setText(pct + "%");
+        avgCapacity.setText(departmentTranslationDao.formatNumber(pct, lang.getLanguage()) + "%");
     }
 
     @FXML
@@ -838,22 +843,17 @@ public class DepartmentController extends BaseController {
         creationDate.setPromptText(lang.getTranslatedText("dept.col.created"));
         creationDate.setPrefWidth(250);
 
-        TextArea descriptionField = new TextArea();
-        descriptionField.setPromptText(lang.getTranslatedText("dept.col.description"));
-        descriptionField.setPrefRowCount(3);
-        descriptionField.setStyle("-fx-background-color: #f8f9fa; -fx-border-color: #e0e3e8; -fx-border-radius: 8;");
+
 
         grid.add(createLabel(lang.getTranslatedText("dept.col.name")), 0, 0); grid.add(nameField, 1, 0);
         grid.add(createLabel(lang.getTranslatedText("dept.col.capacity")), 2, 0); grid.add(capacityField, 3, 0);
         grid.add(createLabel(lang.getTranslatedText("dept.col.created")), 0, 1);  grid.add(creationDate, 1, 1);
-        grid.add(createLabel(lang.getTranslatedText("dept.col.description")), 0, 2);
-        GridPane.setColumnSpan(descriptionField, 3);
-        grid.add(descriptionField, 1, 2);
+
+
 
         if (existingData != null) {
             nameField.setValue(existingData.get(1));
             capacityField.setText(existingData.get(2));
-            descriptionField.setText(existingData.get(5));
             if (!"N/A".equals(existingData.get(4))) {
                 try {
                     creationDate.setValue(java.time.LocalDate.parse(existingData.get(4)));
@@ -892,7 +892,7 @@ public class DepartmentController extends BaseController {
                 Department newDept = new Department(
                         capacity,
                         nameField.getValue(),
-                        descriptionField.getText(),
+                        "",
                         creationDate.getValue(),
                         company
                 );
@@ -931,7 +931,6 @@ public class DepartmentController extends BaseController {
                 if (dept != null) {
                     dept.setDepartmentName(nameField.getValue());
                     dept.setCapacity(capacity);
-                    dept.setDescription(descriptionField.getText());
                     dept.setCreationDate(creationDate.getValue());
 
                     departmentDao.update(dept);

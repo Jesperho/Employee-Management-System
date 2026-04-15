@@ -111,7 +111,6 @@
                                     <TableColumn fx:id="colCapacity" text="Capacity" prefWidth="90" minWidth="70"/>
                                     <TableColumn fx:id="colEmployees" text="Employees" prefWidth="90" minWidth="70"/>
                                     <TableColumn fx:id="colCreationDate" text="Created" prefWidth="110" minWidth="90"/>
-                                    <TableColumn fx:id="colDescription" text="Description" prefWidth="200" minWidth="100"/>
                                     <TableColumn fx:id="colActions" text="Actions" prefWidth="140" minWidth="120"/>
                                 </columns>
                             </TableView>

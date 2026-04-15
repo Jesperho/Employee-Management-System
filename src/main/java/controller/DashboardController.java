@@ -20,9 +20,11 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import utils.BaseController;
 
+import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 
 // Make sure to import BaseController if it's in a different package!
 // import util.BaseController;
@@ -187,6 +189,8 @@ public class DashboardController extends BaseController {
         }
     }
 
+
+
     private void setupDateDisplay() {
         if (dateText != null) {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy");
@@ -219,6 +223,7 @@ public class DashboardController extends BaseController {
     }
 
     private void loadDashboardData() {
+        entity.LanguageManager lang= LanguageManager.getInstance();
         List<Employee> employees = employeeDao.findAll();
         List<Department> departments = departmentDao.findAll();
         List<Leave> leaves = leaveDao.findAll();
@@ -247,7 +252,7 @@ public class DashboardController extends BaseController {
         if (totalEmployeesCount != null) totalEmployeesCount.setText(String.valueOf(total));
         if (activeEmployeesCount != null) activeEmployeesCount.setText(String.valueOf(active));
         if (onLeaveCount != null) onLeaveCount.setText(String.valueOf(currentlyOnLeave));
-        if (pendingLeaveText != null) pendingLeaveText.setText(pendingLeaves + " pending");
+        if (pendingLeaveText != null) pendingLeaveText.setText(pendingLeaves +"");
         if (departmentsCount != null) departmentsCount.setText(String.valueOf(departments.size()));
 
         // Dynamic sub-labels
@@ -276,12 +281,14 @@ public class DashboardController extends BaseController {
         // Employee change: show leave count relative to total as a simple indicator
         if (employeeChangeText != null) {
             if (total > 0) {
-                double leaveRate = (currentlyOnLeave * 100.0) / total;
+                int leaveRate = (currentlyOnLeave * 100) / total;
+                String formatedRate = formatNumber(leaveRate, lang.getLanguage());
+
                 if (currentlyOnLeave == 0) {
-                    employeeChangeText.setText("✓ Full staff");
+                    employeeChangeText.setText(lang.getTranslatedText("full_staff"));
                     employeeChangeText.getStyleClass().setAll("stat-change-positive");
                 } else {
-                    employeeChangeText.setText(String.format("%.0f%% on leave", leaveRate));
+                    employeeChangeText.setText(formatedRate + "% on leave");
                     employeeChangeText.getStyleClass().setAll("stat-change-neutral");
                 }
             } else {
@@ -305,6 +312,26 @@ public class DashboardController extends BaseController {
         if (pendingPayments != null) pendingPayments.setText("€0");
     }
 
+    public String formatNumber(double number, String language) {
+        entity.LanguageManager lang = LanguageManager.getInstance();
+        String code = lang.getAbreviation(language);
+
+        Locale locale = switch (code) {
+            case "ar" -> new Locale.Builder()
+                    .setLanguage("ar")
+                    .setRegion("AE")
+                    .setUnicodeLocaleKeyword("nu", "arab") // 🔥 THIS LINE
+                    .build();
+            case "es" -> new Locale("es", "ES");
+            case "fa" -> new Locale("fa", "AF");
+            default -> Locale.US;
+        };
+
+        NumberFormat formatter = NumberFormat.getInstance(locale);
+        return formatter.format(number);
+    }
+
+
     // Builds recent activity items from real DB data (last added employees + leaves)
     private void loadRecentActivities() {
         app.UserSession s = app.UserSession.getInstance();
@@ -321,7 +348,7 @@ public class DashboardController extends BaseController {
             recentActivitiesContainer.getChildren().add(
                     createActivityItem("+", "activity-new",
                             emp.getMessage(lang.getCurrentLanguageCode()),
-                            ("Made by admin " + s.getFullName()),
+                            (lang.getTranslatedText("madeby") + " " + s.getFullName()),
                             emp.getEmployee().getStartDate() != null ? emp.getEmployee().getStartDate().toString() : "")
             );
         }
@@ -336,7 +363,7 @@ public class DashboardController extends BaseController {
             recentActivitiesContainer.getChildren().add(
                     createActivityItem("📅", "activity-leave",
                             leave.getMessage(lang.getCurrentLanguageCode()),
-                            ("Made by admin " + s.getFullName()),
+                            (lang.getTranslatedText("madeby") + " " + s.getFullName()),
                             leave.getLeave().getStartDate() != null ? leave.getLeave().getStartDate().toString() : "")
             );
         }
@@ -349,7 +376,7 @@ public class DashboardController extends BaseController {
             recentActivitiesContainer.getChildren().add(
                     createActivityItem("+", "activity-new",
                             changeDept.getMessage(lang.getCurrentLanguageCode()),
-                            ("Made by admin " + s.getFullName()),
+                            (lang.getTranslatedText("madeby") + " " + s.getFullName()),
                             changeDept.getDepartment().getCreationDate() != null ? changeDept.getDepartment().getCreationDate().toString() : "")
             );
         }
@@ -396,6 +423,7 @@ public class DashboardController extends BaseController {
     // ── "View More" Recent Activity Popup ─────────────────────────────────────
     @FXML
     private void handleViewMoreActivities() {
+        entity.LanguageManager lang = LanguageManager.getInstance();
         Stage popup = new Stage();
         popup.initModality(Modality.APPLICATION_MODAL);
         popup.initStyle(StageStyle.UNDECORATED);
@@ -416,11 +444,9 @@ public class DashboardController extends BaseController {
         iconWrap.getChildren().addAll(iconCircle, iconLbl);
 
         VBox titleBox = new VBox(2);
-        Label titleLbl = new Label("Recent Activities");
+        Label titleLbl = new Label(lang.getTranslatedText("dashboard.recentActivities"));
         titleLbl.setStyle("-fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold;");
-        Label subLbl  = new Label("All employee and leave events from the system");
-        subLbl.setStyle("-fx-text-fill: rgba(255,255,255,0.6); -fx-font-size: 11px;");
-        titleBox.getChildren().addAll(titleLbl, subLbl);
+        titleBox.getChildren().addAll(titleLbl);
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -437,44 +463,48 @@ public class DashboardController extends BaseController {
         VBox activityList = new VBox(0);
         activityList.setStyle("-fx-background-color: white;");
 
-        List<Employee> employees = employeeDao.findAll();
-        employees.sort((a, b) -> Integer.compare(b.getId(), a.getId()));
 
-        List<Leave> leaves = leaveDao.findAll();
-        leaves.sort((a, b) -> Integer.compare(b.getId(), a.getId()));
+        app.UserSession s = app.UserSession.getInstance();
 
-        // Interleave entries: all employees + all leaves, styled differently
-        int maxRows = Math.max(employees.size(), leaves.size());
-        int empIdx = 0, leaveIdx = 0;
+        List<ChangeEmp> changesEmps = changeEmpDao.findAll();
+        changesEmps.sort((a, b) -> Integer.compare(b.getId(), a.getId()));
+        int empLimit = changesEmps.size();
+
         int rowNum = 0;
 
-        while (empIdx < employees.size() || leaveIdx < leaves.size()) {
-            if (empIdx < employees.size()) {
-                Employee emp = employees.get(empIdx++);
-                String dept = emp.getDepartment() != null
-                        ? emp.getDepartment().getDepartmentName() : "No Department";
-                String date = emp.getStartDate() != null ? emp.getStartDate().toString() : "—";
-                activityList.getChildren().add(
-                        buildActivityRow(rowNum++,
-                                "👤", "#e8f4ff", "#1565c0",
-                                "New Employee Added",
-                                emp.getFullName() + " joined " + dept,
-                                date, "Employee", "#1565c0", "#dbeafe"));
-            }
-            if (leaveIdx < leaves.size()) {
-                Leave leave = leaves.get(leaveIdx++);
-                String empName = leave.getEmployee() != null
-                        ? leave.getEmployee().getFullName() : "Unknown";
-                String type  = leave.getType() != null ? leave.getType() : "Leave";
-                String date  = leave.getStartDate() != null ? leave.getStartDate().toString() : "—";
-                String[] lc  = getActivityLeaveColor(type);
-                activityList.getChildren().add(
-                        buildActivityRow(rowNum++,
-                                getActivityLeaveEmoji(type), lc[0], lc[1],
-                                type + " Leave",
-                                empName + " — " + leave.getReason() != null ? (empName + " — " + (leave.getReason() != null && !leave.getReason().isEmpty() ? leave.getReason() : "No reason")) : empName,
-                                date, type, lc[1], lc[2]));
-            }
+        for (int i = 0; i < empLimit; i++) {
+            ChangeEmp emp = changesEmps.get(i);
+            activityList.getChildren().add(
+                    buildActivityRow(rowNum++,
+                            "👤", "#e8f4ff", "#1565c0",
+                            emp.getMessage(lang.getCurrentLanguageCode()),
+                            (lang.getTranslatedText("madeby") + " " + s.getFullName()), "", "", "#1565c0", "#dbeafe"));
+        }
+
+        // Last 2 leave records added (sorted by ID descending)
+        List<ChangeLeave> leaves = changeLeaveDao.findAll();
+        leaves.sort((a, b) -> Integer.compare(b.getId(), a.getId()));
+
+        int leaveLimit = leaves.size();
+        for (int i = 0; i < leaveLimit; i++) {
+            ChangeLeave leave = leaves.get(i);
+            activityList.getChildren().add(
+                    buildActivityRow(rowNum++,
+                            "📅", "#e8f4ff", "#1565c0",
+                            leave.getMessage(lang.getCurrentLanguageCode()),
+                            (lang.getTranslatedText("madeby") + " " + s.getFullName()), "", "", "#1565c0", "#dbeafe"));
+        }
+
+        List<ChangeDept> changeDepts = changeDeptDao.findAll();
+        changeDepts.sort((a, b) -> Integer.compare(b.getId(), a.getId()));
+        int changeDeptsLimit = changeDepts.size();
+        for (int i = 0; i < changeDeptsLimit; i++) {
+            ChangeDept changeDept = changeDepts.get(i);
+            activityList.getChildren().add(
+                    buildActivityRow(rowNum++,
+                            "+", "#e8f4ff", "#1565c0",
+                            changeDept.getMessage(lang.getCurrentLanguageCode()),
+                            (lang.getTranslatedText("madeby") + " " + s.getFullName()), "", "", "#1565c0", "#dbeafe"));
         }
 
         if (activityList.getChildren().isEmpty()) {
@@ -496,18 +526,14 @@ public class DashboardController extends BaseController {
         footer.setPadding(new Insets(14, 25, 16, 25));
         footer.setStyle("-fx-background-color: #f8f9ff; -fx-background-radius: 0 0 15 15;" +
                 "-fx-border-color: #e8eaf0; -fx-border-width: 1 0 0 0;");
-        Label countLbl = new Label(
-                "Showing " + activityList.getChildren().size() + " activities  •  " +
-                        employees.size() + " employees  •  " + leaves.size() + " leave records");
-        countLbl.setStyle("-fx-text-fill: #7f8c8d; -fx-font-size: 11px;");
-        HBox.setHgrow(countLbl, Priority.ALWAYS);
 
-        Button doneBtn = new Button("Close");
+
+        Button doneBtn = new Button(lang.getTranslatedText("btn.close"));
         doneBtn.setStyle("-fx-background-color: linear-gradient(to right,#6c63ff,#5a52d4);" +
                 "-fx-text-fill:white;-fx-font-weight:bold;-fx-font-size:13px;" +
                 "-fx-padding:9 28;-fx-background-radius:8;-fx-cursor:hand;");
         doneBtn.setOnAction(e -> popup.close());
-        footer.getChildren().addAll(countLbl, doneBtn);
+        footer.getChildren().addAll(doneBtn);
 
         // ── Assemble card ─────────────────────────────────────────────────
         VBox card = new VBox();

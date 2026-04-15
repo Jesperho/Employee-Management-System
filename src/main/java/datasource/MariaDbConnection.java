@@ -29,8 +29,6 @@ public class MariaDbConnection {
         props.put("jakarta.persistence.jdbc.url", url);
 
         // Optional: read user/password from env as well
-        String user = System.getenv().getOrDefault("DB_USER", "appuser");
-        String password = System.getenv().getOrDefault("DB_PASSWORD", "password");
         props.put("jakarta.persistence.jdbc.user", user);
         props.put("jakarta.persistence.jdbc.password", password);
 

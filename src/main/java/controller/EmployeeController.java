@@ -140,6 +140,7 @@
 
                 setupFilters();
                 setupTable();
+                updateStats();
             }
 
             private void refreshTableTranslations() {
@@ -297,7 +298,7 @@
 
 
                 employeeTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-                colId.setCellValueFactory(data -> new SimpleStringProperty(String.valueOf(data.getValue().getId())));
+                colId.setCellValueFactory(data -> new SimpleStringProperty(String.valueOf(employeeTranslationDao.formatNumber(data.getValue().getId(), lang.getLanguage()))));
                 colName.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getFullName()));
 
                 colDepartment.setCellValueFactory(data -> {
@@ -368,8 +369,9 @@
 
             // Updates the stat counters at the top of the page
             private void updateStats() {
-                totalCount.setText(String.valueOf(employeeData.size()));
-                long ft = 0, pt = 0, intern = 0;
+                entity.LanguageManager lang = LanguageManager.getInstance();
+                totalCount.setText(String.valueOf(employeeTranslationDao.formatNumber(employeeData.size(), lang.getLanguage())));
+                int ft = 0, pt = 0, intern = 0;
                 for (Employee emp : employeeData) {
                     String ct = emp.getContractType();
                     if (ct != null) {
@@ -379,9 +381,10 @@
                         else if (ctLower.contains("intern")) intern++;
                     }
                 }
-                fullTimeCount.setText(String.valueOf(ft));
-                remoteCount.setText(String.valueOf(pt));   // remoteCount now shows Part-time
-                internCount.setText(String.valueOf(intern));
+                fullTimeCount.setText(String.valueOf(employeeTranslationDao.formatNumber(ft, lang.getLanguage())));
+
+                remoteCount.setText(String.valueOf(employeeTranslationDao.formatNumber(pt, lang.getLanguage())));   // remoteCount now shows Part-time
+                internCount.setText(String.valueOf(employeeTranslationDao.formatNumber(intern, lang.getLanguage())));
             }
 
             @FXML
@@ -420,7 +423,7 @@
                 nameText.setStyle("-fx-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;");
                 String deptName = getDepartmentName(emp);
                 javafx.scene.text.Text roleText = new javafx.scene.text.Text(
-                        getOrDefault(emp.getTranslatedPosition(langCode)) + "  •  " + deptName);
+                        getOrDefault(emp.getTranslatedPosition(langCode)) + "  •  " +  emp.getTranslatedDepartment(langCode));
                 roleText.setStyle("-fx-fill: rgba(255,255,255,0.7); -fx-font-size: 12px;");
                 header.getChildren().addAll(avatar, nameText, roleText);
 
@@ -432,9 +435,9 @@
 
 
                 emp.getTranslatedStartDate(langCode);
-                addInfoCard(grid, 0, "🪪  " + lang.getTranslatedText("emp.col.id"),         String.valueOf(emp.getId()),       "📅  " + lang.getTranslatedText("emp.col.startDate"), getOrDefault(emp.getTranslatedStartDate(langCode)));
+                addInfoCard(grid, 0, "🪪  " + lang.getTranslatedText("emp.col.id"),         String.valueOf(employeeTranslationDao.formatNumber(emp.getId(), lang.getLanguage())),       "📅  " + lang.getTranslatedText("emp.col.startDate"), getOrDefault(emp.getTranslatedStartDate(langCode)));
                 addInfoCard(grid, 1, "⚧  " + lang.getTranslatedText("emp.col.gender"),      getOrDefault(emp.getTranslatedGender(langCode)),     "📋  " + lang.getTranslatedText("emp.col.contract"),  getOrDefault(emp.getTranslatedContract(langCode)));
-                addInfoCard(grid, 2, "💰  " + lang.getTranslatedText("emp.form.salary"),     getOrDefault(emp.getTranslatedSalary(langCode)),                            "🏢  " + lang.getTranslatedText("emp.col.department"), deptName);
+                addInfoCard(grid, 2, "💰  " + lang.getTranslatedText("emp.form.salary"),     getOrDefault(emp.getTranslatedSalary(langCode)),                            "🏢  " + lang.getTranslatedText("emp.col.department"), emp.getTranslatedDepartment(langCode));
 
 
                 Button closeBtn = new Button("✕  " + lang.getTranslatedText("btn.close"));
