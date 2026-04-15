@@ -103,13 +103,13 @@ This reflects the system’s focus on centralized HR management.
 The ER diagram illustrates the core structure of the Employee Management System, showing how entities such as Company, Department, Employee, Leave, and Admin relate to each other.  
 It also includes associative entities (ChangeEmp, ChangeDept, ChangeLeave) used for audit logging.
 
-![ER Diagram](https://github.com/Jesperho/Employee-Management-System/blob/main/docs/Diagrams/ER_Diagram.jpeg)
+![ER Diagram](https://github.com/Jesperho/Employee-Management-System/blob/main/docs/Diagrams/ER_Diagram2.png)
 
 The ER diagram models the core structure of the system:
 
 - **Company** has many **Departments**, **Employees**, and **Admins**
-- **Department** has many **Employees**
-- **Employee** takes many **Leaves**
+- **Department** has many **Employees** and **Department Translations**
+- **Employee** takes many **Leaves** and **Employee Translations**
 - **Admin** performs changes on Employees, Departments, and Leaves
 - **ChangeEmp**, **ChangeDept**, and **ChangeLeave** act as **audit logs**
 - **Supervisor** is a recursive relationship where an employee may supervise others
@@ -121,7 +121,7 @@ This structure ensures both operational data and administrative actions are trac
 The relational schema represents the physical database structure in MariaDB.  
 It includes primary keys, foreign keys, and table relationships for all entities in the system.
 
-![Relational Schema](https://github.com/Jesperho/Employee-Management-System/blob/main/docs/Diagrams/Relational_Schema.jpeg)
+![Relational Schema](https://github.com/Jesperho/Employee-Management-System/blob/main/docs/Diagrams/Relational_Schema2.png)
 
 ---
 ## Class Diagram
@@ -194,6 +194,28 @@ This ensures full transparency and traceability.
 ## Language Support
 
 The application is available in **4 languages**: English, Spanish, Persian, and Arabic.
+
+
+## Database Localization Strategy
+
+This project implements a multi-language (localization) architecture directly at the database level. The system uses a hybrid approach combining **Field Localization (Column-based)** and **Translation Tables (Entity-based)**.
+
+![ER Diagram](https://github.com/Jesperho/Employee-Management-System/blob/main/docs/Diagrams/ER_Diagram2.png)
+
+### 1. Field Localization (Audit & Tracking Entities)
+For saving history and logs, the tables, specifically `ChangeLeave`, `ChangeDept`, and `ChangeEmp` utilizes a field localization pattern.
+
+Because these tables primarily store discrete message logs, translations are handled via dedicated columns directly within the table. This ensures fast inserts and simple retrieval.
+* **Supported Languages:** English, Spanish, Farsi, and Arabic.
+* **Column Format:** `message_en`, `message_es`, `message_fa`, and `message_ar`.
+
+### 2. Translation Tables (Core Entities)
+For the primary entities, such as `Department`, `Employee`, and `Leaves`, the project utilizes a Translation Table design pattern.
+
+Instead of adding language-specific columns to the main tables, a dedicated, related table is created to hold the translations. This keeps the core entity schemas clean, normalizes the database, and provides a scalable way to support all languages.
+* **Main Entities:** `Department`, `Employee`, `Leaves`
+* **Associated Translation Tables:** `Department_Translation`, `Employee_Translation`, `Leave_Translation`
+
 
 ### How to Change Language
 
