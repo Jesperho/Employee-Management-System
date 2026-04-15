@@ -82,13 +82,14 @@ MariaDB stores all persistent data with foreign‑key relationships ensuring con
 The use case diagram shows the main interactions between the Admin and the system.  
 The Admin can manage employees, departments, salaries, leave records, and view dashboards and change logs.
 
-![Use Case Diagram](https://github.com/Jesperho/Employee-Management-System/blob/main/docs/Diagrams/UseCase_Diagram.jpeg)
+![Use Case Diagram](https://github.com/Jesperho/Employee-Management-System/blob/main/docs/Diagrams/UseCase_Diagram.JPG)
 
 The use‑case diagram shows the **Admin** as the main actor.
 
 The Admin can:
 
 - Register / Sign In
+- Change Language
 - Manage Employees
 - Manage Departments
 - Manage Salaries
