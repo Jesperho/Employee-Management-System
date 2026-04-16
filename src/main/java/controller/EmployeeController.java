@@ -357,7 +357,11 @@
 
                         viewBtn.setOnAction(e -> showViewPopup(getTableView().getItems().get(getIndex())));
                         editBtn.setOnAction(e -> showEditPopup(getTableView().getItems().get(getIndex())));
-                        deleteBtn.setOnAction(e -> handleDeleteEmployee(getTableView().getItems().get(getIndex())));
+                        deleteBtn.setOnAction(e -> {
+                            int idx = getIndex();
+                            if (idx >= 0 && idx < getTableView().getItems().size())
+                                handleDeleteEmployee(getTableView().getItems().get(idx));
+                        });
                     }
 
                     @Override
@@ -726,33 +730,25 @@
             // Asks for confirmation then deletes the employee from the DB
             private void handleDeleteEmployee(Employee emp) {
                 Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-                confirm.setTitle("Delete Employee");
-                confirm.setHeaderText("Are you sure?");
-                confirm.setContentText("Delete employee: " + emp.getFullName() + " (ID: " + emp.getId() + ")?");
+                entity.LanguageManager lang = entity.LanguageManager.getInstance();
+                confirm.setTitle(lang.getTranslatedText("alert.deleteConfirm"));
+                confirm.setHeaderText(lang.getTranslatedText("alert.areYouSure"));
+                confirm.setContentText(lang.getTranslatedText("emp.delete.confirm")
+                        .replace("{0}", emp.getFullName()));
                 Optional<ButtonType> result = confirm.showAndWait();
                 if (result.isPresent() && result.get() == ButtonType.OK) {
-                    LocalDate date = LocalDate.now();
-                    app.UserSession s = app.UserSession.getInstance();
-
-                    String en = "Employee " + emp.getFullName() + " was edited!";
-                    String es = "El empleado " + emp.getFullName() + " fue editado!";
-                    String fa = "کارمند " + emp.getFullName() + " ویرایش شد!";
-                    String ar = "تم تعديل الموظف " + emp.getFullName() + "!";
-
-                    ChangeEmp newChangeEmp = new ChangeEmp(
-                            date,
-                            en,
-                            fa,
-                            ar,
-                            es,
-                            s.getAdmin(),
-                            emp
-                    );
-                    changeEmpDao.create(newChangeEmp);
-
-                    changeEmpDao.create(newChangeEmp);
                     employeeTranslationDao.deleteByEmployee(emp);
                     employeeDao.delete(emp.getId());
+
+                    String en = java.text.MessageFormat.format(lang.getTranslatedTexts("emp.activity.deleted", "en"), emp.getFullName());
+                    String es = java.text.MessageFormat.format(lang.getTranslatedTexts("emp.activity.deleted", "es"), emp.getFullName());
+                    String fa = java.text.MessageFormat.format(lang.getTranslatedTexts("emp.activity.deleted", "fa"), emp.getFullName());
+                    String ar = java.text.MessageFormat.format(lang.getTranslatedTexts("emp.activity.deleted", "ar"), emp.getFullName());
+
+                    changeEmpDao.create(new ChangeEmp(
+                            LocalDate.now(), en, fa, ar, es,
+                            app.UserSession.getInstance().getAdmin(), emp
+                    ));
                     loadFromDatabase();
                 }
             }

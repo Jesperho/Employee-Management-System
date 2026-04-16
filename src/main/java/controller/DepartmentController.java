@@ -25,10 +25,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-// Make sure to import BaseController if it's in a different package!
-// import util.BaseController;
-
-// 1. Extend BaseController instead of implementing Initializable
 public class DepartmentController extends BaseController {
 
     @FXML private TextField searchField;
@@ -55,6 +51,7 @@ public class DepartmentController extends BaseController {
     @FXML private TableColumn<ObservableList<String>, String> colCapacity;
     @FXML private TableColumn<ObservableList<String>, String> colEmployees;
     @FXML private TableColumn<ObservableList<String>, String> colCreationDate;
+    @FXML private TableColumn<ObservableList<String>, String> colDescription;
     @FXML private TableColumn<ObservableList<String>, String> colActions;
 
     @FXML private Text pageInfo;
@@ -1037,45 +1034,45 @@ public class DepartmentController extends BaseController {
 
     // Uses safeDelete — blocks deletion if employees are still assigned
     private void handleDeleteDepartment(ObservableList<String> row) {
+        entity.LanguageManager lang = entity.LanguageManager.getInstance();
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-        confirm.setTitle("Delete Department");
-        confirm.setHeaderText("Are you sure?");
-        confirm.setContentText("Delete department: " + row.get(1) + "?");
+        confirm.setTitle(lang.getTranslatedText("alert.deleteConfirm"));
+        confirm.setHeaderText(lang.getTranslatedText("alert.areYouSure"));
+        confirm.setContentText(lang.getTranslatedText("dept.delete.confirm")
+                .replace("{0}", row.get(1)));
         Optional<ButtonType> result = confirm.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
             int id = Integer.parseInt(row.get(0));
             Department dept = departmentDao.find(id);
 
+            // Attempt deletion first; only proceed if no employees are assigned
+            boolean deleted = departmentDao.safeDelete(id);
+            if (!deleted) {
+                showAlert(lang.getTranslatedText("alert.cannotDelete"),
+                        lang.getTranslatedText("dept.delete.hasEmployees"));
+                return;
+            }
+
+            // Safe to remove translations and log activity now
             departmentTranslationDao.deleteByDepartment(dept);
-
-            LocalDate date = LocalDate.now();
-            entity.LanguageManager lang = entity.LanguageManager.getInstance();
-            app.UserSession s = app.UserSession.getInstance();
-
 
             String deptName = dept.getDepartmentName();
             String deptKey = lang.getKey(deptName);
-
-
             changeDeptDao.create(new ChangeDept(
-                    date,
-                    java.text.MessageFormat.format(lang.getTranslatedTexts("dept.activity.deleted", "en"), lang.getTranslatedTexts(deptKey, "en")),
-                    java.text.MessageFormat.format(lang.getTranslatedTexts("dept.activity.deleted", "fa"), lang.getTranslatedTexts(deptKey, "fa")),
-                    java.text.MessageFormat.format(lang.getTranslatedTexts("dept.activity.deleted", "ar"), lang.getTranslatedTexts(deptKey, "ar")),
-                    java.text.MessageFormat.format(lang.getTranslatedTexts("dept.activity.deleted", "es"), lang.getTranslatedTexts(deptKey, "es")),
-                    s.getAdmin(),
+                    LocalDate.now(),
+                    java.text.MessageFormat.format(lang.getTranslatedTexts("dept.activity.deleted", "en"), deptKey != null ? lang.getTranslatedTexts(deptKey, "en") : deptName),
+                    java.text.MessageFormat.format(lang.getTranslatedTexts("dept.activity.deleted", "fa"), deptKey != null ? lang.getTranslatedTexts(deptKey, "fa") : deptName),
+                    java.text.MessageFormat.format(lang.getTranslatedTexts("dept.activity.deleted", "ar"), deptKey != null ? lang.getTranslatedTexts(deptKey, "ar") : deptName),
+                    java.text.MessageFormat.format(lang.getTranslatedTexts("dept.activity.deleted", "es"), deptKey != null ? lang.getTranslatedTexts(deptKey, "es") : deptName),
+                    app.UserSession.getInstance().getAdmin(),
                     dept
             ));
 
-            boolean deleted = departmentDao.safeDelete(id);
-            if (!deleted) {
-                showAlert("Cannot Delete", "This department still has employees assigned to it.\nReassign or remove them first.");
-                return;
-            }
             loadFromDatabase();
             setupFilters();
         }
     }
+
 
     @FXML
     private void handleSearch() {

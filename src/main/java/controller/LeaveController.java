@@ -348,26 +348,31 @@ public class LeaveController extends BaseController {
         });
     }
 
-    // 6. Object-oriented updateStats
     private void updateStats() {
         entity.LanguageManager lang = LanguageManager.getInstance();
         LocalDate today = LocalDate.now();
-        totalLeaves.setText(String.valueOf(leaveTranslationDao.formatNumber(leaveData.size(),lang.getLanguage())));
+        totalLeaves.setText(String.valueOf(leaveTranslationDao.formatNumber(leaveData.size(), lang.getLanguage())));
 
         long active = leaveData.stream().filter(r -> {
             if (r.getStartDate() == null || r.getEndDate() == null) return false;
-            return (today.isEqual(r.getStartDate()) || today.isAfter(r.getStartDate()))
-                    && (today.isEqual(r.getEndDate()) || today.isBefore(r.getEndDate()));
+            return !today.isBefore(r.getStartDate()) && !today.isAfter(r.getEndDate());
         }).count();
         activeLeaves.setText(String.valueOf(leaveTranslationDao.formatNumber(active, lang.getLanguage())));
 
-        long sick = leaveData.stream().filter(r -> r.getType() != null && r.getType().toLowerCase().contains("sick")).count();
+        long sick = leaveData.stream()
+                .filter(r -> r.getType() != null && r.getType().toLowerCase().contains("sick"))
+                .count();
         sickLeaves.setText(String.valueOf(leaveTranslationDao.formatNumber(sick, lang.getLanguage())));
 
-        long totalDays = 0;
+        // Sum all individual leave durations then divide for a true average (inclusive day count)
+        long totalDays = leaveData.stream()
+                .filter(r -> r.getStartDate() != null && r.getEndDate() != null)
+                .mapToLong(r -> ChronoUnit.DAYS.between(r.getStartDate(), r.getEndDate()) + 1)
+                .sum();
         long avg = leaveData.isEmpty() ? 0 : totalDays / leaveData.size();
         avgDuration.setText(String.valueOf(leaveTranslationDao.formatNumber(avg, lang.getLanguage())));
     }
+
 
     @FXML
     private void handleApplyLeave() {
@@ -783,37 +788,33 @@ public class LeaveController extends BaseController {
         }
     }
 
-    // 10. Delete function now takes Leave directly
     private void handleDeleteLeave(Leave leave) {
+        LanguageManager lang = LanguageManager.getInstance();
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-        confirm.setTitle(LanguageManager.getInstance().getTranslatedText("alert.deleteConfirm"));
-        confirm.setHeaderText(LanguageManager.getInstance().getTranslatedText("alert.deleteConfirm"));
-        confirm.setContentText("Delete leave record for: " + (leave.getEmployee() != null ? leave.getEmployee().getFullName() : "N/A") + "?");
+        confirm.setTitle(lang.getTranslatedText("alert.deleteConfirm"));
+        confirm.setHeaderText(lang.getTranslatedText("alert.areYouSure"));
+        confirm.setContentText(lang.getTranslatedText("leave.delete.confirm")
+                .replace("{0}", leave.getEmployee() != null ? leave.getEmployee().getFullName() : "N/A"));
 
         Optional<ButtonType> result = confirm.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
+            // Log activity before deletion so the entity reference is still valid
+            String en = java.text.MessageFormat.format(lang.getTranslatedTexts("leave.activity.deleted", "en"), leave.getId());
+            String es = java.text.MessageFormat.format(lang.getTranslatedTexts("leave.activity.deleted", "es"), leave.getId());
+            String fa = java.text.MessageFormat.format(lang.getTranslatedTexts("leave.activity.deleted", "fa"), leave.getId());
+            String ar = java.text.MessageFormat.format(lang.getTranslatedTexts("leave.activity.deleted", "ar"), leave.getId());
+
+            changeLeaveDao.create(new ChangeLeave(
+                    LocalDate.now(), en, fa, ar, es,
+                    app.UserSession.getInstance().getAdmin(), leave
+            ));
+
             leaveTranslationDao.deleteByLeave(leave);
-
-            String en = "Leave " + leave.getId() + " was deleted!";
-            String es = "¡La licencia " + leave.getId() + " fue eliminada!";
-            String fa = "مرخصی " + leave.getId() + " حذف شد!";
-            String ar = "تم حذف الإجازة " + leave.getId() + "!";
-
-            ChangeLeave newChangeLeave = new ChangeLeave(
-                    LocalDate.now(),
-                    en,
-                    fa,
-                    ar,
-                    es,
-                    app.UserSession.getInstance().getAdmin(),
-                    leave
-            );
-            changeLeaveDao.create(newChangeLeave);
-
             leaveDao.delete(leave.getId());
             loadFromDatabase();
         }
     }
+
 
     @FXML private void handleSearch() { applyFilters(); }
     @FXML private void handlePreviousPage() {}
