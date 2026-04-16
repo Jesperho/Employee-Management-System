@@ -42,7 +42,7 @@ class DepartmentTranslationDaoTest {
 
     private DepartmentTranslation createTranslation(Department dept, String langCode) {
         DepartmentTranslation t = new DepartmentTranslation(
-                langCode, "IT Department", dept, "01 January 2022", 10
+                langCode, "IT Department", dept, "01 January 2022", "10"
         );
         translationDao.create(t);
         return t;

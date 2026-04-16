@@ -38,7 +38,7 @@ class EmployeeTranslationDaoTest {
 
     private EmployeeTranslation createTranslation(Employee employee, String langCode) {
         EmployeeTranslation t = new EmployeeTranslation(
-                langCode, "Junior Developer", "Full-time", "Male", employee, "01 January 2024", 4000.0
+                langCode, "Junior Developer", "Full-time", "Male", employee, "01 January 2024", "4000.0"
         );
         translationDao.create(t);
         return t;

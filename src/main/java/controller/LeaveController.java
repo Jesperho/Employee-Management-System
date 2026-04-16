@@ -363,7 +363,10 @@ public class LeaveController extends BaseController {
         long sick = leaveData.stream().filter(r -> r.getType() != null && r.getType().toLowerCase().contains("sick")).count();
         sickLeaves.setText(String.valueOf(leaveTranslationDao.formatNumber(sick, lang.getLanguage())));
 
-        long totalDays = 0;
+        long totalDays = leaveData.stream()
+                .filter(r -> r.getDuration() != null)
+                .mapToLong(Leave::getDuration)
+                .sum();
         long avg = leaveData.isEmpty() ? 0 : totalDays / leaveData.size();
         avgDuration.setText(String.valueOf(leaveTranslationDao.formatNumber(avg, lang.getLanguage())));
     }

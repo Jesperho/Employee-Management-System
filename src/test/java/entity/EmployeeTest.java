@@ -158,7 +158,7 @@ class EmployeeTest {
     @DisplayName("getTranslation returns matching translation by language code")
     void testGetTranslation() throws Exception {
         EmployeeTranslation enTranslation = new EmployeeTranslation(
-                "en", "Senior Developer", "Full-time", "Female", employee, "15 January 2023", 5500.0
+                "en", "Senior Developer", "Full-time", "Female", employee, "15 January 2023", "5500.0"
         );
         addTranslation(employee, enTranslation);
 
@@ -177,7 +177,7 @@ class EmployeeTest {
     @DisplayName("getTranslatedGender returns translated value when translation exists")
     void testGetTranslatedGender() throws Exception {
         EmployeeTranslation translation = new EmployeeTranslation(
-                "es", "Desarrolladora Senior", "Tiempo completo", "Femenino", employee, "15 enero 2023", 5500.0
+                "es", "Desarrolladora Senior", "Tiempo completo", "Femenino", employee, "15 enero 2023", "5500.0"
         );
         addTranslation(employee, translation);
 
@@ -194,7 +194,7 @@ class EmployeeTest {
     @DisplayName("getTranslatedContract returns translated value when translation exists")
     void testGetTranslatedContract() throws Exception {
         EmployeeTranslation translation = new EmployeeTranslation(
-                "es", "Desarrolladora Senior", "Tiempo completo", "Femenino", employee, "15 enero 2023", 5500.0
+                "es", "Desarrolladora Senior", "Tiempo completo", "Femenino", employee, "15 enero 2023", "5500.0"
         );
         addTranslation(employee, translation);
 
@@ -211,7 +211,7 @@ class EmployeeTest {
     @DisplayName("getTranslatedPosition returns translated value when translation exists")
     void testGetTranslatedPosition() throws Exception {
         EmployeeTranslation translation = new EmployeeTranslation(
-                "es", "Desarrolladora Senior", "Tiempo completo", "Femenino", employee, "15 enero 2023", 5500.0
+                "es", "Desarrolladora Senior", "Tiempo completo", "Femenino", employee, "15 enero 2023", "5500.0"
         );
         addTranslation(employee, translation);
 
@@ -228,7 +228,7 @@ class EmployeeTest {
     @DisplayName("getTranslatedStartDate returns translated value when translation exists")
     void testGetTranslatedStartDate() throws Exception {
         EmployeeTranslation translation = new EmployeeTranslation(
-                "es", "Desarrolladora Senior", "Tiempo completo", "Femenino", employee, "15 enero 2023", 5500.0
+                "es", "Desarrolladora Senior", "Tiempo completo", "Femenino", employee, "15 enero 2023", "5500.0"
         );
         addTranslation(employee, translation);
 
@@ -239,7 +239,7 @@ class EmployeeTest {
     @DisplayName("getTranslatedSalary returns translated salary string when translation exists")
     void testGetTranslatedSalary() throws Exception {
         EmployeeTranslation translation = new EmployeeTranslation(
-                "es", "Desarrolladora Senior", "Tiempo completo", "Femenino", employee, "15 enero 2023", 5500.0
+                "es", "Desarrolladora Senior", "Tiempo completo", "Femenino", employee, "15 enero 2023", "5500.0"
         );
         addTranslation(employee, translation);
 

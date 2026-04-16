@@ -15,7 +15,7 @@ class EmployeeTranslationTest {
     void setUp() {
         employee = new Employee();
         translation = new EmployeeTranslation(
-                "en", "Senior Developer", "Full-time", "Male", employee, "15 January 2023", 5500.0
+                "en", "Senior Developer", "Full-time", "Male", employee, "15 January 2023", "5500.0"
         );
     }
 
@@ -28,7 +28,7 @@ class EmployeeTranslationTest {
         assertEquals("Full-time", translation.getContractType());
         assertEquals("Male", translation.getGender());
         assertEquals("15 January 2023", translation.getStartDate());
-        assertEquals(5500.0, translation.getSalary());
+        assertEquals("5500.0", translation.getSalary());
     }
 
     @Test

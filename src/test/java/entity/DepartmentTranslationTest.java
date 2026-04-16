@@ -18,7 +18,7 @@ class DepartmentTranslationTest {
     void setUp() {
         company = new Company("TestCorp", "123 Street", "Finland");
         department = new Department(50, "IT", "IT Department", LocalDate.of(2022, 1, 1), company);
-        translation = new DepartmentTranslation("en", "IT", department, "01 January 2022", 50);
+        translation = new DepartmentTranslation("en", "IT", department, "01 January 2022", "50");
     }
 
     @Test
@@ -29,7 +29,7 @@ class DepartmentTranslationTest {
         assertEquals("IT", translation.getDepartmentName());
         assertEquals(department, translation.getDepartment());
         assertEquals("01 January 2022", translation.getCreationDateText());
-        assertEquals(50, translation.getCapacity());
+        assertEquals("50", translation.getCapacity());
     }
 
     @Test
@@ -41,7 +41,7 @@ class DepartmentTranslationTest {
         assertNull(empty.getDepartmentName());
         assertNull(empty.getDepartment());
         assertNull(empty.getCreationDateText());
-        assertEquals(0, empty.getCapacity());
+        assertNull(empty.getCapacity());
     }
 
     @Test
