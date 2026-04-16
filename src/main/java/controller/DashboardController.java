@@ -105,6 +105,7 @@ public class DashboardController extends BaseController {
     private final ChangeLeaveDao changeLeaveDao = new ChangeLeaveDao();
     private final ChangeDeptDao changeDeptDao = new ChangeDeptDao();
     private final DepartmentDao departmentDao = new DepartmentDao();
+    private final DepartmentTranslationDao departmentTranslationDao = new DepartmentTranslationDao();
     private final LeaveDao leaveDao = new LeaveDao();
 
     @Override
@@ -176,6 +177,7 @@ public class DashboardController extends BaseController {
         }
 
         loadRecentActivities();
+        loadDashboardData();
     }
 
     private void setupUserProfile() {
@@ -249,11 +251,11 @@ public class DashboardController extends BaseController {
         int total = employees.size();
         int active = total - currentlyOnLeave;
 
-        if (totalEmployeesCount != null) totalEmployeesCount.setText(String.valueOf(total));
-        if (activeEmployeesCount != null) activeEmployeesCount.setText(String.valueOf(active));
-        if (onLeaveCount != null) onLeaveCount.setText(String.valueOf(currentlyOnLeave));
-        if (pendingLeaveText != null) pendingLeaveText.setText(pendingLeaves +"");
-        if (departmentsCount != null) departmentsCount.setText(String.valueOf(departments.size()));
+        if (totalEmployeesCount != null) totalEmployeesCount.setText(String.valueOf(departmentTranslationDao.formatNumber(total, lang.getLanguage())));
+        if (activeEmployeesCount != null) activeEmployeesCount.setText(String.valueOf(departmentTranslationDao.formatNumber(active, lang.getLanguage())));
+        if (onLeaveCount != null) onLeaveCount.setText(String.valueOf(departmentTranslationDao.formatNumber(currentlyOnLeave, lang.getLanguage())));
+        if (pendingLeaveText != null) pendingLeaveText.setText(departmentTranslationDao.formatNumber(pendingLeaves, lang.getLanguage()) +"");
+        if (departmentsCount != null) departmentsCount.setText(String.valueOf(departmentTranslationDao.formatNumber(departments.size(), lang.getLanguage())));
 
         // Dynamic sub-labels
         // Attendance rate = active / total * 100
@@ -307,9 +309,9 @@ public class DashboardController extends BaseController {
         }
         int avgSalaryAmount = salaryCount > 0 ? totalPayrollAmount / salaryCount : 0;
 
-        if (totalPayroll != null) totalPayroll.setText("€" + String.format("%,d", totalPayrollAmount));
-        if (avgSalary != null) avgSalary.setText("€" + String.format("%,d", avgSalaryAmount));
-        if (pendingPayments != null) pendingPayments.setText("€0");
+        if (totalPayroll != null) totalPayroll.setText(departmentTranslationDao.formatNumber(totalPayrollAmount, lang.getLanguage()));
+        if (avgSalary != null) avgSalary.setText(departmentTranslationDao.formatNumber(avgSalaryAmount, lang.getLanguage()));
+        if (pendingPayments != null) pendingPayments.setText(departmentTranslationDao.formatNumber(0, lang.getLanguage()));
     }
 
     public String formatNumber(double number, String language) {
