@@ -111,9 +111,9 @@ Sprint 7 is essential for validating the system’s quality before final documen
 
 | Team Member      | Hours Spent | Contributions | In-class Tasks |
 |------------------|-------------|---------------|----------------|
-| Amir Noori       | 25 hours    | Implemented database localization, updated ERD, validated multilingual data | Submitted |
+| Amir Noori       | 22 hours    | Implemented database localization, updated ERD, validated multilingual data | Submitted |
 | Jesper Holmström | 23 hours    | Ran static code analysis, documented findings, updated UML diagrams | Submitted |
-| Mehdi Zaidane    | 22 hours    | Refactored codebase, removed duplicate logic, ensured unit tests passed | Submitted |
+| Mehdi Zaidane    | 25 hours    | Refactored codebase, removed duplicate logic, ensured unit tests passed | Submitted |
 | Osama Aamer      | 24 hours    | Created Acceptance Test Plan, updated README, validated UI with localized DB content | Submitted |
 
 ---
