@@ -83,4 +83,48 @@ class ChangeLeaveTest {
         changeLeave.setLeave(newLeave);
         assertEquals(newLeave, changeLeave.getLeave());
     }
+
+    @Test
+    @DisplayName("getMessage returns correct translation for each language code")
+    void testGetMessageAllLanguages() {
+        changeLeave = new ChangeLeave(date, "en-msg", "fa-msg", "ar-msg", "es-msg", admin, leave);
+        assertEquals("en-msg", changeLeave.getMessage("en"));
+        assertEquals("fa-msg", changeLeave.getMessage("fa"));
+        assertEquals("ar-msg", changeLeave.getMessage("ar"));
+        assertEquals("es-msg", changeLeave.getMessage("es"));
+        assertEquals("en-msg", changeLeave.getMessage("unknown"));
+    }
+
+    @Test
+    @DisplayName("setMessageFa and getMessageFa work correctly")
+    void testSetMessageFa() {
+        changeLeave.setMessageFa("تایید مرخصی");
+        assertEquals("تایید مرخصی", changeLeave.getMessageFa());
+    }
+
+    @Test
+    @DisplayName("setMessageAr and getMessageAr work correctly")
+    void testSetMessageAr() {
+        changeLeave.setMessageAr("الموافقة على الإجازة");
+        assertEquals("الموافقة على الإجازة", changeLeave.getMessageAr());
+    }
+
+    @Test
+    @DisplayName("setMessageEs and getMessageEs work correctly")
+    void testSetMessageEs() {
+        changeLeave.setMessageEs("Permiso aprobado");
+        assertEquals("Permiso aprobado", changeLeave.getMessageEs());
+    }
+
+    @Test
+    @DisplayName("getId returns null for unsaved entity")
+    void testGetId() {
+        assertNull(changeLeave.getId());
+    }
+
+    @Test
+    @DisplayName("getMessageEn returns the English message")
+    void testGetMessageEn() {
+        assertEquals("Approved leave", changeLeave.getMessageEn());
+    }
 }

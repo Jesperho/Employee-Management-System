@@ -135,8 +135,8 @@ class ChangeLeaveDaoTest {
 
         List<ChangeLeave> list = changeLeaveDao.findByLeave(l.getId());
 
-        assertTrue(list.stream().anyMatch(x -> x.getId() == cl1.getId()));
-        assertTrue(list.stream().anyMatch(x -> x.getId() == cl2.getId()));
+        assertTrue(list.stream().anyMatch(x -> x.getId().equals(cl1.getId())));
+        assertTrue(list.stream().anyMatch(x -> x.getId().equals(cl2.getId())));
     }
 
     @Test
@@ -163,7 +163,7 @@ class ChangeLeaveDaoTest {
 
         List<ChangeLeave> list = changeLeaveDao.findByAdmin(admin.getId());
 
-        assertTrue(list.stream().anyMatch(x -> x.getId() == cl.getId()));
+        assertTrue(list.stream().anyMatch(x -> x.getId().equals(cl.getId())));
     }
 
     @Test

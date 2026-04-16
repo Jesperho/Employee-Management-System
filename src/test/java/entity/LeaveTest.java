@@ -101,4 +101,89 @@ class LeaveTest {
         leave.setId(100);
         assertEquals(100, leave.getId());
     }
+
+    @Test
+    @DisplayName("getTranslation returns matching translation by language code")
+    void testGetTranslation() throws Exception {
+        LeaveTranslation t = new LeaveTranslation("es", "Vacaciones", leave, "01 marzo 2024", "06 marzo 2024", "6");
+        addTranslation(leave, t);
+
+        LeaveTranslation found = leave.getTranslation("es");
+        assertNotNull(found);
+        assertEquals("es", found.getLanguageCode());
+    }
+
+    @Test
+    @DisplayName("getTranslation returns null when no match")
+    void testGetTranslationNotFound() {
+        assertNull(leave.getTranslation("ar"));
+    }
+
+    @Test
+    @DisplayName("getTranslatedType returns translated value when translation exists")
+    void testGetTranslatedType() throws Exception {
+        LeaveTranslation t = new LeaveTranslation("es", "Vacaciones", leave, "01 marzo 2024", "06 marzo 2024", "6");
+        addTranslation(leave, t);
+
+        assertEquals("Vacaciones", leave.getTranslatedType("es"));
+    }
+
+    @Test
+    @DisplayName("getTranslatedType falls back to raw type when no translation")
+    void testGetTranslatedTypeFallback() {
+        assertEquals("Vacation", leave.getTranslatedType("ar"));
+    }
+
+    @Test
+    @DisplayName("getTranslatedStartDate returns text when translation exists")
+    void testGetTranslatedStartDate() throws Exception {
+        LeaveTranslation t = new LeaveTranslation("es", "Vacaciones", leave, "01 marzo 2024", "06 marzo 2024", "6");
+        addTranslation(leave, t);
+
+        assertEquals("01 marzo 2024", leave.getTranslatedStartDate("es"));
+    }
+
+    @Test
+    @DisplayName("getTranslatedStartDate returns empty string when no translation")
+    void testGetTranslatedStartDateFallback() {
+        assertEquals("", leave.getTranslatedStartDate("ar"));
+    }
+
+    @Test
+    @DisplayName("getTranslatedEndDate returns text when translation exists")
+    void testGetTranslatedEndDate() throws Exception {
+        LeaveTranslation t = new LeaveTranslation("es", "Vacaciones", leave, "01 marzo 2024", "06 marzo 2024", "6");
+        addTranslation(leave, t);
+
+        assertEquals("06 marzo 2024", leave.getTranslatedEndDate("es"));
+    }
+
+    @Test
+    @DisplayName("getTranslatedEndDate returns empty string when no translation")
+    void testGetTranslatedEndDateFallback() {
+        assertEquals("", leave.getTranslatedEndDate("ar"));
+    }
+
+    @Test
+    @DisplayName("getTranslatedDuration returns text when translation exists")
+    void testGetTranslatedDuration() throws Exception {
+        LeaveTranslation t = new LeaveTranslation("es", "Vacaciones", leave, "01 marzo 2024", "06 marzo 2024", "6");
+        addTranslation(leave, t);
+
+        assertEquals("6", leave.getTranslatedDuration("es"));
+    }
+
+    @Test
+    @DisplayName("getTranslatedDuration returns empty string when no translation")
+    void testGetTranslatedDurationFallback() {
+        assertEquals("", leave.getTranslatedDuration("ar"));
+    }
+
+    private void addTranslation(Leave l, LeaveTranslation translation) throws Exception {
+        java.lang.reflect.Field field = Leave.class.getDeclaredField("translations");
+        field.setAccessible(true);
+        @SuppressWarnings("unchecked")
+        java.util.List<LeaveTranslation> translations = (java.util.List<LeaveTranslation>) field.get(l);
+        translations.add(translation);
+    }
 }

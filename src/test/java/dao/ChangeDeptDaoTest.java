@@ -102,8 +102,8 @@ class ChangeDeptDaoTest {
 
         List<ChangeDept> list = changeDeptDao.findByDepartment(d.getId());
 
-        assertTrue(list.stream().anyMatch(x -> x.getId() == cd1.getId()));
-        assertTrue(list.stream().anyMatch(x -> x.getId() == cd2.getId()));
+        assertTrue(list.stream().anyMatch(x -> x.getId().equals(cd1.getId())));
+        assertTrue(list.stream().anyMatch(x -> x.getId().equals(cd2.getId())));
     }
 
     @Test
@@ -122,7 +122,7 @@ class ChangeDeptDaoTest {
         changeDeptDao.create(cd);
 
         List<ChangeDept> list = changeDeptDao.findByAdmin(a.getId());
-        assertTrue(list.stream().anyMatch(x -> x.getId() == cd.getId()));
+        assertTrue(list.stream().anyMatch(x -> x.getId().equals(cd.getId())));
     }
 
     @Test

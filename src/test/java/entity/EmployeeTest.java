@@ -153,4 +153,112 @@ class EmployeeTest {
         employee.setSalary(null);
         assertNull(employee.getSalary());
     }
+
+    @Test
+    @DisplayName("getTranslation returns matching translation by language code")
+    void testGetTranslation() throws Exception {
+        EmployeeTranslation enTranslation = new EmployeeTranslation(
+                "en", "Senior Developer", "Full-time", "Female", employee, "15 January 2023", "5500.0"
+        );
+        addTranslation(employee, enTranslation);
+
+        EmployeeTranslation found = employee.getTranslation("en");
+        assertNotNull(found);
+        assertEquals("en", found.getLanguage_code());
+    }
+
+    @Test
+    @DisplayName("getTranslation returns null when no matching language code")
+    void testGetTranslationNotFound() {
+        assertNull(employee.getTranslation("ar"));
+    }
+
+    @Test
+    @DisplayName("getTranslatedGender returns translated value when translation exists")
+    void testGetTranslatedGender() throws Exception {
+        EmployeeTranslation translation = new EmployeeTranslation(
+                "es", "Desarrolladora Senior", "Tiempo completo", "Femenino", employee, "15 enero 2023", "5500.0"
+        );
+        addTranslation(employee, translation);
+
+        assertEquals("Femenino", employee.getTranslatedGender("es"));
+    }
+
+    @Test
+    @DisplayName("getTranslatedGender falls back to raw gender when no translation")
+    void testGetTranslatedGenderFallback() {
+        assertEquals("Female", employee.getTranslatedGender("ar"));
+    }
+
+    @Test
+    @DisplayName("getTranslatedContract returns translated value when translation exists")
+    void testGetTranslatedContract() throws Exception {
+        EmployeeTranslation translation = new EmployeeTranslation(
+                "es", "Desarrolladora Senior", "Tiempo completo", "Femenino", employee, "15 enero 2023", "5500.0"
+        );
+        addTranslation(employee, translation);
+
+        assertEquals("Tiempo completo", employee.getTranslatedContract("es"));
+    }
+
+    @Test
+    @DisplayName("getTranslatedContract falls back to raw contractType when no translation")
+    void testGetTranslatedContractFallback() {
+        assertEquals("Full-time", employee.getTranslatedContract("ar"));
+    }
+
+    @Test
+    @DisplayName("getTranslatedPosition returns translated value when translation exists")
+    void testGetTranslatedPosition() throws Exception {
+        EmployeeTranslation translation = new EmployeeTranslation(
+                "es", "Desarrolladora Senior", "Tiempo completo", "Femenino", employee, "15 enero 2023", "5500.0"
+        );
+        addTranslation(employee, translation);
+
+        assertEquals("Desarrolladora Senior", employee.getTranslatedPosition("es"));
+    }
+
+    @Test
+    @DisplayName("getTranslatedPosition falls back to raw position when no translation")
+    void testGetTranslatedPositionFallback() {
+        assertEquals("Senior", employee.getTranslatedPosition("ar"));
+    }
+
+    @Test
+    @DisplayName("getTranslatedStartDate returns translated value when translation exists")
+    void testGetTranslatedStartDate() throws Exception {
+        EmployeeTranslation translation = new EmployeeTranslation(
+                "es", "Desarrolladora Senior", "Tiempo completo", "Femenino", employee, "15 enero 2023", "5500.0"
+        );
+        addTranslation(employee, translation);
+
+        assertEquals("15 enero 2023", employee.getTranslatedStartDate("es"));
+    }
+
+    @Test
+    @DisplayName("getTranslatedSalary returns translated salary string when translation exists")
+    void testGetTranslatedSalary() throws Exception {
+        EmployeeTranslation translation = new EmployeeTranslation(
+                "es", "Desarrolladora Senior", "Tiempo completo", "Femenino", employee, "15 enero 2023", "5500.0"
+        );
+        addTranslation(employee, translation);
+
+        assertEquals("5500.0", employee.getTranslatedSalary("es"));
+    }
+
+    @Test
+    @DisplayName("setLeaves with null initializes to empty list")
+    void testSetLeavesNull() {
+        employee.setLeaves(null);
+        assertNotNull(employee.getLeaves());
+        assertTrue(employee.getLeaves().isEmpty());
+    }
+
+    private void addTranslation(Employee emp, EmployeeTranslation translation) throws Exception {
+        java.lang.reflect.Field field = Employee.class.getDeclaredField("translations");
+        field.setAccessible(true);
+        @SuppressWarnings("unchecked")
+        java.util.Set<EmployeeTranslation> translations = (java.util.Set<EmployeeTranslation>) field.get(emp);
+        translations.add(translation);
+    }
 }
