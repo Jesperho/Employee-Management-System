@@ -283,7 +283,6 @@ class DepartmentControllerTest {
         setField("colCapacity",      new TableColumn<>());
         setField("colEmployees",     new TableColumn<>());
         setField("colCreationDate",  new TableColumn<>());
-        setField("colDescription",   new TableColumn<>());
         setField("colActions",       new TableColumn<>());
 
         invoke("setupTable", new Class[]{});
