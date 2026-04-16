@@ -134,6 +134,7 @@ public class DepartmentController extends BaseController {
         if (btnLeave != null) btnLeave.setText("📅  " + lang.getTranslatedText("nav.leave"));
         if (btnSalary != null) btnSalary.setText("💰  " + lang.getTranslatedText("nav.salary"));
         if (btnLogout != null) btnLogout.setText("🚪  " + lang.getTranslatedText("nav.logout"));
+        if (mainMenuLabel != null) mainMenuLabel.setText(lang.getTranslatedText("main_menu"));
 
         if (breadcrumbText != null) breadcrumbText.setText(lang.getTranslatedText("dept.breadcrumb"));
         if (pageTitleText != null) pageTitleText.setText(lang.getTranslatedText("dept.pageTitle"));
@@ -171,7 +172,7 @@ public class DepartmentController extends BaseController {
         if (empColGender != null) empColGender.setText(lang.getTranslatedText("emp.col.gender"));
         if (empColActions != null) empColActions.setText(lang.getTranslatedText("emp.col.actions"));
 
-        if (employeeSectionTitle != null) employeeSectionTitle.setText(lang.getTranslatedText("nav.employees") + " - " + lang.getTranslatedText("dept.pageTitle"));
+        if (employeeSectionTitle != null) employeeSectionTitle.setText(lang.getTranslatedText("dept.empSection.title").replace("{0}", ""));
 
         loadFromDatabase();
         setupFilters();
@@ -585,6 +586,7 @@ public class DepartmentController extends BaseController {
         scene.setFill(javafx.scene.paint.Color.TRANSPARENT);
         var css = getClass().getResource("/css/management.css");
         if (css != null) scene.getStylesheets().add(css.toExternalForm());
+        applyRTLToScene(scene);
         popup.setScene(scene);
         popup.showAndWait();
     }
@@ -617,23 +619,25 @@ public class DepartmentController extends BaseController {
         Stage popup = new Stage();
         popup.initModality(Modality.APPLICATION_MODAL);
         popup.initStyle(StageStyle.DECORATED);
-        popup.setTitle("Edit Employee");
+        entity.LanguageManager dlang = entity.LanguageManager.getInstance();
+        popup.setTitle(dlang.getTranslatedText("emp.form.editTitle"));
 
         VBox form = new VBox(15);
         form.setPadding(new Insets(25));
         form.setStyle("-fx-background-color: white;");
 
-        Text formTitle = new Text("Edit Employee");
+        Text formTitle = new Text(dlang.getTranslatedText("emp.form.editTitle"));
         formTitle.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-fill: #1a1f36;");
 
         GridPane grid = new GridPane();
         grid.setHgap(15);
         grid.setVgap(12);
 
-        TextField nameField = createFormField("Full Name");
+        TextField nameField = createFormField(dlang.getTranslatedText("emp.form.name"));
         nameField.setText(emp.getFullName() != null ? emp.getFullName() : "");
 
-        ComboBox<String> genderCombo = new ComboBox<>(FXCollections.observableArrayList("Male", "Female", "Other"));
+        ComboBox<String> genderCombo = new ComboBox<>(FXCollections.observableArrayList(
+                dlang.getTranslatedText("gender1"), dlang.getTranslatedText("gender2"), dlang.getTranslatedText("gender3")));
         genderCombo.setValue(emp.getGender());
         genderCombo.setPrefWidth(200);
         genderCombo.setStyle("-fx-background-color: #f8f9fa; -fx-border-color: #e0e3e8; -fx-border-radius: 8; -fx-background-radius: 8;");
@@ -659,7 +663,7 @@ public class DepartmentController extends BaseController {
                     .findFirst().ifPresent(deptCombo::setValue);
         }
 
-        TextField jobTitleField = createFormField("Job Title");
+        TextField jobTitleField = createFormField(dlang.getTranslatedText("emp.form.jobTitle"));
         jobTitleField.setText(emp.getPosition() != null ? emp.getPosition() : "");
 
 
@@ -667,26 +671,26 @@ public class DepartmentController extends BaseController {
         startDate.setPrefWidth(200);
 
         ComboBox<String> contractCombo = new ComboBox<>(
-                FXCollections.observableArrayList("Full Time", "Part Time", "Remote", "Intern", "Full-time", "Part-time"));
+                FXCollections.observableArrayList(dlang.getTranslatedText("contract1"), dlang.getTranslatedText("contract2"), dlang.getTranslatedText("contract3"), dlang.getTranslatedText("contract4")));
         contractCombo.setValue(emp.getContractType());
         contractCombo.setPrefWidth(200);
         contractCombo.setStyle("-fx-background-color: #f8f9fa; -fx-border-color: #e0e3e8; -fx-border-radius: 8; -fx-background-radius: 8;");
 
-        TextField salaryField = createFormField("Salary (€)");
+        TextField salaryField = createFormField(dlang.getTranslatedText("emp.form.salary"));
         if (emp.getSalary() != null) salaryField.setText(String.valueOf(emp.getSalary()));
 
-        grid.add(createLabel("Name"),        0, 0); grid.add(nameField,    1, 0);
-        grid.add(createLabel("Gender"),      2, 0); grid.add(genderCombo,  3, 0);
-        grid.add(createLabel("Department"),  0, 1); grid.add(deptCombo,    1, 1);
-        grid.add(createLabel("Job Title"),   2, 1); grid.add(jobTitleField,3, 1);
-        grid.add(createLabel("Start Date"),  0, 3); grid.add(startDate,    1, 3);
-        grid.add(createLabel("Contract"),    2, 3); grid.add(contractCombo,3, 3);
-        grid.add(createLabel("Salary"),      0, 4); grid.add(salaryField,  1, 4);
+        grid.add(createLabel(dlang.getTranslatedText("emp.form.name")),      0, 0); grid.add(nameField,    1, 0);
+        grid.add(createLabel(dlang.getTranslatedText("emp.form.gender")),    2, 0); grid.add(genderCombo,  3, 0);
+        grid.add(createLabel(dlang.getTranslatedText("emp.form.department")),0, 1); grid.add(deptCombo,    1, 1);
+        grid.add(createLabel(dlang.getTranslatedText("emp.form.jobTitle")),  2, 1); grid.add(jobTitleField,3, 1);
+        grid.add(createLabel(dlang.getTranslatedText("emp.form.startDate")), 0, 3); grid.add(startDate,    1, 3);
+        grid.add(createLabel(dlang.getTranslatedText("emp.form.contract")),  2, 3); grid.add(contractCombo,3, 3);
+        grid.add(createLabel(dlang.getTranslatedText("emp.form.salary")),    0, 4); grid.add(salaryField,  1, 4);
 
-        Button updateBtn = new Button("Update");
+        Button updateBtn = new Button(dlang.getTranslatedText("btn.update"));
         updateBtn.setStyle("-fx-background-color: linear-gradient(to right, #6c63ff, #5a52d4); -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 12 30; -fx-background-radius: 8; -fx-cursor: hand;");
 
-        Button cancelBtn = new Button("Cancel");
+        Button cancelBtn = new Button(dlang.getTranslatedText("btn.cancel"));
         cancelBtn.setStyle("-fx-background-color: white; -fx-text-fill: #e74c3c; -fx-border-color: #e74c3c; -fx-border-radius: 8; -fx-background-radius: 8; -fx-font-size: 14px; -fx-padding: 12 30; -fx-cursor: hand; -fx-font-weight: bold;");
 
         updateBtn.setOnAction(e -> {
@@ -723,6 +727,7 @@ public class DepartmentController extends BaseController {
         Scene scene = new Scene(form, 720, 490);
         var css = getClass().getResource("/css/management.css");
         if (css != null) scene.getStylesheets().add(css.toExternalForm());
+        applyRTLToScene(scene);
         popup.setScene(scene);
         popup.showAndWait();
     }
@@ -794,6 +799,7 @@ public class DepartmentController extends BaseController {
         }
 
         if (css != null) scene.getStylesheets().add(css.toExternalForm());
+        applyRTLToScene(scene);
         popup.setScene(scene);
         popup.showAndWait();
     }
@@ -806,7 +812,7 @@ public class DepartmentController extends BaseController {
         entity.LanguageManager lang = entity.LanguageManager.getInstance();
         String formTitleText = existingData == null
                 ? lang.getTranslatedText("dept.addBtn")
-                : lang.getTranslatedText("dept.col.name") + " - " + existingData.get(1);
+                : java.text.MessageFormat.format(lang.getTranslatedText("dept.form.editTitleFull"), existingData.get(1));
         Text formTitle = new Text(formTitleText);
         formTitle.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-fill: #1a1f36;");
 
@@ -908,10 +914,10 @@ public class DepartmentController extends BaseController {
                 String deptName = newDept.getDepartmentName();
                 String deptKey = lang.getKey(deptName);
 
-                String en = "Department " + lang.getTranslatedTexts(deptKey, "en") + " was added.";
-                String fa = "بخش " + lang.getTranslatedTexts(deptKey, "fa") + " اضافه شد.";
-                String ar = "تمت إضافة قسم " + lang.getTranslatedTexts(deptKey, "ar");
-                String es = "El departamento " + lang.getTranslatedTexts(deptKey, "es") + " fue agregado.";
+                String en = java.text.MessageFormat.format(lang.getTranslatedTexts("dept.activity.added", "en"), lang.getTranslatedTexts(deptKey, "en"));
+                String fa = java.text.MessageFormat.format(lang.getTranslatedTexts("dept.activity.added", "fa"), lang.getTranslatedTexts(deptKey, "fa"));
+                String ar = java.text.MessageFormat.format(lang.getTranslatedTexts("dept.activity.added", "ar"), lang.getTranslatedTexts(deptKey, "ar"));
+                String es = java.text.MessageFormat.format(lang.getTranslatedTexts("dept.activity.added", "es"), lang.getTranslatedTexts(deptKey, "es"));
 
                 ChangeDept newChangeDept = new ChangeDept(
                         date,
@@ -947,10 +953,10 @@ public class DepartmentController extends BaseController {
 
                     changeDeptDao.create(new ChangeDept(
                             date,
-                            "Department " + lang.getTranslatedTexts(deptKey, "en") + " was edited.",
-                            "بخش " + lang.getTranslatedTexts(deptKey, "fa") + " ویرایش شد.",
-                            "تم تعديل قسم " + lang.getTranslatedTexts(deptKey, "ar"),
-                            "El departamento " + lang.getTranslatedTexts(deptKey, "es") + " fue editado.",
+                            java.text.MessageFormat.format(lang.getTranslatedTexts("dept.activity.edited", "en"), lang.getTranslatedTexts(deptKey, "en")),
+                            java.text.MessageFormat.format(lang.getTranslatedTexts("dept.activity.edited", "fa"), lang.getTranslatedTexts(deptKey, "fa")),
+                            java.text.MessageFormat.format(lang.getTranslatedTexts("dept.activity.edited", "ar"), lang.getTranslatedTexts(deptKey, "ar")),
+                            java.text.MessageFormat.format(lang.getTranslatedTexts("dept.activity.edited", "es"), lang.getTranslatedTexts(deptKey, "es")),
                             s.getAdmin(),
                             dept
                     ));
@@ -1053,10 +1059,10 @@ public class DepartmentController extends BaseController {
 
             changeDeptDao.create(new ChangeDept(
                     date,
-                    "Department " + lang.getTranslatedTexts(deptKey, "en") + " was deleted.",
-                    "بخش " + lang.getTranslatedTexts(deptKey, "fa") + " حذف شد.",
-                    "تم حذف قسم " + lang.getTranslatedTexts(deptKey, "ar"),
-                    "El departamento " + lang.getTranslatedTexts(deptKey, "es") + " fue eliminado.",
+                    java.text.MessageFormat.format(lang.getTranslatedTexts("dept.activity.deleted", "en"), lang.getTranslatedTexts(deptKey, "en")),
+                    java.text.MessageFormat.format(lang.getTranslatedTexts("dept.activity.deleted", "fa"), lang.getTranslatedTexts(deptKey, "fa")),
+                    java.text.MessageFormat.format(lang.getTranslatedTexts("dept.activity.deleted", "ar"), lang.getTranslatedTexts(deptKey, "ar")),
+                    java.text.MessageFormat.format(lang.getTranslatedTexts("dept.activity.deleted", "es"), lang.getTranslatedTexts(deptKey, "es")),
                     s.getAdmin(),
                     dept
             ));

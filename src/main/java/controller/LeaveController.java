@@ -118,6 +118,7 @@ public class LeaveController extends BaseController {
         if (btnLeave != null) btnLeave.setText("📅  " + lang.getTranslatedText("nav.leave"));
         if (btnSalary != null) btnSalary.setText("💰  " + lang.getTranslatedText("nav.salary"));
         if (btnLogout != null) btnLogout.setText("🚪  " + lang.getTranslatedText("nav.logout"));
+        if (mainMenuLabel != null) mainMenuLabel.setText(lang.getTranslatedText("main_menu"));
 
         if (breadcrumbText != null) breadcrumbText.setText(lang.getTranslatedText("leave.breadcrumb"));
         if (pageTitleText != null) pageTitleText.setText(lang.getTranslatedText("leave.pageTitle"));
@@ -537,6 +538,7 @@ public class LeaveController extends BaseController {
         scene.setFill(javafx.scene.paint.Color.TRANSPARENT);
         var css = getClass().getResource("/css/management.css");
         if (css != null) scene.getStylesheets().add(css.toExternalForm());
+        applyRTLToScene(scene);
         popup.setScene(scene);
         popup.showAndWait();
     }
@@ -769,6 +771,7 @@ public class LeaveController extends BaseController {
         Scene scene = new Scene(form, 720, 450);
         var css = getClass().getResource("/css/management.css");
         if (css != null) scene.getStylesheets().add(css.toExternalForm());
+        applyRTLToScene(scene);
         popup.setScene(scene);
         popup.showAndWait();
     }

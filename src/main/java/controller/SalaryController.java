@@ -112,6 +112,7 @@ public class SalaryController extends BaseController {
         if (btnLeave != null) btnLeave.setText("📅  " + lang.getTranslatedText("nav.leave"));
         if (btnSalary != null) btnSalary.setText("💰  " + lang.getTranslatedText("nav.salary"));
         if (btnLogout != null) btnLogout.setText("🚪  " + lang.getTranslatedText("nav.logout"));
+        if (mainMenuLabel != null) mainMenuLabel.setText(lang.getTranslatedText("main_menu"));
 
         if (breadcrumbText != null) breadcrumbText.setText(lang.getTranslatedText("salary.breadcrumb"));
         if (pageTitleText != null) pageTitleText.setText(lang.getTranslatedText("salary.pageTitle"));
@@ -334,12 +335,14 @@ public class SalaryController extends BaseController {
         scene.setFill(javafx.scene.paint.Color.TRANSPARENT);
         var css = getClass().getResource("/css/management.css");
         if (css != null) scene.getStylesheets().add(css.toExternalForm());
+        applyRTLToScene(scene);
         popup.setScene(scene);
         popup.showAndWait();
     }
 
     private void addSalaryInfoCard(GridPane grid, int row,
                                    String l1, String v1, String l2, String v2) {
+
         Label lbl1 = new Label(l1);
         lbl1.setStyle("-fx-text-fill: #7f8c8d; -fx-font-size: 11px; -fx-font-weight: bold;");
         Label val1 = new Label(v1);
@@ -365,7 +368,8 @@ public class SalaryController extends BaseController {
         Stage popup = new Stage();
         popup.initModality(Modality.APPLICATION_MODAL);
         popup.initStyle(StageStyle.DECORATED);
-        popup.setTitle("Edit Salary - " + row.get(1));
+        popup.setTitle(java.text.MessageFormat.format(
+                entity.LanguageManager.getInstance().getTranslatedText("salary.form.editTitleFull"), row.get(1)));
 
         VBox form = new VBox(15);
         form.setPadding(new Insets(25));
@@ -376,7 +380,7 @@ public class SalaryController extends BaseController {
         Text formTitle = new Text(lang.getTranslatedText("salary.form.editTitle"));
         formTitle.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-fill: #1a1f36;");
 
-        Text empName = new Text(lang.getTranslatedText("salary.col.name") + ": " + row.get(1) + " (" + row.get(2) + ")");
+        Text empName = new Text(java.text.MessageFormat.format(lang.getTranslatedText("salary.view.empDetail"), row.get(1), row.get(2)));
         empName.setStyle("-fx-font-size: 14px; -fx-fill: #7f8c8d;");
 
         GridPane grid = new GridPane();
@@ -452,6 +456,7 @@ public class SalaryController extends BaseController {
         Scene scene = new Scene(form, 500, 420);
         var css = getClass().getResource("/css/management.css");
         if (css != null) scene.getStylesheets().add(css.toExternalForm());
+        applyRTLToScene(scene);
         popup.setScene(scene);
         popup.showAndWait();
     }
@@ -556,6 +561,7 @@ public class SalaryController extends BaseController {
         scene.setFill(javafx.scene.paint.Color.TRANSPARENT);
         var css = getClass().getResource("/css/management.css");
         if (css != null) scene.getStylesheets().add(css.toExternalForm());
+        applyRTLToScene(scene);
         popup.setScene(scene);
         popup.show();
 
