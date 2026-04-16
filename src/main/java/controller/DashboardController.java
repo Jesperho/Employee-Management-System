@@ -348,7 +348,7 @@ public class DashboardController extends BaseController {
             recentActivitiesContainer.getChildren().add(
                     createActivityItem("+", "activity-new",
                             emp.getMessage(lang.getCurrentLanguageCode()),
-                            (lang.getTranslatedText("madeby") + " " + s.getFullName()),
+                            java.text.MessageFormat.format(lang.getTranslatedText("madeby"), s.getFullName()),
                             emp.getEmployee().getStartDate() != null ? emp.getEmployee().getStartDate().toString() : "")
             );
         }
@@ -363,7 +363,7 @@ public class DashboardController extends BaseController {
             recentActivitiesContainer.getChildren().add(
                     createActivityItem("📅", "activity-leave",
                             leave.getMessage(lang.getCurrentLanguageCode()),
-                            (lang.getTranslatedText("madeby") + " " + s.getFullName()),
+                            java.text.MessageFormat.format(lang.getTranslatedText("madeby"), s.getFullName()),
                             leave.getLeave().getStartDate() != null ? leave.getLeave().getStartDate().toString() : "")
             );
         }
@@ -376,7 +376,7 @@ public class DashboardController extends BaseController {
             recentActivitiesContainer.getChildren().add(
                     createActivityItem("+", "activity-new",
                             changeDept.getMessage(lang.getCurrentLanguageCode()),
-                            (lang.getTranslatedText("madeby") + " " + s.getFullName()),
+                            java.text.MessageFormat.format(lang.getTranslatedText("madeby"), s.getFullName()),
                             changeDept.getDepartment().getCreationDate() != null ? changeDept.getDepartment().getCreationDate().toString() : "")
             );
         }
@@ -387,7 +387,7 @@ public class DashboardController extends BaseController {
 
 
         if (recentActivitiesContainer.getChildren().isEmpty()) {
-            Text empty = new Text("No recent activity.");
+            Text empty = new Text(lang.getTranslatedText("dashboard.noActivity"));
             empty.setStyle("-fx-fill: #7f8c8d; -fx-font-size: 13px;");
             recentActivitiesContainer.getChildren().add(empty);
         }
@@ -549,6 +549,7 @@ public class DashboardController extends BaseController {
 
         Scene scene = new Scene(root);
         scene.setFill(Color.TRANSPARENT);
+        applyRTLToScene(scene);
         popup.setScene(scene);
         popup.showAndWait();
     }

@@ -45,7 +45,7 @@
 
             <VBox styleClass="nav-menu" spacing="5">
                 <padding><Insets top="10" bottom="10" left="10" right="10"/></padding>
-                <Text text="MAIN MENU" styleClass="menu-section-label"/>
+                <Text fx:id="mainMenuLabel" text="MAIN MENU" styleClass="menu-section-label"/>
                 <Button fx:id="btnDashboard" text="📊  Dashboard" styleClass="nav-button"
                         onAction="#handleDashboard" maxWidth="Infinity" alignment="CENTER_LEFT"/>
                 <Button fx:id="btnEmployees" text="👥  Employees" styleClass="nav-button, nav-button-active"

@@ -39,7 +39,7 @@ public class Employee {
     private Set<EmployeeTranslation> translations = new HashSet<>();
 
     @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Leave> leaves = new ArrayList<>();   // ⭐ FIXED: always initialized
+    private List<Leave> leaves = new ArrayList<>();
 
     public Employee() {}
 
@@ -63,7 +63,7 @@ public class Employee {
         this.role = role;
         this.contractType = contractType;
         this.position = position;
-        this.leaves = new ArrayList<>();   // ⭐ FIXED: ensure non-null in constructor
+        this.leaves = new ArrayList<>();
     }
 
     public int getId() {
@@ -192,7 +192,6 @@ public class Employee {
         return leaves;
     }
 
-    // ⭐ FIXED: safe setter, no more NullPointerException
     public void setLeaves(List<Leave> leaves) {
         this.leaves = (leaves != null) ? leaves : new ArrayList<>();
     }

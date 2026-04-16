@@ -112,6 +112,7 @@
                 if (btnLeave != null) btnLeave.setText("📅  " + lang.getTranslatedText("nav.leave"));
                 if (btnSalary != null) btnSalary.setText("💰  " + lang.getTranslatedText("nav.salary"));
                 if (btnLogout != null) btnLogout.setText("🚪  " + lang.getTranslatedText("nav.logout"));
+                if (mainMenuLabel != null) mainMenuLabel.setText(lang.getTranslatedText("main_menu"));
 
                 if (breadcrumbText != null) breadcrumbText.setText(lang.getTranslatedText("emp.breadcrumb"));
                 if (pageTitleText != null) pageTitleText.setText(lang.getTranslatedText("emp.pageTitle"));
@@ -356,7 +357,11 @@
 
                         viewBtn.setOnAction(e -> showViewPopup(getTableView().getItems().get(getIndex())));
                         editBtn.setOnAction(e -> showEditPopup(getTableView().getItems().get(getIndex())));
-                        deleteBtn.setOnAction(e -> handleDeleteEmployee(getTableView().getItems().get(getIndex())));
+                        deleteBtn.setOnAction(e -> {
+                            int idx = getIndex();
+                            if (idx >= 0 && idx < getTableView().getItems().size())
+                                handleDeleteEmployee(getTableView().getItems().get(idx));
+                        });
                     }
 
                     @Override
@@ -460,6 +465,7 @@
                 scene.setFill(javafx.scene.paint.Color.TRANSPARENT);
                 var css = getClass().getResource("/css/management.css");
                 if (css != null) scene.getStylesheets().add(css.toExternalForm());
+                applyRTLToScene(scene);
                 popup.setScene(scene);
                 popup.showAndWait();
             }
@@ -640,10 +646,10 @@
                         String deptName = newEmp.getDepartment().getDepartmentName();
                         String deptKey = lang.getKey(deptName);
 
-                        String en = "Employee " + newEmp.getFullName() + " was added to " + lang.getTranslatedTexts(deptKey, "en");
-                        String es = "El empleado " + newEmp.getFullName() + " fue agregado a " + lang.getTranslatedTexts(deptKey, "es");
-                        String fa = "کارمند " + newEmp.getFullName() + " به " + lang.getTranslatedTexts(deptKey, "fa") + " اضافه شد";
-                        String ar = "تمت إضافة الموظف " + newEmp.getFullName() + " إلى " + lang.getTranslatedTexts(deptKey, "ar");
+                        String en = java.text.MessageFormat.format(lang.getTranslatedTexts("emp.activity.added", "en"), newEmp.getFullName());
+                        String es = java.text.MessageFormat.format(lang.getTranslatedTexts("emp.activity.added", "es"), newEmp.getFullName());
+                        String fa = java.text.MessageFormat.format(lang.getTranslatedTexts("emp.activity.added", "fa"), newEmp.getFullName());
+                        String ar = java.text.MessageFormat.format(lang.getTranslatedTexts("emp.activity.added", "ar"), newEmp.getFullName());
 
                         ChangeEmp newChangeEmp = new ChangeEmp(
                                 date,
@@ -678,10 +684,10 @@
                         LocalDate date = LocalDate.now();
                         app.UserSession s = app.UserSession.getInstance();
 
-                        String en = "Employee " + existingEmployee.getFullName() + " was edited!";
-                        String es = "El empleado " + existingEmployee.getFullName() + " fue editado!";
-                        String fa = "کارمند " + existingEmployee.getFullName() + " ویرایش شد!";
-                        String ar = "تم تعديل الموظف " + existingEmployee.getFullName() + "!";
+                        String en = java.text.MessageFormat.format(lang.getTranslatedTexts("emp.activity.edited", "en"), existingEmployee.getFullName());
+                        String es = java.text.MessageFormat.format(lang.getTranslatedTexts("emp.activity.edited", "es"), existingEmployee.getFullName());
+                        String fa = java.text.MessageFormat.format(lang.getTranslatedTexts("emp.activity.edited", "fa"), existingEmployee.getFullName());
+                        String ar = java.text.MessageFormat.format(lang.getTranslatedTexts("emp.activity.edited", "ar"), existingEmployee.getFullName());
 
                         ChangeEmp newChangeEmp = new ChangeEmp(
                                 date,
@@ -716,6 +722,7 @@
                 Scene scene = new Scene(form, 700, 480);
                 var css = getClass().getResource("/css/management.css");
                 if (css != null) scene.getStylesheets().add(css.toExternalForm());
+                applyRTLToScene(scene);
                 popup.setScene(scene);
                 popup.showAndWait();
             }
@@ -723,33 +730,25 @@
             // Asks for confirmation then deletes the employee from the DB
             private void handleDeleteEmployee(Employee emp) {
                 Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-                confirm.setTitle("Delete Employee");
-                confirm.setHeaderText("Are you sure?");
-                confirm.setContentText("Delete employee: " + emp.getFullName() + " (ID: " + emp.getId() + ")?");
+                entity.LanguageManager lang = entity.LanguageManager.getInstance();
+                confirm.setTitle(lang.getTranslatedText("alert.deleteConfirm"));
+                confirm.setHeaderText(lang.getTranslatedText("alert.areYouSure"));
+                confirm.setContentText(lang.getTranslatedText("emp.delete.confirm")
+                        .replace("{0}", emp.getFullName()));
                 Optional<ButtonType> result = confirm.showAndWait();
                 if (result.isPresent() && result.get() == ButtonType.OK) {
-                    LocalDate date = LocalDate.now();
-                    app.UserSession s = app.UserSession.getInstance();
-
-                    String en = "Employee " + emp.getFullName() + " was edited!";
-                    String es = "El empleado " + emp.getFullName() + " fue editado!";
-                    String fa = "کارمند " + emp.getFullName() + " ویرایش شد!";
-                    String ar = "تم تعديل الموظف " + emp.getFullName() + "!";
-
-                    ChangeEmp newChangeEmp = new ChangeEmp(
-                            date,
-                            en,
-                            fa,
-                            ar,
-                            es,
-                            s.getAdmin(),
-                            emp
-                    );
-                    changeEmpDao.create(newChangeEmp);
-
-                    changeEmpDao.create(newChangeEmp);
                     employeeTranslationDao.deleteByEmployee(emp);
                     employeeDao.delete(emp.getId());
+
+                    String en = java.text.MessageFormat.format(lang.getTranslatedTexts("emp.activity.deleted", "en"), emp.getFullName());
+                    String es = java.text.MessageFormat.format(lang.getTranslatedTexts("emp.activity.deleted", "es"), emp.getFullName());
+                    String fa = java.text.MessageFormat.format(lang.getTranslatedTexts("emp.activity.deleted", "fa"), emp.getFullName());
+                    String ar = java.text.MessageFormat.format(lang.getTranslatedTexts("emp.activity.deleted", "ar"), emp.getFullName());
+
+                    changeEmpDao.create(new ChangeEmp(
+                            LocalDate.now(), en, fa, ar, es,
+                            app.UserSession.getInstance().getAdmin(), emp
+                    ));
                     loadFromDatabase();
                 }
             }
