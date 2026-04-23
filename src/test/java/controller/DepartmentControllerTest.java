@@ -255,21 +255,19 @@ class DepartmentControllerTest {
     // ─── createFormField ──────────────────────────────────────────────────────
 
     @Test
-    @DisplayName("createFormField returns TextField with correct prompt and width")
+    @DisplayName("createFormField creates correctly styled TextField")
     void createFormField() throws Exception {
-        TextField tf = (TextField) invoke("createFormField", new Class[]{String.class}, "Dept Name");
-        assertEquals("Dept Name", tf.getPromptText());
+        TextField tf = view.FormBuilder.createFormField("PromptText", 250);
+        assertEquals("PromptText", tf.getPromptText());
         assertEquals(250.0, tf.getPrefWidth());
     }
 
-    // ─── createLabel ──────────────────────────────────────────────────────────
-
     @Test
-    @DisplayName("createLabel returns styled Label with correct text")
+    @DisplayName("createLabel creates correctly styled Label")
     void createLabel() throws Exception {
-        Label lbl = (Label) invoke("createLabel", new Class[]{String.class}, "Test");
-        assertEquals("Test", lbl.getText());
-        assertTrue(lbl.getStyle().contains("bold"));
+        Label lbl = view.FormBuilder.createLabel("MyLabel");
+        assertEquals("MyLabel", lbl.getText());
+        assertTrue(lbl.getStyle().contains("-fx-font-weight: bold"));
     }
 
     // ─── setupTable column factories ──────────────────────────────────────────
