@@ -233,7 +233,7 @@ class EmployeeControllerTest {
     @Test
     @DisplayName("createFormField returns TextField with correct prompt and width")
     void createFormField() throws Exception {
-        TextField tf = (TextField) invoke("createFormField", new Class[]{String.class}, "Test Prompt");
+        TextField tf = view.FormBuilder.createFormField("Test Prompt");
         assertEquals("Test Prompt", tf.getPromptText());
         assertEquals(200.0, tf.getPrefWidth());
     }
@@ -243,7 +243,7 @@ class EmployeeControllerTest {
     @Test
     @DisplayName("createLabel returns styled Label with correct text")
     void createLabel() throws Exception {
-        Label lbl = (Label) invoke("createLabel", new Class[]{String.class}, "My Label");
+        Label lbl = view.FormBuilder.createLabel("My Label");
         assertEquals("My Label", lbl.getText());
         assertTrue(lbl.getStyle().contains("#2c3e50"));
     }
