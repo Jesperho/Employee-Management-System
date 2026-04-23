@@ -10,7 +10,7 @@ import javafx.stage.Stage;
 public class GUIApplication extends Application {
 
     // ── DEV ONLY: set to true to skip the login screen ───────────────────────
-    private static final boolean DEV_BYPASS = true;
+    private static final boolean DEV_BYPASS = false;
     // ─────────────────────────────────────────────────────────────────────────
 
     @Override
