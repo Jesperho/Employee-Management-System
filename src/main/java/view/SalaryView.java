@@ -383,7 +383,7 @@ public final class SalaryView {
         Timeline countUp = new Timeline();
         for (int i = 1; i <= frames; i++) {
             final int frame = i;
-            countUp.getKeyFrames().add(new KeyFrame(Duration.millis((long) i * 30L), e -> {
+            countUp.getKeyFrames().add(new KeyFrame(Duration.millis((double) i * 30), e -> {
                 int current = (int) ((frame / (double) frames) * total);
                 counterLabel.setText("€ " + String.format("%,d", current));
                 progressBar.setProgress(frame / (double) frames);

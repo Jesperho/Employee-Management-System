@@ -12,6 +12,14 @@
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        
+        <!-- SonarQube Configuration -->
+        <sonar.projectKey>EMP</sonar.projectKey>
+        <sonar.projectName>EMP</sonar.projectName>
+        <sonar.host.url>http://localhost:9000</sonar.host.url>
+        <sonar.exclusions>**/app/Main.java,**/app/GUIApplication.java,**/view/ViewManager.java,**/dataseeder/DataSeeder.java,**/datasource/MariaDbConnection.java</sonar.exclusions>
+        <sonar.coverage.exclusions>**/app/Main.java,**/app/GUIApplication.java,**/view/ViewManager.java,**/dataseeder/DataSeeder.java,**/datasource/MariaDbConnection.java</sonar.coverage.exclusions>
+        <sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/jacoco-report/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
     </properties>
 
     <dependencies>
