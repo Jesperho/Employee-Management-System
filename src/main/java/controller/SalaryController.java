@@ -11,21 +11,12 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.*;
 import javafx.scene.text.Text;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 
-import javafx.animation.KeyFrame;
-import javafx.animation.KeyValue;
-import javafx.animation.Timeline;
-import javafx.util.Duration;
 import utils.BaseController;
 
 import java.text.MessageFormat;
@@ -101,7 +92,7 @@ public class SalaryController extends BaseController {
     @Override
     protected void updateUIText(String newLanguage) {
         System.out.println("Salary View updating to: " + newLanguage);
-        entity.LanguageManager lang = entity.LanguageManager.getInstance();
+        LanguageManager lang = LanguageManager.getInstance();
 
         if (btnDashboard != null) btnDashboard.setText("📊  " + lang.getTranslatedText("nav.dashboard"));
         if (btnEmployees != null) btnEmployees.setText("👥  " + lang.getTranslatedText("nav.employees"));
@@ -178,7 +169,7 @@ public class SalaryController extends BaseController {
 
     // Populates the department filter from DB
     private void setupFilters() {
-        entity.LanguageManager lang = entity.LanguageManager.getInstance();
+        LanguageManager lang = LanguageManager.getInstance();
         List<String> deptNames = departmentDao.findAll().stream()
                 .map(Department::getDepartmentName)
                 .collect(Collectors.toList());
@@ -188,7 +179,7 @@ public class SalaryController extends BaseController {
     }
 
     private void applyFilters() {
-        entity.LanguageManager lang = entity.LanguageManager.getInstance();
+        LanguageManager lang = LanguageManager.getInstance();
         String dept = filterDepartment.getValue();
         String search = searchField.getText().trim().toLowerCase();
 
@@ -245,7 +236,7 @@ public class SalaryController extends BaseController {
     }
 
     @FXML
-    private void handleRunPayroll() {
+    protected void handleRunPayroll() {
         // Data calculation — stays in controller
         List<ObservableList<String>> dataToProcess = currentFilteredData.isEmpty() && filterDepartment.getValue() == null
                 ? new java.util.ArrayList<>(salaryData)
@@ -256,7 +247,7 @@ public class SalaryController extends BaseController {
         }).sum();
         int empCount = dataToProcess.size();
 
-        entity.LanguageManager lang = entity.LanguageManager.getInstance();
+        LanguageManager lang = LanguageManager.getInstance();
         String deptVal       = filterDepartment.getValue();
         String allDeptsLabel = lang.getTranslatedText("salary.filterAllDepts");
         boolean isDeptFilter = deptVal != null && !deptVal.equals(allDeptsLabel);
@@ -267,22 +258,22 @@ public class SalaryController extends BaseController {
     }
 
     @FXML
-    private void handleSearch() {
+    protected void handleSearch() {
         applyFilters();
     }
 
-    @FXML private void handlePreviousPage() {}
-    @FXML private void handleNextPage() {}
+    @FXML protected void handlePreviousPage() {}
+    @FXML protected void handleNextPage() {}
 
     // ===== NAVIGATION =====
-    @FXML private void handleDashboard()    { navigateTo("/fxml/dashboard.fxml",  "/css/dashboard.css"); }
-    @FXML private void handleEmployees()    { navigateTo("/fxml/employee.fxml",   "/css/management.css"); }
-    @FXML private void handleDepartments()  { navigateTo("/fxml/department.fxml", "/css/management.css"); }
-    @FXML private void handleLeave()        { navigateTo("/fxml/leave.fxml",      "/css/management.css"); }
-    @FXML private void handleSalary()       { /* already here */ }
+    @FXML protected void handleDashboard()    { navigateTo("/fxml/dashboard.fxml",  "/css/dashboard.css"); }
+    @FXML protected void handleEmployees()    { navigateTo("/fxml/employee.fxml",   "/css/management.css"); }
+    @FXML protected void handleDepartments()  { navigateTo("/fxml/department.fxml", "/css/management.css"); }
+    @FXML protected void handleLeave()        { navigateTo("/fxml/leave.fxml",      "/css/management.css"); }
+    @FXML protected void handleSalary()       { /* already here */ }
 
     @FXML
-    private void handleLogout() { navigateTo("/fxml/login.fxml", "/css/login.css"); }
+    protected void handleLogout() { navigateTo("/fxml/login.fxml", "/css/login.css"); }
 
     private void navigateTo(String fxmlPath, String cssPath) {
         try {
@@ -299,13 +290,5 @@ public class SalaryController extends BaseController {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    private void showAlert(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.WARNING);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
     }
 }

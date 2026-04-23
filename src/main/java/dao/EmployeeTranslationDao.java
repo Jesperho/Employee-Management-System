@@ -1,7 +1,6 @@
 package dao;
 
 import datasource.MariaDbConnection;
-import entity.ChangeDept;
 import entity.Employee;
 import entity.EmployeeTranslation;
 import entity.LanguageManager;

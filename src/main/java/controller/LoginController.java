@@ -70,7 +70,7 @@ public class LoginController extends BaseController {
     }
 
     @FXML
-    private void handleLogin() {
+    protected void handleLogin() {
         String email = loginEmail.getText().trim();
         String password = loginPassword.getText();
 
@@ -121,7 +121,7 @@ public class LoginController extends BaseController {
     }
 
     @FXML
-    private void handleRegister() {
+    protected void handleRegister() {
         // Company fields
         String company = companyName.getText().trim();
         String address = companyAddress.getText().trim();

@@ -33,7 +33,7 @@ public class MariaDbConnection {
         }
         
         String dbName = isTest ? "employment_management_test" : "employment_management";
-        String url = "jdbc:mariadb://" + host + ":" + port + "/" + dbName;
+        String url = "jdbc:mariadb://" + host + ":" + port + "/" + dbName + "?createDatabaseIfNotExist=true";
 
         Map<String, String> props = new HashMap<>();
         props.put("jakarta.persistence.jdbc.url", url);

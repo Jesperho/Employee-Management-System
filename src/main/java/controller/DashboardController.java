@@ -121,7 +121,7 @@ public class DashboardController extends BaseController {
     protected void updateUIText(String newLanguage) {
         System.out.println("Dashboard View updating to: " + newLanguage);
 
-        entity.LanguageManager langManager = entity.LanguageManager.getInstance();
+        LanguageManager langManager = LanguageManager.getInstance();
 
         if (btnDashboard != null) btnDashboard.setText(langManager.getTranslatedText("nav.dashboard"));
         if (btnEmployees != null) btnEmployees.setText(langManager.getTranslatedText("nav.employees"));
@@ -337,7 +337,7 @@ public class DashboardController extends BaseController {
     // Builds recent activity items from real DB data (last added employees + leaves)
     private void loadRecentActivities() {
         app.UserSession s = app.UserSession.getInstance();
-        entity.LanguageManager lang = entity.LanguageManager.getInstance();
+        LanguageManager lang = LanguageManager.getInstance();
         if (recentActivitiesContainer == null) return;
         recentActivitiesContainer.getChildren().clear();
 

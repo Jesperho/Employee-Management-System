@@ -8,21 +8,14 @@
         import javafx.collections.transformation.FilteredList;
         import javafx.fxml.FXML;
         import javafx.fxml.FXMLLoader;
-        import javafx.geometry.Insets;
-        import javafx.geometry.Pos;
         import javafx.scene.Parent;
         import javafx.scene.Scene;
         import javafx.scene.control.*;
-        import javafx.scene.layout.*;
         import javafx.scene.text.Text;
-        import javafx.stage.Modality;
         import javafx.stage.Stage;
-        import javafx.stage.StageStyle;
         import utils.BaseController;
 
         import java.time.LocalDate;
-        import java.time.LocalDateTime;
-        import java.util.ArrayList;
         import java.util.List;
         import java.util.Optional;
         import java.util.stream.Collectors;
@@ -370,7 +363,7 @@
             }
 
             @FXML
-            private void handleAddEmployee() {
+            protected void handleAddEmployee() {
                 entity.LanguageManager lang = entity.LanguageManager.getInstance();
                 showEmployeeFormPopup(lang.getTranslatedText("emp.form.addTitle"), null);
             }
@@ -415,22 +408,21 @@
                 }
             }
 
-            @FXML
-            private void handleSearch() {
+            @FXML protected void handleSearch() {
                 applyFilters();
             }
 
-            @FXML private void handlePreviousPage() {}
-            @FXML private void handleNextPage() {}
+            @FXML protected void handlePreviousPage() {}
+            @FXML protected void handleNextPage() {}
 
-            @FXML private void handleDashboard() { navigateTo("/fxml/dashboard.fxml", "/css/dashboard.css"); }
-            @FXML private void handleEmployees() {}
-            @FXML private void handleDepartments() { navigateTo("/fxml/department.fxml", "/css/management.css"); }
-            @FXML private void handleLeave() { navigateTo("/fxml/leave.fxml", "/css/management.css"); }
-            @FXML private void handleSalary() { navigateTo("/fxml/salary.fxml", "/css/management.css"); }
+            @FXML protected void handleDashboard() { navigateTo("/fxml/dashboard.fxml", "/css/dashboard.css"); }
+            @FXML protected void handleEmployees() {}
+            @FXML protected void handleDepartments() { navigateTo("/fxml/department.fxml", "/css/management.css"); }
+            @FXML protected void handleLeave() { navigateTo("/fxml/leave.fxml", "/css/management.css"); }
+            @FXML protected void handleSalary() { navigateTo("/fxml/salary.fxml", "/css/management.css"); }
 
             @FXML
-            private void handleLogout() {
+            protected void handleLogout() {
                 navigateTo("/fxml/login.fxml", "/css/login.css");
             }
 

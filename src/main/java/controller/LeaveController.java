@@ -8,16 +8,12 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 import utils.BaseController;
 
 import java.time.LocalDate;
@@ -110,7 +106,7 @@ public class LeaveController extends BaseController {
     @Override
     protected void updateUIText(String newLanguage) {
         System.out.println("Leave View updating to: " + newLanguage);
-        entity.LanguageManager lang = entity.LanguageManager.getInstance();
+        LanguageManager lang = LanguageManager.getInstance();
 
         if (btnDashboard != null) btnDashboard.setText("📊  " + lang.getTranslatedText("nav.dashboard"));
         if (btnEmployees != null) btnEmployees.setText("👥  " + lang.getTranslatedText("nav.employees"));
@@ -184,7 +180,7 @@ public class LeaveController extends BaseController {
 
     private void setupFilters() {
         try {
-            entity.LanguageManager lang = entity.LanguageManager.getInstance();
+            LanguageManager lang = LanguageManager.getInstance();
             if (filterType != null) {
                 filterType.setItems(FXCollections.observableArrayList(
                         "ALL",
@@ -333,7 +329,7 @@ public class LeaveController extends BaseController {
         colActions.setMinWidth(160);
         colActions.setCellFactory(view.LeaveView.buildActionsColumn(
             this::showViewPopup, 
-            leave -> showLeaveFormPopup(entity.LanguageManager.getInstance().getTranslatedText("leave.form.editTitle"), leave), 
+            leave -> showLeaveFormPopup(LanguageManager.getInstance().getTranslatedText("leave.form.editTitle"), leave), 
             this::handleDeleteLeave
         ));
     }
@@ -365,13 +361,13 @@ public class LeaveController extends BaseController {
 
 
     @FXML
-    private void handleApplyLeave() {
+    protected void handleApplyLeave() {
         showLeaveFormPopup(LanguageManager.getInstance().getTranslatedText("leave.form.addTitle"), null);
     }
 
     // Leave history remains unchanged, but relies on object properties safely now.
     @FXML
-    private void handleLeaveHistory() {
+    protected void handleLeaveHistory() {
         // [Intentionally truncated for brevity: Your exact existing handleLeaveHistory() logic goes here]
         // This method was already perfectly formatted to handle List<Leave> allLeaves!
     }
@@ -382,35 +378,9 @@ public class LeaveController extends BaseController {
         return value;
     }
 
-    private String[] getLeaveChipColor(String type) {
-        if (type == null) return new String[]{"#6c63ff","#6c63ff","#ede9ff"};
-        return switch (type.toLowerCase()) {
-            case "sick"      -> new String[]{"#c0392b","#c0392b","#fde8e8"};
-            case "vacation"  -> new String[]{"#1565c0","#1565c0","#dbeafe"};
-            case "maternity","paternity" -> new String[]{"#7b1fa2","#7b1fa2","#f3e5f5"};
-            case "personal"  -> new String[]{"#2e7d32","#2e7d32","#dcfce7"};
-            case "exam"      -> new String[]{"#e65100","#e65100","#fff3e0"};
-            case "unpaid"    -> new String[]{"#546e7a","#546e7a","#eceff1"};
-            default          -> new String[]{"#6c63ff","#6c63ff","#ede9ff"};
-        };
-    }
-
-    private VBox makeSummaryStatCard(String label, String value, String bg, String fg) {
-        Label lbl = new Label(label);
-        lbl.setStyle("-fx-text-fill:" + fg + ";-fx-font-size:10px;-fx-font-weight:bold;");
-        Label val = new Label(value);
-        val.setStyle("-fx-text-fill:" + fg + ";-fx-font-size:20px;-fx-font-weight:bold;");
-        VBox box = new VBox(3, lbl, val);
-        box.setAlignment(Pos.CENTER_LEFT);
-        box.setStyle("-fx-background-color:" + bg + ";-fx-background-radius:10;-fx-padding:12 16;");
-        HBox.setHgrow(box, Priority.ALWAYS);
-        box.setMaxWidth(Double.MAX_VALUE);
-        return box;
-    }
-
     // 7. Object-oriented Filter logic
     private void applyFilters() {
-        entity.LanguageManager lang = entity.LanguageManager.getInstance();
+        LanguageManager lang = LanguageManager.getInstance();
 
         String type = filterType != null ? filterType.getValue() : null;
         Department selectedDept = filterDepartment.getValue();
@@ -501,15 +471,15 @@ public class LeaveController extends BaseController {
     }
 
 
-    @FXML private void handleSearch() { applyFilters(); }
-    @FXML private void handlePreviousPage() {}
-    @FXML private void handleNextPage() {}
-    @FXML private void handleDashboard() { navigateTo("/fxml/dashboard.fxml", "/css/dashboard.css"); }
-    @FXML private void handleEmployees() { navigateTo("/fxml/employee.fxml", "/css/management.css"); }
-    @FXML private void handleDepartments() { navigateTo("/fxml/department.fxml", "/css/management.css"); }
-    @FXML private void handleLeave() { /* already here */ }
-    @FXML private void handleSalary() { navigateTo("/fxml/salary.fxml", "/css/management.css"); }
-    @FXML private void handleLogout() { navigateTo("/fxml/login.fxml", "/css/login.css"); }
+    @FXML protected void handleSearch() { applyFilters(); }
+    @FXML protected void handlePreviousPage() {}
+    @FXML protected void handleNextPage() {}
+    @FXML protected void handleDashboard() { navigateTo("/fxml/dashboard.fxml", "/css/dashboard.css"); }
+    @FXML protected void handleEmployees() { navigateTo("/fxml/employee.fxml", "/css/management.css"); }
+    @FXML protected void handleDepartments() { navigateTo("/fxml/department.fxml", "/css/management.css"); }
+    @FXML protected void handleLeave() { /* already here */ }
+    @FXML protected void handleSalary() { navigateTo("/fxml/salary.fxml", "/css/management.css"); }
+    @FXML protected void handleLogout() { navigateTo("/fxml/login.fxml", "/css/login.css"); }
 
     private void navigateTo(String fxmlPath, String cssPath) {
         try {
@@ -528,12 +498,7 @@ public class LeaveController extends BaseController {
     }
 
     private String resolveLeaveDuration(Leave leave) {
-        entity.LanguageManager lang = LanguageManager.getInstance();
+        LanguageManager lang = LanguageManager.getInstance();
         return leave.getTranslatedDuration(lang.getAbreviation(lang.getLanguage()));
-    }
-
-    private long calculateInclusiveDuration(LocalDate start, LocalDate end) {
-        if (start == null || end == null || end.isBefore(start)) return 0;
-        return ChronoUnit.DAYS.between(start, end) + 1;
     }
 }

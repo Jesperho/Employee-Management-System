@@ -404,14 +404,14 @@ public class DepartmentController extends BaseController {
     }
 
     @FXML
-    private void handleEmployeeSearch() {
+    protected void handleEmployeeSearch() {
         String q = empSearchField.getText().trim().toLowerCase();
         if (q.isEmpty()) {
             employeeTable.setItems(employeeData);
             return;
         }
-        javafx.collections.transformation.FilteredList<ObservableList<String>> filtered =
-                new javafx.collections.transformation.FilteredList<>(employeeData, row ->
+        FilteredList<ObservableList<String>> filtered =
+                new FilteredList<>(employeeData, row ->
                         row.get(1).toLowerCase().contains(q) ||
                                 row.get(3).toLowerCase().contains(q) ||
                                 row.get(5).toLowerCase().contains(q)
@@ -425,7 +425,7 @@ public class DepartmentController extends BaseController {
     }
 
     private void setupTable() {
-        entity.LanguageManager lang = entity.LanguageManager.getInstance();
+        LanguageManager lang = LanguageManager.getInstance();
         String langCode = lang.getAbreviation(lang.getLanguage());
 
         departmentTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
@@ -452,7 +452,7 @@ public class DepartmentController extends BaseController {
         });
 
         colActions.setCellFactory(view.DepartmentView.buildDeptActionsColumn(
-            row -> showDeptFormPopup(entity.LanguageManager.getInstance().getTranslatedText("dept.col.actions"), row),
+            row -> showDeptFormPopup(LanguageManager.getInstance().getTranslatedText("dept.col.actions"), row),
             this::handleDeleteDepartment
         ));
     }
@@ -496,7 +496,7 @@ public class DepartmentController extends BaseController {
         confirm.setTitle("Delete Employee");
         confirm.setHeaderText("Are you sure?");
         confirm.setContentText("Delete employee: " + emp.getFullName() + "?");
-        java.util.Optional<ButtonType> result = confirm.showAndWait();
+        Optional<ButtonType> result = confirm.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
             employeeDao.delete(emp.getId());
             // Refresh
@@ -508,7 +508,7 @@ public class DepartmentController extends BaseController {
     }
 
     private void updateStats() {
-        entity.LanguageManager lang = LanguageManager.getInstance();
+        LanguageManager lang = LanguageManager.getInstance();
         totalDeptCount.setText(String.valueOf(departmentTranslationDao.formatNumber(deptData.size(), lang.getLanguage())));
         activeDeptCount.setText(String.valueOf(departmentTranslationDao.formatNumber(deptData.size(), lang.getLanguage())));
         int totalEmp = 0;
@@ -523,8 +523,8 @@ public class DepartmentController extends BaseController {
     }
 
     @FXML
-    private void handleAddDepartment() {
-        entity.LanguageManager lang = entity.LanguageManager.getInstance();
+    protected void handleAddDepartment() {
+        LanguageManager lang = LanguageManager.getInstance();
         showDeptFormPopup(lang.getTranslatedText("dept.addBtn"), null);
     }
 
@@ -539,7 +539,7 @@ public class DepartmentController extends BaseController {
 
     // Uses safeDelete — blocks deletion if employees are still assigned
     private void handleDeleteDepartment(ObservableList<String> row) {
-        entity.LanguageManager lang = entity.LanguageManager.getInstance();
+        LanguageManager lang = LanguageManager.getInstance();
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
         confirm.setTitle(lang.getTranslatedText("alert.deleteConfirm"));
         confirm.setHeaderText(lang.getTranslatedText("alert.areYouSure"));
@@ -580,7 +580,7 @@ public class DepartmentController extends BaseController {
 
 
     @FXML
-    private void handleSearch() {
+    protected void handleSearch() {
         String search = searchField.getText().trim().toLowerCase();
         Department dept = filterDepartment.getValue();
         String cap = filterCapacity.getValue();
@@ -601,18 +601,18 @@ public class DepartmentController extends BaseController {
         departmentTable.setItems(filtered);
     }
 
-    @FXML private void handlePreviousPage() {}
-    @FXML private void handleNextPage() {}
+    @FXML protected void handlePreviousPage() {}
+    @FXML protected void handleNextPage() {}
 
     // ===== NAVIGATION =====
-    @FXML private void handleDashboard() { navigateTo("/fxml/dashboard.fxml", "/css/dashboard.css"); }
-    @FXML private void handleEmployees() { navigateTo("/fxml/employee.fxml", "/css/management.css"); }
-    @FXML private void handleDepartments() { /* already here */ }
-    @FXML private void handleLeave() { navigateTo("/fxml/leave.fxml", "/css/management.css"); }
-    @FXML private void handleSalary() { navigateTo("/fxml/salary.fxml", "/css/management.css"); }
+    @FXML protected void handleDashboard() { navigateTo("/fxml/dashboard.fxml", "/css/dashboard.css"); }
+    @FXML protected void handleEmployees() { navigateTo("/fxml/employee.fxml", "/css/management.css"); }
+    @FXML protected void handleDepartments() { /* already here */ }
+    @FXML protected void handleLeave() { navigateTo("/fxml/leave.fxml", "/css/management.css"); }
+    @FXML protected void handleSalary() { navigateTo("/fxml/salary.fxml", "/css/management.css"); }
 
     @FXML
-    private void handleLogout() { navigateTo("/fxml/login.fxml", "/css/login.css"); }
+    protected void handleLogout() { navigateTo("/fxml/login.fxml", "/css/login.css"); }
 
     private void navigateTo(String fxmlPath, String cssPath) {
         try {
