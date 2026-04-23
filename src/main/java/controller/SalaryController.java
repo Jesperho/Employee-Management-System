@@ -581,7 +581,7 @@ public class SalaryController extends BaseController {
         int frames = 60;
         for (int i = 1; i <= frames; i++) {
             final int frame = i;
-            countUp.getKeyFrames().add(new KeyFrame(Duration.millis(i * 30L), e -> {
+            countUp.getKeyFrames().add(new KeyFrame(Duration.millis((long) i * 30L), e -> {
                 int current = (int)((frame / (double) frames) * total);
                 counterLabel.setText("€ " + String.format("%,d", current));
                 progressBar.setProgress(frame / (double) frames);
