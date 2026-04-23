@@ -303,8 +303,8 @@ public class DepartmentController extends BaseController {
                 );
                 return;
             }
-        } else if ((dept == null || dept.equals("All Departments")) && !search.isEmpty()) {
-            // Make sure we're on the dept view (not employee detail view) when searching
+        } else if (dept == null && !search.isEmpty()) {
+            // Ensure the dept list view is visible when searching with no dept filter
             if (!deptScrollPane.isVisible()) {
                 deptScrollPane.setVisible(true);
                 deptScrollPane.setManaged(true);
