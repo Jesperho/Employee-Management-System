@@ -144,24 +144,36 @@ public class SalaryController extends BaseController {
 
     // Loads all employees from DB and maps their salary data to the table rows
     private void loadFromDatabase() {
-        salaryData.clear();
-        List<Employee> employees = employeeDao.findAll();
-        for (Employee emp : employees) {
-            String deptName = emp.getDepartment() != null ? emp.getDepartment().getDepartmentName() : "N/A";
-            int salary = emp.getSalary() != null ? emp.getSalary().intValue() : 0;
-            salaryData.add(FXCollections.observableArrayList(
-                    String.valueOf(emp.getId()),
-                    emp.getFullName() != null ? emp.getFullName() : "N/A",
-                    deptName,
-                    emp.getPosition() != null ? emp.getPosition() : "N/A",
-                    emp.getRole() != null ? emp.getRole() : "N/A",
-                    String.valueOf(salary),
-                    emp.getGender() != null ? emp.getGender() : "N/A"
-            ));
-        }
-        salaryTable.setItems(salaryData);
-        currentFilteredData = new java.util.ArrayList<>(salaryData);
-        updateStats();
+        javafx.concurrent.Task<List<ObservableList<String>>> task = new javafx.concurrent.Task<>() {
+            @Override
+            protected List<ObservableList<String>> call() {
+                List<ObservableList<String>> newData = new java.util.ArrayList<>();
+                List<Employee> employees = employeeDao.findAll();
+                for (Employee emp : employees) {
+                    String deptName = emp.getDepartment() != null ? emp.getDepartment().getDepartmentName() : "N/A";
+                    int salary = emp.getSalary() != null ? emp.getSalary().intValue() : 0;
+                    newData.add(FXCollections.observableArrayList(
+                            String.valueOf(emp.getId()),
+                            emp.getFullName() != null ? emp.getFullName() : "N/A",
+                            deptName,
+                            emp.getPosition() != null ? emp.getPosition() : "N/A",
+                            emp.getRole() != null ? emp.getRole() : "N/A",
+                            String.valueOf(salary),
+                            emp.getGender() != null ? emp.getGender() : "N/A"
+                    ));
+                }
+                return newData;
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            salaryData.setAll(task.getValue());
+            salaryTable.setItems(salaryData);
+            currentFilteredData = new java.util.ArrayList<>(salaryData);
+            updateStats();
+        });
+
+        new Thread(task).start();
     }
 
     // Populates the department filter from DB

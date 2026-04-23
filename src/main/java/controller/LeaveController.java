@@ -162,13 +162,24 @@ public class LeaveController extends BaseController {
 
     // 4. Load entities directly instead of strings
     private void loadFromDatabase() {
-        try {
-            leaveData.setAll(leaveDao.findAllWithTranslations()); // Ideally findAllWithTranslations() if you have it!
+        javafx.concurrent.Task<List<Leave>> task = new javafx.concurrent.Task<>() {
+            @Override
+            protected List<Leave> call() throws Exception {
+                return leaveDao.findAllWithTranslations();
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            leaveData.setAll(task.getValue());
             leaveTable.setItems(leaveData);
             updateStats();
-        } catch (Exception e) {
-            System.err.println("Failed to load leave data: " + e.getMessage());
-        }
+        });
+
+        task.setOnFailed(e -> {
+            System.err.println("Failed to load leave data: " + task.getException().getMessage());
+        });
+
+        new Thread(task).start();
     }
 
     private void setupFilters() {

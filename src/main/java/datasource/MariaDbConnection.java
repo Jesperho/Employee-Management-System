@@ -23,7 +23,17 @@ public class MariaDbConnection {
             port = "3306"; // default MariaDB port locally
         }
 
-        String url = "jdbc:mariadb://" + host + ":" + port + "/employment_management";
+        // Determine if we are running in a test environment
+        boolean isTest = false;
+        for (StackTraceElement el : Thread.currentThread().getStackTrace()) {
+            if (el.getClassName().contains("junit")) {
+                isTest = true;
+                break;
+            }
+        }
+        
+        String dbName = isTest ? "employment_management_test" : "employment_management";
+        String url = "jdbc:mariadb://" + host + ":" + port + "/" + dbName;
 
         Map<String, String> props = new HashMap<>();
         props.put("jakarta.persistence.jdbc.url", url);

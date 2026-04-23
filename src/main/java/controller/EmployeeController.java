@@ -158,9 +158,18 @@
 
             // Fetches all employees from the DB and refreshes the table and stats
             private void loadFromDatabase() {
-                employeeData.setAll(employeeDao.findAllWithTranslations());
-                employeeTable.setItems(employeeData);
-                updateStats();
+                javafx.concurrent.Task<List<Employee>> task = new javafx.concurrent.Task<>() {
+                    @Override
+                    protected List<Employee> call() {
+                        return employeeDao.findAllWithTranslations();
+                    }
+                };
+                task.setOnSucceeded(e -> {
+                    employeeData.setAll(task.getValue());
+                    employeeTable.setItems(employeeData);
+                    updateStats();
+                });
+                new Thread(task).start();
             }
 
             private void setupDepartmentFilter() {

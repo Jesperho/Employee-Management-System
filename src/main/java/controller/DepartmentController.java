@@ -191,25 +191,35 @@ public class DepartmentController extends BaseController {
     // Loads all departments from DB and refreshes the table and stats
     private void loadFromDatabase() {
         entity.LanguageManager lang = entity.LanguageManager.getInstance();
-        deptData.clear();
+        javafx.concurrent.Task<List<ObservableList<String>>> task = new javafx.concurrent.Task<>() {
+            @Override
+            protected List<ObservableList<String>> call() {
+                List<ObservableList<String>> newData = new java.util.ArrayList<>();
+                List<Department> departments = departmentDao.findAllWithTranslations();
 
-        List<Department> departments = departmentDao.findAllWithTranslations();
+                for (Department dept : departments) {
+                    long empCount = departmentDao.countEmployees(dept.getId());
 
-        for (Department dept : departments) {
-            long empCount = departmentDao.countEmployees(dept.getId());
+                    newData.add(FXCollections.observableArrayList(
+                            String.valueOf(dept.getId()),
+                            dept.getTranslatedName(lang.getCurrentLanguageCode()),
+                            String.valueOf(dept.getCapacity()),
+                            String.valueOf(empCount),
+                            dept.getTranslatedDate(lang.getCurrentLanguageCode()) != null ? dept.getTranslatedDate(lang.getCurrentLanguageCode()) : "N/A",
+                            dept.getDescription() != null ? dept.getDescription() : ""
+                    ));
+                }
+                return newData;
+            }
+        };
 
-            deptData.add(FXCollections.observableArrayList(
-                    String.valueOf(dept.getId()),
-                    dept.getTranslatedName(lang.getCurrentLanguageCode()),
-                    String.valueOf(dept.getCapacity()),
-                    String.valueOf(empCount),
-                    dept.getTranslatedDate(lang.getCurrentLanguageCode()) != null ? dept.getTranslatedDate(lang.getCurrentLanguageCode()) : "N/A",
-                    dept.getDescription() != null ? dept.getDescription() : ""
-            ));
-        }
+        task.setOnSucceeded(e -> {
+            deptData.setAll(task.getValue());
+            departmentTable.setItems(deptData);
+            updateStats();
+        });
 
-        departmentTable.setItems(deptData);
-        updateStats();
+        new Thread(task).start();
     }
 
     // Populates the filter dropdowns; department names come from the DB
