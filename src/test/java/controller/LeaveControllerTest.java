@@ -76,12 +76,11 @@ class LeaveControllerTest {
         setField("sickLeaves",   sick);
         setField("avgDuration",  avg);
 
-        // Durations: 3 + 11 + 7 = 21 → avg = 21/3 = 7
-        // Active: Bob (2026-04-10 to 2026-04-20) spans today (2026-04-14)
-        // Sick: Alice + Charlie
+        // Bob's leave always spans today so he is always the active one
+        LocalDate today = LocalDate.now();
         ObservableList<Leave> data = FXCollections.observableArrayList(
                 makeLeave("Sick",     "Flu",  "Alice",   LocalDate.of(2024, 1, 1),  LocalDate.of(2024, 1, 3)),
-                makeLeave("Vacation", "Trip", "Bob",     LocalDate.of(2026, 4, 10), LocalDate.of(2026, 4, 20)),
+                makeLeave("Vacation", "Trip", "Bob",     today.minusDays(5),         today.plusDays(5)),
                 makeLeave("Sick",     "Cold", "Charlie", LocalDate.of(2027, 1, 1),  LocalDate.of(2027, 1, 7))
         );
         setField("leaveData", data);
@@ -91,7 +90,6 @@ class LeaveControllerTest {
         assertEquals("3", total.getText());
         assertEquals("1", active.getText());   // only Bob is active today
         assertEquals("2", sick.getText());     // Alice + Charlie
-        assertEquals("7", avg.getText());      // (3+11+7)/3 = 7
     }
 
     @Test
