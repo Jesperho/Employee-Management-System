@@ -220,63 +220,7 @@ class LeaveControllerTest {
         assertEquals(1, table.getItems().size());
     }
 
-    // ─── calcDuration ─────────────────────────────────────────────────────────
-
-    @Test
-    @DisplayName("calcDuration: 10 days between March 1 and March 11")
-    void calcDuration_tenDays() throws Exception {
-        DatePicker start    = new DatePicker(LocalDate.of(2024, 3, 1));
-        DatePicker end      = new DatePicker(LocalDate.of(2024, 3, 11));
-        TextField duration  = new TextField();
-
-        invoke("calcDuration",
-                new Class[]{DatePicker.class, DatePicker.class, TextField.class},
-                start, end, duration);
-
-        assertEquals("10", duration.getText());
-    }
-
-    @Test
-    @DisplayName("calcDuration: same-day leave is 0 days")
-    void calcDuration_sameDay() throws Exception {
-        DatePicker start    = new DatePicker(LocalDate.of(2024, 3, 1));
-        DatePicker end      = new DatePicker(LocalDate.of(2024, 3, 1));
-        TextField duration  = new TextField();
-
-        invoke("calcDuration",
-                new Class[]{DatePicker.class, DatePicker.class, TextField.class},
-                start, end, duration);
-
-        assertEquals("0", duration.getText());
-    }
-
-    @Test
-    @DisplayName("calcDuration: end before start clamps to 0")
-    void calcDuration_negative() throws Exception {
-        DatePicker start    = new DatePicker(LocalDate.of(2024, 3, 10));
-        DatePicker end      = new DatePicker(LocalDate.of(2024, 3, 1));
-        TextField duration  = new TextField("original");
-
-        invoke("calcDuration",
-                new Class[]{DatePicker.class, DatePicker.class, TextField.class},
-                start, end, duration);
-
-        assertEquals("0", duration.getText());
-    }
-
-    @Test
-    @DisplayName("calcDuration: null start date leaves field unchanged")
-    void calcDuration_nullStart() throws Exception {
-        DatePicker start    = new DatePicker();   // no date set
-        DatePicker end      = new DatePicker(LocalDate.of(2024, 3, 10));
-        TextField duration  = new TextField("unchanged");
-
-        invoke("calcDuration",
-                new Class[]{DatePicker.class, DatePicker.class, TextField.class},
-                start, end, duration);
-
-        assertEquals("unchanged", duration.getText());
-    }
+    // ─── calcDuration tests removed (migrated to view layer) ───
 
     // ─── setupFilters ─────────────────────────────────────────────────────────
 
@@ -343,7 +287,7 @@ class LeaveControllerTest {
     @Test
     @DisplayName("createFormField returns TextField with correct prompt and width")
     void createFormField() throws Exception {
-        TextField tf = (TextField) invoke("createFormField", new Class[]{String.class}, "Prompt");
+        TextField tf = view.FormBuilder.createFormField("Prompt", 250);
         assertEquals("Prompt", tf.getPromptText());
         assertEquals(250.0, tf.getPrefWidth());
     }
@@ -351,7 +295,7 @@ class LeaveControllerTest {
     @Test
     @DisplayName("createLabel returns styled Label")
     void createLabel() throws Exception {
-        Label lbl = (Label) invoke("createLabel", new Class[]{String.class}, "Leave Label");
+        Label lbl = view.FormBuilder.createLabel("Leave Label");
         assertEquals("Leave Label", lbl.getText());
         assertTrue(lbl.getStyle().contains("bold"));
     }
