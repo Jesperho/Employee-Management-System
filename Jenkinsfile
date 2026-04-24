@@ -7,6 +7,10 @@ pipeline {
 
     environment {
         PATH = "C:\\Program Files\\Docker\\Docker\\resources\\bin;${env.PATH}"
+        SONARQUBE_SERVER = 'SonarQube Server'
+        SONAR_PROJECT_KEY = 'EMP'
+        SONAR_PROJECT_NAME = 'EMP'
+        SONAR_TOKEN = credentials('SONAR_TOKEN')
         DOCKERHUB_CREDENTIALS_ID = 'docker-hub-cred'
         DOCKERHUB_REPO = 'osamaaa1/employee-management-system'
         DOCKER_IMAGE_TAG = 'latest'
@@ -29,6 +33,14 @@ pipeline {
         stage('Generate Report') {
             steps {
                 bat 'mvn jacoco:report'
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv("${SONARQUBE_SERVER}") {
+                    bat 'mvn sonar:sonar -Dsonar.projectKey=%SONAR_PROJECT_KEY% -Dsonar.projectName=%SONAR_PROJECT_NAME% -Dsonar.coverage.jacoco.xmlReportPaths=target/jacoco-report/jacoco.xml -Dsonar.token=%SONAR_TOKEN%'
+                }
             }
         }
 
