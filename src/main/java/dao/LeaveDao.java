@@ -75,11 +75,17 @@ public class LeaveDao extends BaseDao<Leave> {
     public List<Leave> sortByStartDate(boolean ascending) {
         EntityManager em = MariaDbConnection.getEntityManager();
         try {
-            String order = ascending ? "ASC" : "DESC";
-            return em.createQuery(
-                    "SELECT l FROM Leave l ORDER BY l.startDate " + order,
-                    Leave.class
-            ).getResultList();
+            if (ascending) {
+                return em.createQuery(
+                        "SELECT l FROM Leave l ORDER BY l.startDate ASC",
+                        Leave.class
+                ).getResultList();
+            } else {
+                return em.createQuery(
+                        "SELECT l FROM Leave l ORDER BY l.startDate DESC",
+                        Leave.class
+                ).getResultList();
+            }
         } finally {
             em.close();
         }
@@ -89,11 +95,17 @@ public class LeaveDao extends BaseDao<Leave> {
     public List<Leave> sortByEndDate(boolean ascending) {
         EntityManager em = MariaDbConnection.getEntityManager();
         try {
-            String order = ascending ? "ASC" : "DESC";
-            return em.createQuery(
-                    "SELECT l FROM Leave l ORDER BY l.endDate " + order,
-                    Leave.class
-            ).getResultList();
+            if (ascending) {
+                return em.createQuery(
+                        "SELECT l FROM Leave l ORDER BY l.endDate ASC",
+                        Leave.class
+                ).getResultList();
+            } else {
+                return em.createQuery(
+                        "SELECT l FROM Leave l ORDER BY l.endDate DESC",
+                        Leave.class
+                ).getResultList();
+            }
         } finally {
             em.close();
         }

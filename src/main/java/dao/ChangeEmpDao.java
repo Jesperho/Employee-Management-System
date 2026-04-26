@@ -64,11 +64,17 @@ public class ChangeEmpDao extends BaseDao<ChangeEmp> {
     public List<ChangeEmp> sortByDate(boolean ascending) {
         EntityManager em = MariaDbConnection.getEntityManager();
         try {
-            String order = ascending ? "ASC" : "DESC";
-            return em.createQuery(
-                    "SELECT c FROM ChangeEmp c ORDER BY c.date " + order,
-                    ChangeEmp.class
-            ).getResultList();
+            if (ascending) {
+                return em.createQuery(
+                        "SELECT c FROM ChangeEmp c ORDER BY c.date ASC",
+                        ChangeEmp.class
+                ).getResultList();
+            } else {
+                return em.createQuery(
+                        "SELECT c FROM ChangeEmp c ORDER BY c.date DESC",
+                        ChangeEmp.class
+                ).getResultList();
+            }
         } finally {
             em.close();
         }

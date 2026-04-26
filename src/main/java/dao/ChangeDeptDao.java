@@ -64,11 +64,17 @@ public class ChangeDeptDao extends BaseDao<ChangeDept> {
     public List<ChangeDept> sortByDate(boolean ascending) {
         EntityManager em = MariaDbConnection.getEntityManager();
         try {
-            String order = ascending ? "ASC" : "DESC";
-            return em.createQuery(
-                    "SELECT c FROM ChangeDept c ORDER BY c.date " + order,
-                    ChangeDept.class
-            ).getResultList();
+            if (ascending) {
+                return em.createQuery(
+                        "SELECT c FROM ChangeDept c ORDER BY c.date ASC",
+                        ChangeDept.class
+                ).getResultList();
+            } else {
+                return em.createQuery(
+                        "SELECT c FROM ChangeDept c ORDER BY c.date DESC",
+                        ChangeDept.class
+                ).getResultList();
+            }
         } finally {
             em.close();
         }

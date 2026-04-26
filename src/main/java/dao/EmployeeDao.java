@@ -108,11 +108,17 @@ public class EmployeeDao extends BaseDao<Employee> {
     public List<Employee> sortBySalary(boolean ascending) {
         EntityManager em = MariaDbConnection.getEntityManager();
         try {
-            String order = ascending ? "ASC" : "DESC";
-            return em.createQuery(
-                    "SELECT e FROM Employee e ORDER BY e.salary " + order,
-                    Employee.class
-            ).getResultList();
+            if (ascending) {
+                return em.createQuery(
+                        "SELECT e FROM Employee e ORDER BY e.salary ASC",
+                        Employee.class
+                ).getResultList();
+            } else {
+                return em.createQuery(
+                        "SELECT e FROM Employee e ORDER BY e.salary DESC",
+                        Employee.class
+                ).getResultList();
+            }
         } finally {
             em.close();
         }
@@ -122,11 +128,17 @@ public class EmployeeDao extends BaseDao<Employee> {
     public List<Employee> sortByStartDate(boolean ascending) {
         EntityManager em = MariaDbConnection.getEntityManager();
         try {
-            String order = ascending ? "ASC" : "DESC";
-            return em.createQuery(
-                    "SELECT e FROM Employee e ORDER BY e.startDate " + order,
-                    Employee.class
-            ).getResultList();
+            if (ascending) {
+                return em.createQuery(
+                        "SELECT e FROM Employee e ORDER BY e.startDate ASC",
+                        Employee.class
+                ).getResultList();
+            } else {
+                return em.createQuery(
+                        "SELECT e FROM Employee e ORDER BY e.startDate DESC",
+                        Employee.class
+                ).getResultList();
+            }
         } finally {
             em.close();
         }

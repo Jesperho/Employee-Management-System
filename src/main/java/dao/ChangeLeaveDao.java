@@ -64,11 +64,17 @@ public class ChangeLeaveDao extends BaseDao<ChangeLeave> {
     public List<ChangeLeave> sortByDate(boolean ascending) {
         EntityManager em = MariaDbConnection.getEntityManager();
         try {
-            String order = ascending ? "ASC" : "DESC";
-            return em.createQuery(
-                    "SELECT c FROM ChangeLeave c ORDER BY c.date " + order,
-                    ChangeLeave.class
-            ).getResultList();
+            if (ascending) {
+                return em.createQuery(
+                        "SELECT c FROM ChangeLeave c ORDER BY c.date ASC",
+                        ChangeLeave.class
+                ).getResultList();
+            } else {
+                return em.createQuery(
+                        "SELECT c FROM ChangeLeave c ORDER BY c.date DESC",
+                        ChangeLeave.class
+                ).getResultList();
+            }
         } finally {
             em.close();
         }
