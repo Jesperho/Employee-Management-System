@@ -108,7 +108,7 @@ public class DashboardController extends BaseController {
     private final DepartmentDao departmentDao = new DepartmentDao();
     private final DepartmentTranslationDao departmentTranslationDao = new DepartmentTranslationDao();
     private final LeaveDao leaveDao = new LeaveDao();
-    private static final Logger LOGGER = Logger.getLogger(DashboardController.class.getName());;
+    private static final Logger LOGGER = Logger.getLogger(DashboardController.class.getName());
 
     @Override
     protected void setupController() {
