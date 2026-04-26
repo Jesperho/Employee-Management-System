@@ -25,6 +25,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
+import java.util.logging.Logger;
 
 // Make sure to import BaseController if it's in a different package!
 // import util.BaseController;
@@ -107,6 +108,7 @@ public class DashboardController extends BaseController {
     private final DepartmentDao departmentDao = new DepartmentDao();
     private final DepartmentTranslationDao departmentTranslationDao = new DepartmentTranslationDao();
     private final LeaveDao leaveDao = new LeaveDao();
+    private static final Logger LOGGER = Logger.getLogger(DashboardController.class.getName());;
 
     @Override
     protected void setupController() {
@@ -433,7 +435,7 @@ public class DashboardController extends BaseController {
             stage.setScene(scene);
             stage.setTitle("Employee Management System - Login");
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(java.util.logging.Level.SEVERE, "Failed to logout", e);
             showAlert("Error", "Failed to logout. Please try again.");
         }
     }
@@ -451,7 +453,7 @@ public class DashboardController extends BaseController {
             if (css != null) scene.getStylesheets().add(css.toExternalForm());
             stage.setScene(scene);
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(java.util.logging.Level.SEVERE, "Failed to load view: " + fxmlPath, e);
             showAlert("Error", "Failed to load view: " + fxmlPath);
         }
     }

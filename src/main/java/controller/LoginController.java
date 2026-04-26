@@ -13,6 +13,8 @@ import javafx.stage.Stage;
 import service.AuthService;
 import utils.BaseController;
 
+import java.util.logging.Logger;
+
 // Make sure to import your BaseController if it's in a different package!
 // import util.BaseController;
 
@@ -40,6 +42,8 @@ public class LoginController extends BaseController {
     @FXML private Label registerMessage;
 
     @FXML private TabPane tabPane;
+
+    private static final Logger LOGGER = Logger.getLogger(LoginController.class.getName());
 
     // 1. Replaced initialize() with setupController()
     @Override
@@ -115,7 +119,7 @@ public class LoginController extends BaseController {
             stage.setMinWidth(1100);
             stage.setMinHeight(700);
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.severe("Error loading dashboard: " + e.getMessage());
             showError(loginMessage, "Error loading dashboard. Please try again.");
         }
     }
@@ -179,12 +183,12 @@ public class LoginController extends BaseController {
             return;
         }
 
-        if (!password.matches(".*[A-Z].*")) {
+        if (!hasUppercase(password)) {
             showError(registerMessage, "Password must contain at least one uppercase letter.");
             return;
         }
 
-        if (!password.matches(".*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?].*")) {
+        if (!hasSpecialChar(password)) {
             showError(registerMessage, "Password must contain at least one special character.");
             return;
         }
@@ -203,6 +207,26 @@ public class LoginController extends BaseController {
             showError(registerMessage, "Email already registered.");
         }
     }
+
+    private boolean hasUppercase(String password) {
+        for (char c : password.toCharArray()) {
+            if (Character.isUpperCase(c)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean hasSpecialChar(String password) {
+        String specials = "!@#$%^&*()_+-=[]{};':\"\\|,.<>/?";
+        for (char c : password.toCharArray()) {
+            if (specials.indexOf(c) >= 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 
     private boolean isValidEmail(String email) {
         return email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");

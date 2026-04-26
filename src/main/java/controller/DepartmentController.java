@@ -23,6 +23,8 @@ import utils.BaseController;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public class DepartmentController extends BaseController {
@@ -106,6 +108,8 @@ public class DepartmentController extends BaseController {
     private ObservableList<ObservableList<String>> deptData = FXCollections.observableArrayList();
     private ObservableList<ObservableList<String>> employeeData = FXCollections.observableArrayList();
     private List<Employee> currentDeptEmployees = new java.util.ArrayList<>();
+
+    private static final Logger LOGGER = Logger.getLogger(DepartmentController.class.getName());
 
     // 2. Replace initialize() with setupController()
     @Override
@@ -627,7 +631,7 @@ public class DepartmentController extends BaseController {
             if (css != null) scene.getStylesheets().add(css.toExternalForm());
             stage.setScene(scene);
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Navigation failed: " + fxmlPath, e);
         }
     }
 

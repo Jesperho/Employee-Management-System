@@ -22,6 +22,8 @@ import utils.BaseController;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 // 1. Extend BaseController instead of implementing Initializable
@@ -76,6 +78,8 @@ public class SalaryController extends BaseController {
     private ObservableList<ObservableList<String>> salaryData = FXCollections.observableArrayList();
     // Tracks the rows currently visible after filtering — used for stats & payroll
     private List<ObservableList<String>> currentFilteredData = new java.util.ArrayList<>();
+
+    private static final Logger LOGGER = Logger.getLogger(SalaryController.class.getName());
 
     // 2. Replace initialize() with setupController()
     @Override
@@ -288,7 +292,7 @@ public class SalaryController extends BaseController {
             if (css != null) scene.getStylesheets().add(css.toExternalForm());
             stage.setScene(scene);
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Navigation failed: " + fxmlPath, e);
         }
     }
 }

@@ -18,6 +18,8 @@
         import java.time.LocalDate;
         import java.util.List;
         import java.util.Optional;
+        import java.util.logging.Level;
+        import java.util.logging.Logger;
         import java.util.stream.Collectors;
 
         // Make sure to import BaseController if it's in a different package!
@@ -426,6 +428,8 @@
                 navigateTo("/fxml/login.fxml", "/css/login.css");
             }
 
+            private static final Logger LOGGER = Logger.getLogger(EmployeeController.class.getName());
+
             private void navigateTo(String fxmlPath, String cssPath) {
                 try {
                     FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
@@ -439,7 +443,7 @@
                     if (css != null) scene.getStylesheets().add(css.toExternalForm());
                     stage.setScene(scene);
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    LOGGER.log(Level.SEVERE, "Navigation failed: " + fxmlPath, e);
                 }
             }
 

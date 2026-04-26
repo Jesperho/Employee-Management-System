@@ -20,6 +20,8 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class LeaveController extends BaseController {
 
@@ -81,6 +83,8 @@ public class LeaveController extends BaseController {
 
     // 2. Changed to ObservableList<Leave>
     private final ObservableList<Leave> leaveData = FXCollections.observableArrayList();
+
+    private static final Logger LOGGER = Logger.getLogger(LeaveController.class.getName());
 
     @Override
     protected void setupController() {
@@ -493,7 +497,7 @@ public class LeaveController extends BaseController {
             if (css != null) scene.getStylesheets().add(css.toExternalForm());
             stage.setScene(scene);
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Navigation failed: " + fxmlPath, e);
         }
     }
 
