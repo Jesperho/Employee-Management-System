@@ -2,17 +2,17 @@ pipeline {
     agent any
 
     tools {
-        maven 'Maven3'
+        maven 'Maven 3.8.5'
     }
 
     environment {
         PATH = "C:\\Program Files\\Docker\\Docker\\resources\\bin;${env.PATH}"
-        SONARQUBE_SERVER = 'SonarQube Server'
+        SONARQUBE_SERVER = 'SonarQubeServer'
         SONAR_PROJECT_KEY = 'EMP'
         SONAR_PROJECT_NAME = 'EMP'
-        SONAR_TOKEN = credentials('SONAR_TOKEN')
-        DOCKERHUB_CREDENTIALS_ID = 'docker-hub-cred'
-        DOCKERHUB_REPO = 'osamaaa1/employee-management-system'
+        SONAR_TOKEN = credentials('sonar_token')
+        DOCKERHUB_CREDENTIALS_ID = 'Docker-Hub'
+        DOCKERHUB_REPO = 'mehdizaidane/employee-management-system'
         DOCKER_IMAGE_TAG = 'latest'
     }
 
