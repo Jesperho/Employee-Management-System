@@ -62,18 +62,11 @@ public abstract class BaseDao<T> {
     public List<T> findAll() {
         EntityManager em = MariaDbConnection.getEntityManager();
         try {
-            String jpql;
-
             if (entityClass == null) {
                 throw new IllegalStateException("Entity class is null");
             }
 
-            if (entityClass.equals(entityClass)) {
-                // still generic, but avoids concatenation pattern Sonar flags
-                jpql = "SELECT e FROM " + entityClass.getName() + " e";
-            } else {
-                jpql = "SELECT e FROM " + entityClass.getSimpleName() + " e";
-            }
+            String jpql = "SELECT e FROM " + entityClass.getSimpleName() + " e";
 
             TypedQuery<T> query = em.createQuery(jpql, entityClass);
             return query.getResultList();
