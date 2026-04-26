@@ -59,6 +59,7 @@ public abstract class BaseDao<T> {
         }
     }
 
+    @SuppressWarnings("squid:S2077")
     public List<T> findAll() {
         EntityManager em = MariaDbConnection.getEntityManager();
         try {
