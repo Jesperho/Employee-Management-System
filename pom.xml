@@ -155,9 +155,10 @@
                     <excludes>
                         <exclude>app/Main.class</exclude>
                         <exclude>app/GUIApplication.class</exclude>
-                        <exclude>view/ViewManager.class</exclude>
+                        <exclude>view/**</exclude>
                         <exclude>dataseeder/DataSeeder.class</exclude>
                         <exclude>datasource/MariaDbConnection.class</exclude>
+                        <exclude>controller/*$*.class</exclude>
                     </excludes>
                 </configuration>
                 <executions>

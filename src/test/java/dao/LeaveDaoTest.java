@@ -269,7 +269,85 @@ class LeaveDaoTest {
     }
 
     @Test
+    @Order(11)
+    void testSortByStartDateDescending() {
+        Employee e = createEmployee();
+
+        Leave l1 = new Leave(LocalDate.of(2024, 2, 1), LocalDate.of(2024, 2, 3), "Sick", "A", e);
+        Leave l2 = new Leave(LocalDate.of(2024, 2, 20), LocalDate.of(2024, 2, 22), "Sick", "B", e);
+
+        leaveDao.create(l1);
+        leaveDao.create(l2);
+
+        List<Leave> sorted = leaveDao.sortByStartDate(false);
+
+        assertFalse(sorted.isEmpty());
+        // Descending: later dates come first
+        int idx1 = -1, idx2 = -1;
+        for (int i = 0; i < sorted.size(); i++) {
+            if (sorted.get(i).getId() == l1.getId()) idx1 = i;
+            if (sorted.get(i).getId() == l2.getId()) idx2 = i;
+        }
+        assertTrue(idx1 > idx2);
+    }
+
+    @Test
     @Order(12)
+    void testSortByEndDateDescending() {
+        Employee e = createEmployee();
+
+        Leave l1 = new Leave(LocalDate.of(2024, 3, 1), LocalDate.of(2024, 3, 5), "Personal", "A", e);
+        Leave l2 = new Leave(LocalDate.of(2024, 3, 10), LocalDate.of(2024, 3, 15), "Personal", "B", e);
+
+        leaveDao.create(l1);
+        leaveDao.create(l2);
+
+        List<Leave> sorted = leaveDao.sortByEndDate(false);
+
+        assertFalse(sorted.isEmpty());
+        int idx1 = -1, idx2 = -1;
+        for (int i = 0; i < sorted.size(); i++) {
+            if (sorted.get(i).getId() == l1.getId()) idx1 = i;
+            if (sorted.get(i).getId() == l2.getId()) idx2 = i;
+        }
+        assertTrue(idx1 > idx2);
+    }
+
+    @Test
+    @Order(13)
+    void testFindAllWithTranslations() {
+        Employee e = createEmployee();
+        createLeave(e);
+
+        List<Leave> list = leaveDao.findAllWithTranslations();
+        assertFalse(list.isEmpty());
+    }
+
+    @Test
+    @Order(14)
+    void testHasNoOverlappingLeave() {
+        Employee e = createEmployee();
+
+        Leave l1 = new Leave(
+                LocalDate.of(2024, 4, 1),
+                LocalDate.of(2024, 4, 5),
+                "Vacation",
+                "No overlap test",
+                e
+        );
+        leaveDao.create(l1);
+
+        boolean overlaps = leaveDao.hasOverlappingLeave(
+                e.getId(),
+                LocalDate.of(2024, 5, 1),
+                LocalDate.of(2024, 5, 5)
+        );
+
+        assertFalse(overlaps);
+    }
+
+    @Test
+    @Order(15)
     void testCountLeaves() {
         long before = leaveDao.countLeaves();
 

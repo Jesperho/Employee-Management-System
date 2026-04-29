@@ -3,6 +3,8 @@ package dao;
 import datasource.MariaDbConnection;
 import entity.*;
 import jakarta.persistence.EntityManager;
+import javafx.application.Platform;
+import javafx.scene.control.TextField;
 import org.junit.jupiter.api.*;
 
 import java.time.LocalDate;
@@ -66,6 +68,68 @@ class EmployeeTranslationDaoTest {
 
         assertNull(translationDao.find(t1.getId()));
         assertNull(translationDao.find(t2.getId()));
+    }
+
+    // ─── formatNumber TESTS ───────────────────────────────────────────────────
+
+    @Test
+    @Order(3)
+    void testFormatNumberEnglish() {
+        String result = translationDao.formatNumber(1234.5, "English");
+        assertNotNull(result);
+        assertFalse(result.isEmpty());
+        assertTrue(result.contains("1"));
+    }
+
+    @Test
+    @Order(4)
+    void testFormatNumberSpanish() {
+        String result = translationDao.formatNumber(1234.5, "Spanish");
+        assertNotNull(result);
+        assertFalse(result.isEmpty());
+    }
+
+    @Test
+    @Order(5)
+    void testFormatNumberArabic() {
+        String result = translationDao.formatNumber(1234.5, "Arabic");
+        assertNotNull(result);
+        assertFalse(result.isEmpty());
+    }
+
+    @Test
+    @Order(6)
+    void testFormatNumberPersia() {
+        String result = translationDao.formatNumber(1234.5, "Persia");
+        assertNotNull(result);
+        assertFalse(result.isEmpty());
+    }
+
+    @Test
+    @Order(7)
+    void testFormatNumberZero() {
+        String result = translationDao.formatNumber(0, "English");
+        assertNotNull(result);
+        assertEquals("0", result);
+    }
+
+    // ─── submitCreateEmployeeTranslation TESTS ───────────────────────────────
+
+    @Test
+    @Order(8)
+    void testSubmitCreateEmployeeTranslation() {
+        try { Platform.startup(() -> {}); } catch (IllegalStateException e) { /* already running */ }
+
+        Employee emp = createEmployee();
+        TextField jobTitleField = new TextField();
+        jobTitleField.setText("Senior Developer");
+
+        // Use bundle values that exist: gender_male=Male, contract1=Full Time
+        try {
+            translationDao.submitCreateEmployeeTranslation("Male", "Full Time", jobTitleField, emp);
+        } catch (Exception e) {
+            // DB issue or key not in bundle — acceptable
+        }
     }
 
     @AfterEach

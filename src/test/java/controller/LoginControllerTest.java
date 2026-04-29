@@ -383,6 +383,173 @@ class LoginControllerTest {
         assertTrue(country.getItems().contains("Sweden"));
     }
 
+    // ===== hasUppercase TESTS =====
+
+    @Test
+    @DisplayName("handleRegister shows error when password has no uppercase letter")
+    void testHandleRegisterNoUppercase() throws Exception {
+        fillRegistrationFieldsUntilPassword("password1!");
+        PasswordField confirmPassword = (PasswordField) getField("registerConfirmPassword");
+        confirmPassword.setText("password1!");
+        invokePrivate("handleRegister", new Class[]{});
+        Label registerMessage = (Label) getField("registerMessage");
+        assertEquals("Password must contain at least one uppercase letter.", registerMessage.getText());
+    }
+
+    @Test
+    @DisplayName("handleRegister shows error when password has no special character")
+    void testHandleRegisterNoSpecialChar() throws Exception {
+        fillRegistrationFieldsUntilPassword("Password1");
+        PasswordField confirmPassword = (PasswordField) getField("registerConfirmPassword");
+        confirmPassword.setText("Password1");
+        invokePrivate("handleRegister", new Class[]{});
+        Label registerMessage = (Label) getField("registerMessage");
+        assertEquals("Password must contain at least one special character.", registerMessage.getText());
+    }
+
+    @Test
+    @DisplayName("hasUppercase returns true when password has uppercase")
+    void testHasUppercase_true() throws Exception {
+        assertTrue((boolean) invokePrivate("hasUppercase", new Class[]{String.class}, "Password1"));
+    }
+
+    @Test
+    @DisplayName("hasUppercase returns false when password has no uppercase")
+    void testHasUppercase_false() throws Exception {
+        assertFalse((boolean) invokePrivate("hasUppercase", new Class[]{String.class}, "password1"));
+    }
+
+    @Test
+    @DisplayName("hasUppercase returns false for empty string")
+    void testHasUppercase_empty() throws Exception {
+        assertFalse((boolean) invokePrivate("hasUppercase", new Class[]{String.class}, ""));
+    }
+
+    @Test
+    @DisplayName("hasSpecialChar returns true when password has special char")
+    void testHasSpecialChar_true() throws Exception {
+        assertTrue((boolean) invokePrivate("hasSpecialChar", new Class[]{String.class}, "Password1!"));
+    }
+
+    @Test
+    @DisplayName("hasSpecialChar returns false when password has no special char")
+    void testHasSpecialChar_false() throws Exception {
+        assertFalse((boolean) invokePrivate("hasSpecialChar", new Class[]{String.class}, "Password1"));
+    }
+
+    @Test
+    @DisplayName("hasSpecialChar returns false for empty string")
+    void testHasSpecialChar_empty() throws Exception {
+        assertFalse((boolean) invokePrivate("hasSpecialChar", new Class[]{String.class}, ""));
+    }
+
+    // ===== capitaliseEmailPrefix TESTS =====
+
+    @Test
+    @DisplayName("capitaliseEmailPrefix handles dot-separated name")
+    void testCapitalise_dotSeparated() throws Exception {
+        String result = (String) invokePrivate("capitaliseEmailPrefix", new Class[]{String.class}, "john.doe");
+        assertEquals("John Doe", result);
+    }
+
+    @Test
+    @DisplayName("capitaliseEmailPrefix handles underscore-separated name")
+    void testCapitalise_underscore() throws Exception {
+        String result = (String) invokePrivate("capitaliseEmailPrefix", new Class[]{String.class}, "john_doe");
+        assertEquals("John Doe", result);
+    }
+
+    @Test
+    @DisplayName("capitaliseEmailPrefix handles dash-separated name")
+    void testCapitalise_dash() throws Exception {
+        String result = (String) invokePrivate("capitaliseEmailPrefix", new Class[]{String.class}, "john-doe");
+        assertEquals("John Doe", result);
+    }
+
+    @Test
+    @DisplayName("capitaliseEmailPrefix handles simple name with no separator")
+    void testCapitalise_simple() throws Exception {
+        String result = (String) invokePrivate("capitaliseEmailPrefix", new Class[]{String.class}, "johndoe");
+        assertEquals("Johndoe", result);
+    }
+
+    @Test
+    @DisplayName("capitaliseEmailPrefix handles empty string returning original")
+    void testCapitalise_empty() throws Exception {
+        String result = (String) invokePrivate("capitaliseEmailPrefix", new Class[]{String.class}, "");
+        assertEquals("", result);
+    }
+
+    @Test
+    @DisplayName("capitaliseEmailPrefix handles three-part name")
+    void testCapitalise_threeParts() throws Exception {
+        String result = (String) invokePrivate("capitaliseEmailPrefix", new Class[]{String.class}, "john.a.doe");
+        assertEquals("John A Doe", result);
+    }
+
+    @Test
+    @DisplayName("capitaliseEmailPrefix skips empty parts from consecutive separators")
+    void testCapitalise_doubleSeparator() throws Exception {
+        String result = (String) invokePrivate("capitaliseEmailPrefix", new Class[]{String.class}, "john..doe");
+        assertEquals("John Doe", result);
+    }
+
+    @Test
+    @DisplayName("capitaliseEmailPrefix handles single char parts")
+    void testCapitalise_singleChars() throws Exception {
+        String result = (String) invokePrivate("capitaliseEmailPrefix", new Class[]{String.class}, "j.d");
+        assertEquals("J D", result);
+    }
+
+    // ===== updateUIText in LoginController =====
+
+    @Test
+    @DisplayName("updateUIText does not throw (empty implementation)")
+    void testUpdateUIText_noThrow() throws Exception {
+        assertDoesNotThrow(() -> invokePrivate("updateUIText", new Class[]{String.class}, "English"));
+    }
+
+    @Test
+    @DisplayName("updateUIText with all languages does not throw")
+    void testUpdateUIText_allLanguages() throws Exception {
+        for (String lang : new String[]{"English", "Spanish", "Arabic", "Persia"}) {
+            assertDoesNotThrow(() -> invokePrivate("updateUIText", new Class[]{String.class}, lang));
+        }
+    }
+
+    // ===== clearRegisterForm TESTS =====
+
+    @Test
+    @DisplayName("clearRegisterForm clears all registration fields")
+    void testClearRegisterForm() throws Exception {
+        TextField companyName = (TextField) getField("companyName");
+        companyName.setText("TestCorp");
+        TextField companyAddress = (TextField) getField("companyAddress");
+        companyAddress.setText("Test Street");
+        ComboBox<String> companyCountry = (ComboBox<String>) getField("companyCountry");
+        companyCountry.setValue("Finland");
+        TextField firstName = (TextField) getField("registerFirstName");
+        firstName.setText("John");
+        TextField lastName = (TextField) getField("registerLastName");
+        lastName.setText("Doe");
+        TextField email = (TextField) getField("registerEmail");
+        email.setText("john@test.com");
+        ComboBox<String> gender = (ComboBox<String>) getField("registerGender");
+        gender.setValue("Male");
+        PasswordField pw = (PasswordField) getField("registerPassword");
+        pw.setText("Password1!");
+        PasswordField confirmPw = (PasswordField) getField("registerConfirmPassword");
+        confirmPw.setText("Password1!");
+
+        invokePrivate("clearRegisterForm", new Class[]{});
+
+        assertEquals("", companyName.getText());
+        assertNull(companyCountry.getValue());
+        assertEquals("", firstName.getText());
+        assertNull(gender.getValue());
+        assertEquals("", pw.getText());
+    }
+
     // ===== HELPER to fill registration fields up to password =====
 
     private void fillRegistrationFieldsUntilPassword(String password) throws Exception {
