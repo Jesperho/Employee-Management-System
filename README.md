@@ -264,22 +264,6 @@ Instead of adding language-specific columns to the main tables, a dedicated, rel
 
 ---
 
-### 🐞 Bug Fixing Summary
-
-Key bugs resolved during Sprint 7:
-- Incorrect leave duration calculation.
-- Missing translation keys (Next, Previous, Department Overview, etc.).
-- Password validation not triggering on registration.
-- Salary input rejecting Persian/Arabic digits.
-- Filtering logic inconsistencies in Employee module.
-- SonarQube security hotspot in password regex.
-- NPEs in `LanguageManager` during tests.
-- Reflection-based test failures after refactoring.
-
-**All bugs resolved before final deployment.**
-
----
-
 ### 🛠 Code Cleanup & Refactoring
 
 #### **MVC Separation**
