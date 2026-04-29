@@ -26,5 +26,7 @@ The Maven `verify` lifecycle now executes perfectly, confirming system stability
 
 ## Next Steps
 The project is now fully stabilized and secure. The user should proceed to execute the final SonarQube analysis pipeline (`mvn clean verify sonar:sonar`) to generate the final code coverage report and trigger the Docker deployment process in Jenkins.
+
 Screenshot of Jenkins
+
 ![ER Diagram](https://github.com/Jesperho/Employee-Management-System/blob/main/docs/Diagrams/Jenkins-Test1.jpeg)
