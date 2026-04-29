@@ -232,3 +232,112 @@ Instead of adding language-specific columns to the main tables, a dedicated, rel
 | :--- | :--- |
 | **Translation Review** | Native speakers — dialect validation for Arabic and Persian |
 | **Key Management** | IntelliJ IDEA Resource Bundle Editor — edit all language files side-by-side |
+
+---
+
+### Testing & Quality Assurance
+
+#### **Unit Testing**
+- All core modules tested using JUnit (Employee, Department, Leave, Salary, Dashboard, Auth).
+- **328/328 tests passed** with no failures.
+- Coverage improved significantly after refactoring.
+- Tested business logic, filtering, statistics, localization, and DAO operations.
+
+#### **Integration Testing**
+- Full workflow validated: Login → Dashboard → Employees → Departments → Leave → Salary.
+- All CRUD operations confirmed working end‑to‑end.
+
+#### **User Acceptance Testing (UAT)**
+- 10 UAT test cases executed by all team members.
+- Majority passed across all evaluators.
+- Team comparison table created.
+- Minor issues found in responsiveness and localization.
+
+#### **Heuristic Evaluation**
+- Evaluated using Nielsen’s 10 heuristics.
+- Issues identified in:
+    - Responsiveness
+    - Error messages
+    - Localization completeness
+    - Feedback/confirmation dialogs
+- All issues documented with severity ratings and improvements.
+
+---
+
+### 🐞 Bug Fixing Summary
+
+Key bugs resolved during Sprint 7:
+- Incorrect leave duration calculation.
+- Missing translation keys (Next, Previous, Department Overview, etc.).
+- Password validation not triggering on registration.
+- Salary input rejecting Persian/Arabic digits.
+- Filtering logic inconsistencies in Employee module.
+- SonarQube security hotspot in password regex.
+- NPEs in `LanguageManager` during tests.
+- Reflection-based test failures after refactoring.
+
+**All bugs resolved before final deployment.**
+
+---
+
+### 🛠 Code Cleanup & Refactoring
+
+#### **MVC Separation**
+A new `view/` layer was introduced:
+- `DashboardView`
+- `EmployeeView`
+- `DepartmentView`
+- `LeaveView`
+- `SalaryView`
+- Shared `FormBuilder`
+
+Controllers now contain **only business logic**, improving readability and testability.
+
+#### **Performance Improvements**
+- All heavy database operations moved to background threads using `javafx.concurrent.Task`.
+- UI no longer freezes during table loading or filtering.
+
+#### **Architecture Updates**
+- Added a dedicated View layer to the architecture.
+- Updated DB connection logic to auto‑switch between production and test DB.
+- Implemented callback patterns (`Runnable`, `Consumer`) to keep Views decoupled.
+
+#### **Code Quality**
+- Removed 200+ PMD violations.
+- Standardized JavaFX handler visibility.
+- Removed unused imports and dead code.
+- Centralized form styling via `FormBuilder`.
+
+---
+
+### 🚀 CI/CD Pipeline (Jenkins + Docker)
+
+#### **Jenkins Pipeline**
+- Automated build using Maven.
+- Runs all unit tests.
+- Executes SonarQube static analysis.
+- Builds and deploys Docker image.
+
+#### **SonarQube Results**
+- All metrics achieved **A or B grade**.
+- Coverage increased significantly after refactoring.
+- No critical vulnerabilities remain.
+
+#### **Docker Deployment**
+- Application packaged into a Docker container.
+- Ensures consistent deployment across environments.
+
+---
+
+### 📄 Documentation Updates
+
+During Sprint 7, the following documents were added or updated:
+- Test Plan
+- Unit Testing Report
+- UAT Summary
+- Heuristic Evaluation Report
+- Bug Tracking Table
+- Refactoring Reports (Dashboard, Employee, Department, Leave, Salary)
+- Architecture updates (View layer added)
+- Code cleanup and linting documentation
+
