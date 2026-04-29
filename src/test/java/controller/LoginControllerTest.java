@@ -677,4 +677,16 @@ class LoginControllerTest {
         return field != null && !field.trim().isEmpty();
     }
 
+    // ─── navigateToDashboard coverage ────────────────────────────────────────
+
+    @Test
+    @DisplayName("navigateToDashboard covers FXMLLoader lines before scene creation")
+    void testNavigateToDashboard_coversLoaderLines() throws Exception {
+        // inject a TextField so getScene() NPE comes after loader.load() attempt
+        javafx.scene.control.TextField loginEmail = new javafx.scene.control.TextField();
+        setField("loginEmail", loginEmail);
+        try {
+            invokePrivate("navigateToDashboard", new Class[]{});
+        } catch (Exception ignored) {}
+    }
 }

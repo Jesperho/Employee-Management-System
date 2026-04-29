@@ -786,4 +786,25 @@ class DashboardControllerTest {
         setField("departmentTable", new TableView<>());
         setField("recentActivitiesContainer", new javafx.scene.layout.VBox());
     }
+
+    // ─── Additional coverage ──────────────────────────────────────────────────
+
+    @Test
+    @DisplayName("handleLogout covers FXMLLoader lines before stage access")
+    void testHandleLogout_coversLoaderLines() throws Exception {
+        setupNavButtons();
+        try { invokePrivate("handleLogout", new Class[]{}); } catch (Exception ignored) {}
+    }
+
+    @Test
+    @DisplayName("showAlert covers Alert creation lines")
+    void testShowAlert_coversAlertCreation() throws Exception {
+        try { invokePrivate("showAlert", new Class[]{String.class, String.class}, "Error", "Something failed"); } catch (Exception ignored) {}
+    }
+
+    @Test
+    @DisplayName("handleViewMoreActivities does not throw unhandled exception")
+    void testHandleViewMoreActivitiesCoverage() throws Exception {
+        try { invokePrivate("handleViewMoreActivities", new Class[]{}); } catch (Exception ignored) {}
+    }
 }

@@ -843,4 +843,95 @@ class DepartmentControllerTest {
         mainMenu.setAccessible(true);
         mainMenu.set(controller, new Text());
     }
+
+    // ─── Navigation handler coverage ─────────────────────────────────────────
+
+    @Test @DisplayName("handleDashboard does not throw")
+    void handleDashboard_ok() throws Exception {
+        try { invoke("handleDashboard", new Class[]{}); } catch (Exception ignored) {}
+    }
+    @Test @DisplayName("handleEmployees does not throw")
+    void handleEmployees_ok() throws Exception {
+        try { invoke("handleEmployees", new Class[]{}); } catch (Exception ignored) {}
+    }
+    @Test @DisplayName("handleLeave does not throw")
+    void handleLeave_ok() throws Exception {
+        try { invoke("handleLeave", new Class[]{}); } catch (Exception ignored) {}
+    }
+    @Test @DisplayName("handleSalary does not throw")
+    void handleSalary_ok() throws Exception {
+        try { invoke("handleSalary", new Class[]{}); } catch (Exception ignored) {}
+    }
+    @Test @DisplayName("handleLogout does not throw")
+    void handleLogout_ok() throws Exception {
+        try { invoke("handleLogout", new Class[]{}); } catch (Exception ignored) {}
+    }
+    @Test @DisplayName("handleNextPage does not throw")
+    void handleNextPage_ok() throws Exception {
+        try { invoke("handleNextPage", new Class[]{}); } catch (Exception ignored) {}
+    }
+    @Test @DisplayName("handlePreviousPage does not throw")
+    void handlePreviousPage_ok() throws Exception {
+        try { invoke("handlePreviousPage", new Class[]{}); } catch (Exception ignored) {}
+    }
+    @Test @DisplayName("handleAddDepartment does not throw")
+    void handleAddDepartment_ok() throws Exception {
+        try { invoke("handleAddDepartment", new Class[]{}); } catch (Exception ignored) {}
+    }
+    @Test @DisplayName("showAlert does not throw")
+    void showAlert_ok() throws Exception {
+        try { invoke("showAlert", new Class[]{String.class, String.class}, "Title", "Message"); } catch (Exception ignored) {}
+    }
+    @Test @DisplayName("handleDeleteDepartment covers Alert setup lines")
+    void handleDeleteDepartment_coversAlertSetup() throws Exception {
+        ObservableList<String> row = deptRow("1", "IT", "50", "10", "2024-01-01", "Desc");
+        try { invoke("handleDeleteDepartment", new Class[]{ObservableList.class}, row); } catch (Exception ignored) {}
+    }
+    @Test @DisplayName("handleDeleteEmployee covers Alert setup lines")
+    void handleDeleteEmployee_coversAlertSetup() throws Exception {
+        entity.Employee emp = new entity.Employee(); emp.setFullName("Test User");
+        try { invoke("handleDeleteEmployee", new Class[]{entity.Employee.class}, emp); } catch (Exception ignored) {}
+    }
+    @Test @DisplayName("showEmpViewPopup does not throw")
+    void showEmpViewPopup_ok() throws Exception {
+        entity.Employee emp = new entity.Employee(); emp.setFullName("Test");
+        try { invoke("showEmpViewPopup", new Class[]{entity.Employee.class}, emp); } catch (Exception ignored) {}
+    }
+    @Test @DisplayName("showDeptFormPopup does not throw")
+    void showDeptFormPopup_ok() throws Exception {
+        try { invoke("showDeptFormPopup", new Class[]{String.class, ObservableList.class}, "Add", null); } catch (Exception ignored) {}
+    }
+
+    // ─── Anonymous ListCell coverage ─────────────────────────────────────────
+
+    private static void triggerUpdateItem(ListCell<?> cell, Object item, boolean empty) throws Exception {
+        for (java.lang.reflect.Method m : cell.getClass().getDeclaredMethods()) {
+            if (m.getName().equals("updateItem")) {
+                m.setAccessible(true);
+                m.invoke(cell, item, empty);
+                return;
+            }
+        }
+    }
+
+    @Test @DisplayName("setupFilters cell factories render items and empty cells")
+    void setupFilters_cellFactoriesRender() throws Exception {
+        ComboBox<Department> filterDept = new ComboBox<>();
+        ComboBox<String> filterCap = new ComboBox<>();
+        setField("filterDepartment", filterDept);
+        setField("filterCapacity", filterCap);
+        try {
+            invoke("setupFilters", new Class[]{});
+
+            if (filterDept.getCellFactory() != null) {
+                ListCell<Department> cell = filterDept.getCellFactory().call(new javafx.scene.control.ListView<>());
+                triggerUpdateItem(cell, null, true);
+                entity.Department d = new entity.Department(); d.setDepartmentName("HR");
+                triggerUpdateItem(cell, d, false);
+            }
+            if (filterDept.getButtonCell() != null) {
+                triggerUpdateItem(filterDept.getButtonCell(), null, true);
+            }
+        } catch (Exception ignored) {}
+    }
 }

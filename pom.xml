@@ -158,7 +158,6 @@
                         <exclude>view/**</exclude>
                         <exclude>dataseeder/DataSeeder.class</exclude>
                         <exclude>datasource/MariaDbConnection.class</exclude>
-                        <exclude>controller/*$*.class</exclude>
                     </excludes>
                 </configuration>
                 <executions>
