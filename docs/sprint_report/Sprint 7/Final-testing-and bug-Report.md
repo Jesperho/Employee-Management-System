@@ -24,9 +24,15 @@ The Maven `verify` lifecycle now executes perfectly, confirming system stability
 - **Skipped**: 0
 - **Build Status**: SUCCESS
 
-## Next Steps
-The project is now fully stabilized and secure. The user should proceed to execute the final SonarQube analysis pipeline (`mvn clean verify sonar:sonar`) to generate the final code coverage report and trigger the Docker deployment process in Jenkins.
+## 📊 CI/CD Pipeline & Code Quality Verification
 
-Screenshot of Jenkins
+The final CI/CD pipeline was executed successfully using Jenkins. All stages — build, testing, report generation, SonarQube analysis, and Docker image deployment — completed without errors, confirming that the system is stable and production‑ready. The final SonarQube analysis shows strong code quality with high test coverage and no critical issues, validating that the refactored architecture meets the Sprint 7 acceptance criteria.
+
 
 ![ER Diagram](https://github.com/Jesperho/Employee-Management-System/blob/main/docs/Diagrams/Jenkins-Test1.jpeg)
+**Jenkins CI/CD Pipeline Execution**  
+The Jenkins pipeline completed all stages successfully, including build, testing, SonarQube analysis, and Docker image deployment. This confirms that the CI/CD workflow is stable and fully automated.
+
+![ER Diagram](https://github.com/Jesperho/Employee-Management-System/blob/main/docs/Diagrams/SonarQube.jpeg)
+**Final SonarQube Quality Report**  
+The SonarQube analysis shows strong code quality with high test coverage and no critical issues. These results validate that the system meets the Sprint 7 quality requirements and is ready for release.
