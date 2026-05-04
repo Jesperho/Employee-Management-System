@@ -423,15 +423,25 @@ public class DashboardController extends BaseController {
 
     @FXML
     private void handleLogout() {
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Logout");
+        confirm.setHeaderText("Are you sure you want to logout?");
+        confirm.setContentText("Any unsaved changes will be lost.");
+        if (confirm.showAndWait().filter(b -> b == ButtonType.OK).isEmpty()) return;
+
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/login.fxml"));
             loader.setResources(LanguageManager.getInstance().getCurrentBundle());
             Parent root = loader.load();
             Stage stage = (Stage) btnLogout.getScene().getWindow();
-            Scene scene = new Scene(root, 1050, 700);
+            boolean wasMaximized = stage.isMaximized();
+            boolean wasFullscreen = stage.isFullScreen();
+            Scene scene = new Scene(root, stage.getWidth(), stage.getHeight());
             scene.getStylesheets().add(getClass().getResource("/css/login.css").toExternalForm());
             stage.setScene(scene);
             stage.setTitle("Employee Management System - Login");
+            if (wasMaximized) stage.setMaximized(true);
+            if (wasFullscreen) stage.setFullScreen(true);
         } catch (Exception e) {
             LOGGER.log(java.util.logging.Level.SEVERE, "Failed to logout", e);
             showAlert("Error", "Failed to logout. Please try again.");

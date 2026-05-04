@@ -111,13 +111,17 @@ public class LoginController extends BaseController {
             Parent root = loader.load();
 
             Stage stage = (Stage) loginEmail.getScene().getWindow();
-            Scene scene = new Scene(root, 1280, 800);
+            boolean wasMaximized = stage.isMaximized();
+            boolean wasFullscreen = stage.isFullScreen();
+            Scene scene = new Scene(root, stage.getWidth(), stage.getHeight());
             scene.getStylesheets().add(getClass().getResource("/css/dashboard.css").toExternalForm());
 
             stage.setScene(scene);
             stage.setTitle("Employee Management System - Dashboard");
             stage.setMinWidth(1100);
             stage.setMinHeight(700);
+            if (wasMaximized) stage.setMaximized(true);
+            if (wasFullscreen) stage.setFullScreen(true);
         } catch (Exception e) {
             LOGGER.severe("Error loading dashboard: " + e.getMessage());
             showError(loginMessage, "Error loading dashboard. Please try again.");

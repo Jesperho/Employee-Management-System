@@ -277,7 +277,14 @@ public class SalaryController extends BaseController {
     @FXML protected void handleSalary()       { /* already here */ }
 
     @FXML
-    protected void handleLogout() { navigateTo("/fxml/login.fxml", "/css/login.css"); }
+    protected void handleLogout() {
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Logout");
+        confirm.setHeaderText("Are you sure you want to logout?");
+        confirm.setContentText("Any unsaved changes will be lost.");
+        if (confirm.showAndWait().filter(b -> b == ButtonType.OK).isEmpty()) return;
+        navigateTo("/fxml/login.fxml", "/css/login.css");
+    }
 
     private void navigateTo(String fxmlPath, String cssPath) {
         try {
@@ -285,12 +292,14 @@ public class SalaryController extends BaseController {
             loader.setResources(LanguageManager.getInstance().getCurrentBundle());
             Parent root = loader.load();
             Stage stage = (Stage) btnLogout.getScene().getWindow();
-            double w = stage.getWidth();
-            double h = stage.getHeight();
-            Scene scene = new Scene(root, w, h);
+            boolean wasMaximized = stage.isMaximized();
+            boolean wasFullscreen = stage.isFullScreen();
+            Scene scene = new Scene(root, stage.getWidth(), stage.getHeight());
             var css = getClass().getResource(cssPath);
             if (css != null) scene.getStylesheets().add(css.toExternalForm());
             stage.setScene(scene);
+            if (wasMaximized) stage.setMaximized(true);
+            if (wasFullscreen) stage.setFullScreen(true);
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Navigation failed: " + fxmlPath, e);
         }
