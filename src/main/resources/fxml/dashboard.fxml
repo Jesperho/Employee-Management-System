@@ -218,7 +218,6 @@
                                 <Button fx:id="btnCreateDepartment" text="📋  Create Department" styleClass="action-button" maxWidth="Infinity" onAction="#handleCreateDepartment"/>
                                 <Button fx:id="btnProcessLeave" text="📝  Process Leave Request" styleClass="action-button" maxWidth="Infinity" onAction="#handleProcessLeave"/>
                                 <Button fx:id="btnRunPayroll" text="💵  Run Payroll" styleClass="action-button" maxWidth="Infinity" onAction="#handleRunPayroll"/>
-                                <Button fx:id="btnGenerateReport" text="📊  Generate Report" styleClass="action-button" maxWidth="Infinity" onAction="#handleGenerateReport"/>
                             </VBox>
                         </VBox>
                     </HBox>

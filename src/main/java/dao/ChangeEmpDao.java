@@ -60,6 +60,20 @@ public class ChangeEmpDao extends BaseDao<ChangeEmp> {
         }
     }
 
+    // Nullifies the employee FK in all change logs for a given employee so the employee can be deleted
+    public void nullifyEmployee(int employeeId) {
+        EntityManager em = MariaDbConnection.getEntityManager();
+        try {
+            em.getTransaction().begin();
+            em.createQuery("UPDATE ChangeEmp c SET c.employee = null WHERE c.employee.id = :empId")
+              .setParameter("empId", employeeId)
+              .executeUpdate();
+            em.getTransaction().commit();
+        } finally {
+            em.close();
+        }
+    }
+
     // READ: Sort all changes by date (ascending or descending)
     public List<ChangeEmp> sortByDate(boolean ascending) {
         EntityManager em = MariaDbConnection.getEntityManager();

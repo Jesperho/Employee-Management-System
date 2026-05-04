@@ -394,9 +394,6 @@
                         .replace("{0}", emp.getFullName()));
                 Optional<ButtonType> result = confirm.showAndWait();
                 if (result.isPresent() && result.get() == ButtonType.OK) {
-                    employeeTranslationDao.deleteByEmployee(emp);
-                    employeeDao.delete(emp.getId());
-
                     String en = java.text.MessageFormat.format(lang.getTranslatedTexts("emp.activity.deleted", "en"), emp.getFullName());
                     String es = java.text.MessageFormat.format(lang.getTranslatedTexts("emp.activity.deleted", "es"), emp.getFullName());
                     String fa = java.text.MessageFormat.format(lang.getTranslatedTexts("emp.activity.deleted", "fa"), emp.getFullName());
@@ -406,6 +403,10 @@
                             LocalDate.now(), en, fa, ar, es,
                             app.UserSession.getInstance().getAdmin(), emp
                     ));
+
+                    changeEmpDao.nullifyEmployee(emp.getId());
+                    employeeTranslationDao.deleteByEmployee(emp);
+                    employeeDao.delete(emp.getId());
                     loadFromDatabase();
                 }
             }

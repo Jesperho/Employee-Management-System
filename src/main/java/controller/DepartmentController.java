@@ -554,16 +554,11 @@ public class DepartmentController extends BaseController {
             int id = Integer.parseInt(row.get(0));
             Department dept = departmentDao.find(id);
 
-            // Attempt deletion first; only proceed if no employees are assigned
-            boolean deleted = departmentDao.safeDelete(id);
-            if (!deleted) {
+            if (departmentDao.countEmployees(id) > 0) {
                 showAlert(lang.getTranslatedText("alert.cannotDelete"),
                         lang.getTranslatedText("dept.delete.hasEmployees"));
                 return;
             }
-
-            // Safe to remove translations and log activity now
-            departmentTranslationDao.deleteByDepartment(dept);
 
             String deptName = dept.getDepartmentName();
             String deptKey = lang.getKey(deptName);
@@ -576,6 +571,10 @@ public class DepartmentController extends BaseController {
                     app.UserSession.getInstance().getAdmin(),
                     dept
             ));
+
+            changeDeptDao.nullifyDepartment(id);
+            departmentTranslationDao.deleteByDepartment(dept);
+            departmentDao.delete(id);
 
             loadFromDatabase();
             setupFilters();

@@ -60,6 +60,20 @@ public class ChangeDeptDao extends BaseDao<ChangeDept> {
         }
     }
 
+    // Nullifies the department FK in all change logs so the department can be deleted
+    public void nullifyDepartment(int departmentId) {
+        EntityManager em = MariaDbConnection.getEntityManager();
+        try {
+            em.getTransaction().begin();
+            em.createQuery("UPDATE ChangeDept c SET c.department = null WHERE c.department.id = :deptId")
+              .setParameter("deptId", departmentId)
+              .executeUpdate();
+            em.getTransaction().commit();
+        } finally {
+            em.close();
+        }
+    }
+
     // READ: Sort all department changes by date
     public List<ChangeDept> sortByDate(boolean ascending) {
         EntityManager em = MariaDbConnection.getEntityManager();

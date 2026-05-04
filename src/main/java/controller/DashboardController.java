@@ -60,7 +60,6 @@ public class DashboardController extends BaseController {
     @FXML private Button btnCreateDepartment;
     @FXML private Button btnProcessLeave;
     @FXML private Button btnRunPayroll;
-    @FXML private Button btnGenerateReport;
     @FXML private Text deptOverviewTitle;
     @FXML private Button btnManageDepts;
     @FXML private Text salarySummaryTitle;
@@ -166,7 +165,6 @@ public class DashboardController extends BaseController {
         if (btnCreateDepartment != null) btnCreateDepartment.setText("📋  " + langManager.getTranslatedText("action.createDepartment"));
         if (btnProcessLeave != null) btnProcessLeave.setText("📝  " + langManager.getTranslatedText("action.processLeave"));
         if (btnRunPayroll != null) btnRunPayroll.setText("💵  " + langManager.getTranslatedText("action.runPayroll"));
-        if (btnGenerateReport != null) btnGenerateReport.setText("📊  " + langManager.getTranslatedText("action.generateReport"));
 
         if (searchField != null) searchField.setPromptText(langManager.getTranslatedText("search.prompt"));
 
@@ -353,7 +351,7 @@ public class DashboardController extends BaseController {
                     view.DashboardView.createActivityItem("+", "activity-new",
                             emp.getMessage(lang.getCurrentLanguageCode()),
                             java.text.MessageFormat.format(lang.getTranslatedText("madeby"), s.getFullName()),
-                            emp.getEmployee().getStartDate() != null ? emp.getEmployee().getStartDate().toString() : "")
+                            emp.getEmployee() != null && emp.getEmployee().getStartDate() != null ? emp.getEmployee().getStartDate().toString() : "")
             );
         }
 
@@ -381,7 +379,7 @@ public class DashboardController extends BaseController {
                     view.DashboardView.createActivityItem("+", "activity-new",
                             changeDept.getMessage(lang.getCurrentLanguageCode()),
                             java.text.MessageFormat.format(lang.getTranslatedText("madeby"), s.getFullName()),
-                            changeDept.getDepartment().getCreationDate() != null ? changeDept.getDepartment().getCreationDate().toString() : "")
+                            changeDept.getDepartment() != null && changeDept.getDepartment().getCreationDate() != null ? changeDept.getDepartment().getCreationDate().toString() : "")
             );
         }
 
@@ -481,7 +479,6 @@ public class DashboardController extends BaseController {
     @FXML private void handleCreateDepartment() { navigateTo("/fxml/department.fxml", "/css/management.css"); }
     @FXML private void handleProcessLeave() { navigateTo("/fxml/leave.fxml", "/css/management.css"); }
     @FXML private void handleRunPayroll() { navigateTo("/fxml/salary.fxml", "/css/management.css"); }
-    @FXML private void handleGenerateReport() { System.out.println("Generating report..."); }
 
     private void showAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
