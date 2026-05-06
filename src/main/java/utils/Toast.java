@@ -46,18 +46,39 @@ public class Toast {
             
             popup.getContent().add(pane);
 
-            if (owner != null) {
-                popup.show(owner);
-                popup.setX(owner.getX() + owner.getWidth() / 2 - pane.prefWidth(-1) / 2);
-                popup.setY(owner.getY() + owner.getHeight() - 80);
-            } else {
-                // If no owner is provided, try to show on the primary stage or just anywhere
-                Window window = Stage.getWindows().stream().filter(Window::isShowing).findFirst().orElse(null);
-                if (window != null) {
-                    popup.show(window);
-                    popup.setX(window.getX() + window.getWidth() / 2 - pane.prefWidth(-1) / 2);
-                    popup.setY(window.getY() + window.getHeight() - 80);
+            Window window = owner;
+            if (window == null) {
+                java.util.List<Window> windows = Stage.getWindows();
+                for (Window w : windows) {
+                    if (w.isShowing() && w instanceof Stage) {
+                        Stage s = (Stage) w;
+                        if (s.getTitle() != null && s.getTitle().contains("Employee Management System")) {
+                            window = s;
+                            break;
+                        }
+                    }
                 }
+                if (window == null) {
+                    for (Window w : windows) {
+                        if (w.isShowing() && w.getWidth() > 300 && w.getHeight() > 300) {
+                            window = w;
+                            break;
+                        }
+                    }
+                }
+                if (window == null && !windows.isEmpty()) {
+                    window = windows.get(0);
+                }
+            }
+            
+            if (window != null) {
+                popup.show(window);
+                // force layout to get bounds
+                pane.applyCss();
+                pane.layout();
+                double width = pane.prefWidth(-1);
+                popup.setX(window.getX() + window.getWidth() / 2 - width / 2);
+                popup.setY(window.getY() + window.getHeight() - 80);
             }
 
             Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(3), e -> popup.hide()));
