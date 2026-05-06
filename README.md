@@ -349,7 +349,20 @@ I[GitHub Repository] --> E
 I --> B
 
 ```
-
 ---
 
-## 12. How to Run the Project
+## 12. Authors
+
+**Team Members**
+
+- Amir Noori - Developer
+- Jesper Holmström - Developer
+- Mehdi Zaidani - Developer
+- Osama Aamer - Developer
+
+**Course Information**
+- Course: Software Engineering Project 1 and 2
+- Semester: Spring 2026
+- Institution: Metropolia University of Applied Sciences
+
+
