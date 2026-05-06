@@ -90,6 +90,11 @@ public final class SalaryView {
             @Override
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
+                if (!empty) {
+                    entity.LanguageManager lang = entity.LanguageManager.getInstance();
+                    viewBtn.setText(lang.getTranslatedText("btn.view"));
+                    editBtn.setText(lang.getTranslatedText("btn.edit"));
+                }
                 setGraphic(empty ? null : box);
             }
         };
@@ -255,6 +260,7 @@ public final class SalaryView {
                 emp.setSalary(salaryValue);
                 if (positionCombo.getValue() != null) emp.setRole(positionCombo.getValue());
                 employeeDao.update(emp);
+                utils.Toast.showSuccess("Salary updated successfully", null);
             }
             onRefresh.run();
             popup.close();

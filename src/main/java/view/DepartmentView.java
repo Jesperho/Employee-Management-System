@@ -285,6 +285,8 @@ public class DepartmentView {
             
             if (onSuccess != null) onSuccess.run();
             popup.close();
+            utils.Toast.showSuccess(dlang.getTranslatedText("alert.savedSuccessfully") != null && !dlang.getTranslatedText("alert.savedSuccessfully").startsWith("!") 
+                ? dlang.getTranslatedText("alert.savedSuccessfully") : "Saved successfully", null);
         });
         cancelBtn.setOnAction(e -> popup.close());
 
@@ -459,6 +461,8 @@ public class DepartmentView {
 
             if (onSuccess != null) onSuccess.run();
             popup.close();
+            utils.Toast.showSuccess(lang.getTranslatedText("alert.savedSuccessfully") != null && !lang.getTranslatedText("alert.savedSuccessfully").startsWith("!") 
+                ? lang.getTranslatedText("alert.savedSuccessfully") : "Saved successfully", null);
         });
 
         cancelBtn.setOnAction(e -> popup.close());

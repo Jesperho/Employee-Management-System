@@ -355,6 +355,8 @@ public class LeaveView {
 
             if (onSuccess != null) onSuccess.run();
             popup.close();
+            utils.Toast.showSuccess(lang.getTranslatedText("alert.savedSuccessfully") != null && !lang.getTranslatedText("alert.savedSuccessfully").startsWith("!") 
+                ? lang.getTranslatedText("alert.savedSuccessfully") : "Saved successfully", null);
         });
 
         resetBtn.setOnAction(e -> {
